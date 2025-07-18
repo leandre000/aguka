@@ -20,6 +20,7 @@ import {
   Clock,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from '@/contexts/AuthContext';
 
 const translations = {
   en: {
@@ -117,8 +118,8 @@ const Reports = () => {
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
 
-  // TODO: Replace with real manager ID from auth/user context
-  const managerId = "mock-manager-id";
+  const { user } = useAuth();
+  const managerId = user?._id;
 
   useEffect(() => {
     setKpisLoading(true);

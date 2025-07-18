@@ -56,11 +56,6 @@ export function ManagerPortalSidebar() {
       icon: Calendar,
     },
     {
-      title: "Leave Approvals",
-      url: "/manager-portal/leave-approvals",
-      icon: CheckCircle,
-    },
-    {
       title: t("manager.performance"),
       url: "/manager-portal/performance",
       icon: TrendingUp,
@@ -79,11 +74,6 @@ export function ManagerPortalSidebar() {
       title: t("manager.successionPlanning") || "Succession Planning",
       url: "/manager-portal/succession",
       icon: Users,
-    },
-    {
-      title: t("common.messages") || "Messages",
-      url: "/manager-portal/messages",
-      icon: MessageSquare,
     },
     {
       title: "AI Tools",

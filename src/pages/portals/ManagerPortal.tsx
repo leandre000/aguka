@@ -23,23 +23,20 @@ const ManagerPortal = () => {
     setLoading(true);
     setError("");
     Promise.all([
-      apiFetch("/users"),
       apiFetch("/leave"),
-      apiFetch("/activity-log/system/recent?limit=4")
     ])
-      .then(([usersRes, leaveRes, activityRes]) => {
-        const users = Array.isArray(usersRes.data) ? usersRes.data : [];
+      .then(([leaveRes]) => {
         const leaves = Array.isArray(leaveRes.data) ? leaveRes.data : [];
         // Team stats
-        const totalTeamMembers = users.length;
-        const activeMembers = users.filter(u => u.status === "active").length;
+        const totalTeamMembers = 0; // No user data available for managers
+        const activeMembers = 0; // No user data available for managers
         // On leave: users with an approved leave that includes today
         const today = new Date();
         const onLeaveUserIds = new Set(
           leaves.filter(l => l.status === "approved" && new Date(l.startDate) <= today && new Date(l.endDate) >= today)
             .map(l => l.employee?._id || l.employee)
         );
-        const onLeave = users.filter(u => onLeaveUserIds.has(u._id)).length;
+        const onLeave = leaves.filter(l => onLeaveUserIds.has(l.employee?._id || l.employee)).length;
         // Pending requests: leave requests with status pending
         const pendingRequests = leaves.filter(l => l.status === "pending").length;
         setTeamStats({
@@ -49,14 +46,7 @@ const ManagerPortal = () => {
           pendingRequests
         });
         // Recent system activity
-        const sysActivity = Array.isArray(activityRes.logs)
-          ? activityRes.logs.map(log => ({
-              action: log.action,
-              user: log.user?.Names || log.user?.name || "System",
-              time: new Date(log.createdAt).toLocaleString(),
-              type: log.resource || "system"
-            }))
-          : [];
+        const sysActivity = []; // No system activity data available for managers
         setRecentActivity(sysActivity);
       })
       .catch(() => setError("Failed to load dashboard data."))
@@ -136,29 +126,7 @@ const ManagerPortal = () => {
         </div>
 
       {/* Team Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{loading ? "..." : teamStats.totalTeamMembers}</div>
-            <p className="text-xs text-muted-foreground">Total team size</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{teamStats.activeMembers}</div>
-            <p className="text-xs text-muted-foreground">Working today</p>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">On Leave</CardTitle>
@@ -182,94 +150,8 @@ const ManagerPortal = () => {
         </Card>
       </div>
 
-      {/* Team Members */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Team Members</CardTitle>
-              <CardDescription>Manage your direct reports</CardDescription>
-            </div>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Team Member
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {teamMembers.map((member) => (
-              <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                    <span className="text-primary font-semibold">
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{member.name}</h3>
-                    <p className="text-sm text-muted-foreground">{member.position}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                  <div className="text-right">
-                    <p className="text-sm font-medium">Performance: {member.performance}/5.0</p>
-                    <p className="text-xs text-muted-foreground">Last active: {member.lastActive}</p>
-                  </div>
-                  <Badge className={getStatusColor(member.status)}>
-                    {member.status}
-                  </Badge>
-                  <Button variant="outline" size="sm">
-                    View Details
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Pending Requests */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <AlertCircle className="h-5 w-5" />
-            <span>Pending Approvals</span>
-          </CardTitle>
-          <CardDescription>Requests requiring your attention</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {pendingRequests.map((request) => (
-              <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-semibold">{request.employee}</h3>
-                    <Badge variant="outline">{request.type}</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{request.dates}</p>
-                  <p className="text-sm">{request.reason}</p>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Badge className={getStatusColor(request.status)}>
-                    {request.status}
-                  </Badge>
-                  <div className="flex space-x-1">
-                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700">
-                      Approve
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                      Reject
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Remove Team Members and Pending Requests mock data and UI */}
+      {/* Only keep dynamic, authorized manager content here */}
       </div>
     </ManagerPortalLayout>
   );

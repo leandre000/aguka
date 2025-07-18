@@ -19,6 +19,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from '@/contexts/AuthContext';
 
 const translations = {
   en: {
@@ -124,8 +125,8 @@ const Attendance = () => {
   const [weeklyStatsLoading, setWeeklyStatsLoading] = useState(true);
   const [weeklyStatsError, setWeeklyStatsError] = useState<string | null>(null);
 
-  // TODO: Replace with real manager ID from auth/user context
-  const managerId = "mock-manager-id";
+  const { user } = useAuth();
+  const managerId = user?._id;
 
   useEffect(() => {
     setOverviewLoading(true);
@@ -138,17 +139,17 @@ const Attendance = () => {
     setAttendanceLoading(true);
     setAttendanceError(null);
     apiFetch(`/employees/manager/attendance/today?manager=${managerId}`)
-      .then((res) => setAttendanceData(res.data))
+      .then((res) => setAttendanceData(Array.isArray(res.data) ? res.data : []))
       .catch(() => setAttendanceError("Failed to load today's attendance."))
       .finally(() => setAttendanceLoading(false));
 
     setWeeklyStatsLoading(true);
     setWeeklyStatsError(null);
     apiFetch(`/employees/manager/attendance/weekly-trends?manager=${managerId}`)
-      .then((res) => setWeeklyStats(res.data))
+      .then((res) => setWeeklyStats(Array.isArray(res.data) ? res.data : []))
       .catch(() => setWeeklyStatsError("Failed to load weekly trends."))
       .finally(() => setWeeklyStatsLoading(false));
-  }, []);
+  }, [managerId]);
 
   return (
     <ManagerPortalLayout>
@@ -234,7 +235,7 @@ const Attendance = () => {
               <div className="animate-pulse h-8 w-full bg-muted rounded" />
             ) : attendanceError ? (
               <div className="text-xs text-red-500">{attendanceError}</div>
-            ) : attendanceData.length === 0 ? (
+            ) : Array.isArray(attendanceData) && attendanceData.length === 0 ? (
               <div className="text-muted-foreground text-sm">No attendance data found.</div>
             ) : (
               <div className="space-y-3 md:space-y-4">
@@ -275,7 +276,7 @@ const Attendance = () => {
               <div className="animate-pulse h-8 w-full bg-muted rounded" />
             ) : weeklyStatsError ? (
               <div className="text-xs text-red-500">{weeklyStatsError}</div>
-            ) : weeklyStats.length === 0 ? (
+            ) : Array.isArray(weeklyStats) && weeklyStats.length === 0 ? (
               <div className="text-muted-foreground text-sm">No weekly stats found.</div>
             ) : (
               <div className="space-y-4">

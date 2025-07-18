@@ -96,12 +96,10 @@ export default function OfferManagement() {
         setLoading(false);
       });
     getJobPostings().then(setJobs).catch(() => {});
-    getUsers().then(setCandidates).catch(() => {});
   }, [language, t.error]);
 
   useEffect(() => {
     getJobPostings().then(setJobs).catch(() => {});
-    getUsers().then(setCandidates).catch(() => {});
   }, []);
 
   const openCreateModal = () => {

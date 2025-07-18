@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import axios from "axios";
+import { useAuth } from '@/contexts/AuthContext';
 
 const translations = {
   en: {
@@ -158,8 +159,8 @@ const Performance = () => {
   const [reviewFormError, setReviewFormError] = useState<string | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
 
-  // TODO: Replace with real manager ID from auth/user context
-  const managerId = "mock-manager-id";
+  const { user } = useAuth();
+  const managerId = user?._id;
 
   useEffect(() => {
     setOverviewLoading(true);
@@ -196,7 +197,7 @@ const Performance = () => {
       .then((data) => setDevAreas(data))
       .catch(() => setDevAreasError("Failed to load development areas."))
       .finally(() => setDevAreasLoading(false));
-  }, []);
+  }, [managerId]);
 
   return (
     <ManagerPortalLayout>
@@ -231,7 +232,7 @@ const Performance = () => {
             <div className="col-span-4 text-red-500 text-sm">{overviewError}</div>
           ) : overview ? (
             <>
-              <Card>
+              <Card key={overview.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-xs md:text-sm font-medium">{t("teamAvgScore")}</CardTitle>
                   <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
@@ -241,7 +242,7 @@ const Performance = () => {
                   <p className="text-xs text-muted-foreground">{t("teamAvgScoreChange")}</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card key={overview.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-xs md:text-sm font-medium">{t("goalsCompleted")}</CardTitle>
                   <Target className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
@@ -251,7 +252,7 @@ const Performance = () => {
                   <p className="text-xs text-muted-foreground">{t("goalsCompletedRate")}</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card key={overview.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-xs md:text-sm font-medium">{t("highPerformers")}</CardTitle>
                   <Star className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
@@ -261,7 +262,7 @@ const Performance = () => {
                   <p className="text-xs text-muted-foreground">{t("highPerformersRate")}</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card key={overview.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-xs md:text-sm font-medium">{t("reviewsDue")}</CardTitle>
                   <Calendar className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
@@ -340,7 +341,7 @@ const Performance = () => {
             ) : (
               <div className="space-y-4">
                 {upcomingReviews.map((review, index) => (
-                  <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4">
+                  <div key={review.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                         <Calendar className="h-5 w-5" />
@@ -380,7 +381,7 @@ const Performance = () => {
             ) : (
               <div className="space-y-4">
                 {trends.map((trend, idx) => (
-                  <div key={idx} className="flex justify-between items-center">
+                  <div key={trend.id} className="flex justify-between items-center">
                     <span className="text-sm">{trend.label}</span>
                     <div className="flex items-center gap-2">
                       <div className="w-24 h-2 bg-secondary rounded-full">
@@ -411,7 +412,7 @@ const Performance = () => {
             ) : (
               <div className="space-y-4">
                 {devAreas.map((area, idx) => (
-                  <div key={idx} className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div key={area.id} className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <h3 className="font-medium text-blue-800 text-sm">{area.area}</h3>
                     <p className="text-sm text-blue-700">{area.desc}</p>
                   </div>

@@ -13,6 +13,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Users, UserPlus, Phone, Mail, Calendar, Target } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getTeamMembers } from "@/lib/api";
+import { useAuth } from '@/contexts/AuthContext';
 
 const translations = {
   en: {
@@ -105,24 +106,26 @@ const TeamMembers = () => {
     return value ?? key;
   };
 
+  const { user } = useAuth();
+  const managerId = user?._id;
+
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamError, setTeamError] = useState<string | null>(null);
-  const managerId = localStorage.getItem('userId'); // Replace with real auth context if available
 
   useEffect(() => {
     if (!managerId) return;
     setTeamLoading(true);
     getTeamMembers(managerId)
-      .then((data) => { setTeamMembers(data); setTeamError(null); })
-      .catch(() => setTeamError("Failed to load team members"))
+      .then((data) => setTeamMembers(Array.isArray(data) ? data : []))
+      .catch(() => setTeamMembers([]))
       .finally(() => setTeamLoading(false));
   }, [managerId]);
 
   // Replace static stats with dynamic calculations
   const totalMembers = teamMembers.length;
-  const activeMembers = teamMembers.filter(m => m.status === 'Active').length;
-  const onLeave = teamMembers.filter(m => m.status === 'On Leave').length;
+  const activeMembers = Array.isArray(teamMembers) ? teamMembers.filter(m => m.status === 'Active').length : 0;
+  const onLeave = Array.isArray(teamMembers) ? teamMembers.filter(m => m.status === 'On Leave').length : 0;
   const avgPerformance = teamMembers.length ? (teamMembers.reduce((sum, m) => sum + (m.performanceScore || 4), 0) / teamMembers.length).toFixed(1) : 'N/A';
 
   return (
@@ -228,7 +231,7 @@ const TeamMembers = () => {
               <p>No team members found for this manager.</p>
             )}
             <div className="space-y-3 md:space-y-4">
-              {teamMembers.map((member) => (
+              {Array.isArray(teamMembers) && teamMembers.map((member) => (
                 <div
                   key={member.id}
                   className="flex flex-col lg:flex-row lg:items-center justify-between p-3 md:p-4 border rounded-lg gap-4"

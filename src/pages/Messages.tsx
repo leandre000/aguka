@@ -45,10 +45,14 @@ export default function Messages() {
 
   // Fetch all users for participant selection
   useEffect(() => {
-    getUsers()
-      .then((res: any) => setAllUsers(res.data || []))
-      .catch(() => setAllUsers([]));
-  }, []);
+    if (user?.role === 'admin') {
+      getUsers()
+        .then((res: any) => setAllUsers(res.data || []))
+        .catch(() => setAllUsers([]));
+    } else {
+      setAllUsers([]); // Non-admins cannot fetch all users
+    }
+  }, [user]);
 
   // Fetch threads
   const fetchThreads = () => {

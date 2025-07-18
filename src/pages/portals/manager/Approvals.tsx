@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Card,
   CardContent,
@@ -18,6 +19,10 @@ import {
   FileText,
   AlertTriangle,
 } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import { getLeaveRequests, approveLeave, rejectLeave } from '@/lib/api';
+import { toast } from '@/components/ui/use-toast';
+import { useEffect, useState } from "react";
 
 const translations = {
   en: {
@@ -135,52 +140,46 @@ const Approvals = () => {
   const t = (key: keyof (typeof translations)["en"]) =>
     translations[language][key];
 
-  const pendingApprovals = [
-    {
-      id: 1,
-      type: t("timeOff"),
-      employee: "Alice Johnson",
-      description: "Annual leave for family vacation",
-      amount: null,
-      period: "Feb 15-19, 2024",
-      submitted: "2024-01-10",
-      priority: "Normal",
-      icon: Calendar,
-    },
-    {
-      id: 2,
-      type: t("expenseClaims"),
-      employee: "Bob Smith",
-      description: "Client dinner and travel expenses",
-      amount: "$347.50",
-      period: "Jan 12, 2024",
-      submitted: "2024-01-13",
-      priority: "Normal",
-      icon: DollarSign,
-    },
-    {
-      id: 3,
-      type: t("overtime"),
-      employee: "Carol Davis",
-      description: "Project deadline - weekend work",
-      amount: "16 hours",
-      period: "Jan 20-21, 2024",
-      submitted: "2024-01-18",
-      priority: "High",
-      icon: Clock,
-    },
-    {
-      id: 4,
-      type: t("training"),
-      employee: "David Wilson",
-      description: "AWS Certification Course",
-      amount: "$1,200",
-      period: "Feb 1-5, 2024",
-      submitted: "2024-01-15",
-      priority: "Normal",
-      icon: FileText,
-    },
-  ];
+  const { user } = useAuth();
+  const managerId = user?._id;
+  const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  useEffect(() => {
+    setLoading(true);
+    getLeaveRequests()
+      .then(data => setPendingApprovals(Array.isArray(data) ? data.filter((r: any) => r.status === 'Pending') : []))
+      .finally(() => setLoading(false));
+  }, [managerId]);
+
+  const handleApprove = async (id: string) => {
+    setActionLoading(id);
+    try {
+      await approveLeave(id);
+      setPendingApprovals(prev => prev.filter(r => r._id !== id));
+      toast({ title: 'Request approved' });
+    } catch (err: any) {
+      let errorMsg = 'Failed to approve request';
+      if (err?.message) errorMsg = err.message;
+      toast({ title: 'Error', description: errorMsg, variant: 'destructive' });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+  const handleReject = async (id: string) => {
+    setActionLoading(id);
+    try {
+      await rejectLeave(id);
+      setPendingApprovals(prev => prev.filter(r => r._id !== id));
+      toast({ title: 'Request rejected' });
+    } catch (err: any) {
+      let errorMsg = 'Failed to reject request';
+      if (err?.message) errorMsg = err.message;
+      toast({ title: 'Error', description: errorMsg, variant: 'destructive' });
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const approvalStats = [
     { type: t("timeOff"), pending: 3, approved: 12, rejected: 1 },
@@ -321,13 +320,20 @@ const Approvals = () => {
                         <Button
                           size="sm"
                           className="bg-green-600 hover:bg-green-700"
+                          onClick={() => handleApprove(approval._id)}
+                          disabled={actionLoading === approval._id}
                         >
                           <Check className="h-4 w-4" />
                           <span className="hidden sm:inline ml-1">
                             {t("approve")}
                           </span>
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleReject(approval._id)}
+                          disabled={actionLoading === approval._id}
+                        >
                           <X className="h-4 w-4" />
                           <span className="hidden sm:inline ml-1">
                             {t("reject")}

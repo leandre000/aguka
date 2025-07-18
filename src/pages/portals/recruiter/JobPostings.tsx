@@ -45,11 +45,6 @@ export default function JobPostings() {
   const [formError, setFormError] = useState<string | null>(null);
   const { isAuthenticated, user } = useAuth();
 
-  // Only allow recruiter, admin, or manager
-  if (!isAuthenticated || !["recruiter", "admin", "manager"].includes(user?.role)) {
-    return <div className="p-8 text-center text-red-600">Access denied.</div>;
-  }
-
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -58,6 +53,10 @@ export default function JobPostings() {
       .catch((err) => setError(err.message || "Failed to load jobs"))
       .finally(() => setLoading(false));
   }, []);
+
+  if (!isAuthenticated || !["recruiter", "admin", "manager"].includes(user?.role)) {
+    return <div className="p-8 text-center text-red-600">Access denied.</div>;
+  }
 
   const content = {
     en: {

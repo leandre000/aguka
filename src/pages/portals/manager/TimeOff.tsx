@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -11,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { ManagerPortalLayout } from "@/components/layouts/ManagerPortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Calendar, Check, X, Clock, Users } from "lucide-react";
+import { getLeaveRequests, getTeamMembers } from '@/lib/api';
+import { useAuth } from "@/contexts/AuthContext";
 
 const timeOffTranslations = {
   en: {
@@ -100,110 +103,6 @@ const timeOffTranslations = {
   },
 };
 
-// Mock API utilities (to be replaced with real API calls)
-const mockFetchPendingRequests = async () => {
-  // Simulate network delay
-  await new Promise((res) => setTimeout(res, 600));
-  // Return mock data
-  return [
-    {
-      id: 1,
-      employee: "Alice Johnson",
-      type: "Annual Leave",
-      startDate: "2024-02-15",
-      endDate: "2024-02-19",
-      days: 5,
-      reason: "Family vacation",
-      submitted: "2024-01-10",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      employee: "Bob Smith",
-      type: "Sick Leave",
-      startDate: "2024-01-20",
-      endDate: "2024-01-20",
-      days: 1,
-      reason: "Medical appointment",
-      submitted: "2024-01-18",
-      status: "Pending",
-    },
-    {
-      id: 3,
-      employee: "Carol Davis",
-      type: "Personal Leave",
-      startDate: "2024-02-01",
-      endDate: "2024-02-02",
-      days: 2,
-      reason: "Personal matters",
-      submitted: "2024-01-15",
-      status: "Pending",
-    },
-  ];
-};
-
-const mockFetchTeamCalendar = async () => {
-  await new Promise((res) => setTimeout(res, 600));
-  return [
-    {
-      date: "Jan 18",
-      employee: "David Wilson",
-      type: "Sick Leave",
-      status: "Away",
-    },
-    {
-      date: "Jan 22-24",
-      employee: "Emma Brown",
-      type: "Annual Leave",
-      status: "Away",
-    },
-    {
-      date: "Feb 1-2",
-      employee: "Frank Miller",
-      type: "Personal Leave",
-      status: "Scheduled",
-    },
-    {
-      date: "Feb 15-19",
-      employee: "Grace Lee",
-      type: "Annual Leave",
-      status: "Scheduled",
-    },
-  ];
-};
-
-const mockFetchTeamLeaveBalances = async () => {
-  await new Promise((res) => setTimeout(res, 600));
-  return [
-    {
-      employee: "Alice Johnson",
-      annualLeave: 15,
-      sickLeave: 2,
-    },
-    {
-      employee: "Bob Smith",
-      annualLeave: 8,
-      sickLeave: 5,
-    },
-    {
-      employee: "Carol Davis",
-      annualLeave: 20,
-      sickLeave: 1,
-    },
-  ];
-};
-
-const mockFetchOverviewStats = async () => {
-  await new Promise((res) => setTimeout(res, 400));
-  return {
-    pendingRequests: 3,
-    teamAvailable: 11,
-    outOfMembers: 12,
-    daysRequested: 18,
-    coverage: 98,
-  };
-};
-
 const TimeOff = () => {
   const { language } = useLanguage();
   const t = (key: string) => {
@@ -231,37 +130,34 @@ const TimeOff = () => {
   const [overviewStats, setOverviewStats] = useState<any>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const managerId = user?._id;
 
   // Fetch all data on mount
   useEffect(() => {
     setPendingLoading(true);
     setPendingError(null);
-    mockFetchPendingRequests()
-      .then(setPendingRequests)
-      .catch(() => setPendingError("Failed to load pending requests."))
+    getLeaveRequests()
+      .then(data => setPendingRequests((data || []).filter((r: any) => r.status === 'Pending')))
+      .catch(() => setPendingError('Failed to load pending requests.'))
       .finally(() => setPendingLoading(false));
 
     setCalendarLoading(true);
     setCalendarError(null);
-    mockFetchTeamCalendar()
-      .then(setTeamCalendar)
-      .catch(() => setCalendarError("Failed to load team calendar."))
+    getTeamMembers(managerId)
+      .then(data => setTeamCalendar(Array.isArray(data) ? data : []))
+      .catch(() => setTeamCalendar([]))
       .finally(() => setCalendarLoading(false));
 
     setBalancesLoading(true);
     setBalancesError(null);
-    mockFetchTeamLeaveBalances()
-      .then(setLeaveBalances)
-      .catch(() => setBalancesError("Failed to load leave balances."))
+    getTeamMembers(managerId)
+      .then(data => setLeaveBalances(Array.isArray(data) ? data : []))
+      .catch(() => setLeaveBalances([]))
       .finally(() => setBalancesLoading(false));
 
-    setStatsLoading(true);
-    setStatsError(null);
-    mockFetchOverviewStats()
-      .then(setOverviewStats)
-      .catch(() => setStatsError("Failed to load stats."))
-      .finally(() => setStatsLoading(false));
-  }, []);
+    setStatsLoading(false);
+  }, [managerId]);
 
   // Approve/Reject handlers (mocked)
   const handleApprove = async (id: number) => {
@@ -467,11 +363,11 @@ const TimeOff = () => {
               <div className="animate-pulse h-8 w-full bg-muted rounded" />
             ) : calendarError ? (
               <div className="text-xs text-red-500">{calendarError}</div>
-            ) : teamCalendar.length === 0 ? (
+            ) : Array.isArray(teamCalendar) && teamCalendar.length === 0 ? (
               <div className="text-muted-foreground text-sm">No upcoming leaves.</div>
             ) : (
               <div className="space-y-4">
-                {teamCalendar.map((item, index) => (
+                {Array.isArray(teamCalendar) && teamCalendar.map((item, index) => (
                   <div
                     key={index}
                     className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4"
@@ -511,11 +407,11 @@ const TimeOff = () => {
               <div className="animate-pulse h-8 w-full bg-muted rounded" />
             ) : balancesError ? (
               <div className="text-xs text-red-500">{balancesError}</div>
-            ) : leaveBalances.length === 0 ? (
+            ) : Array.isArray(leaveBalances) && leaveBalances.length === 0 ? (
               <div className="text-muted-foreground text-sm">No leave balances found.</div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {leaveBalances.map((item, idx) => (
+                {Array.isArray(leaveBalances) && leaveBalances.map((item, idx) => (
                   <div key={idx} className="p-4 border rounded-lg">
                     <h3 className="font-medium">{item.employee}</h3>
                     <div className="mt-2 space-y-1">
@@ -570,5 +466,3 @@ const TimeOff = () => {
 };
 
 export default TimeOff;
-
-// TODO: Replace all mockFetch* functions with real API calls once backend endpoints are ready.
