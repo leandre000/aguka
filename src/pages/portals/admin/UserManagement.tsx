@@ -13,6 +13,12 @@ import { Badge } from "@/components/ui/badge";
 import { AdminPortalLayout } from "@/components/layouts/AdminPortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Users, UserPlus, Settings, Shield, Search } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
+import { useRef } from "react";
+import axios from "axios";
 
 const translations = {
   en: {
@@ -83,6 +89,18 @@ const UserManagement = () => {
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
+  // Modal state
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addLoading, setAddLoading] = useState(false);
+  const [form, setForm] = useState({
+    Names: "",
+    Email: "",
+    password: "",
+    role: "admin",
+    department: ""
+  });
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+
   useEffect(() => {
     getUsers().then((res: any) => {
       const userList = res.data || [];
@@ -130,6 +148,63 @@ const UserManagement = () => {
   const departments = useMemo(() => Array.from(new Set(users.map(u => u.department))), [users]);
   const statuses = ["active", "pending", "inactive"];
 
+  // Add user handler
+  const handleAddUser = async () => {
+    setAddLoading(true);
+    try {
+      await axios.post("/auth/register", form);
+      toast({ title: "User added successfully" });
+      setAddModalOpen(false);
+      setForm({ Names: "", Email: "", password: "", role: "admin", department: "" });
+      // Refresh users
+      getUsers().then((res: any) => {
+        const userList = res.data || [];
+        setUsers(userList);
+        setActiveUsers(userList.filter((u: any) => u.status === "active").length);
+        setPendingApprovals(userList.filter((u: any) => u.status === "pending").length);
+        const now = new Date();
+        setNewThisMonth(
+          userList.filter((u: any) => {
+            const created = new Date(u.createdAt);
+            return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+          }).length
+        );
+      });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.response?.data?.message || err.message || "Failed to add user", variant: "destructive" });
+    } finally {
+      setAddLoading(false);
+    }
+  };
+
+  // Delete user handler
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    setDeleteLoading(userId);
+    try {
+      await axios.delete(`/auth/user/${userId}`);
+      toast({ title: "User deleted successfully" });
+      // Refresh users
+      getUsers().then((res: any) => {
+        const userList = res.data || [];
+        setUsers(userList);
+        setActiveUsers(userList.filter((u: any) => u.status === "active").length);
+        setPendingApprovals(userList.filter((u: any) => u.status === "pending").length);
+        const now = new Date();
+        setNewThisMonth(
+          userList.filter((u: any) => {
+            const created = new Date(u.createdAt);
+            return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+          }).length
+        );
+      });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.response?.data?.message || err.message || "Failed to delete user", variant: "destructive" });
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
+
   return (
     <AdminPortalLayout>
       <div className="space-y-4 md:space-y-6 p-2 md:p-0">
@@ -142,7 +217,7 @@ const UserManagement = () => {
               {t("userManagementDesc")}
             </p>
           </div>
-          <Button className="flex items-center gap-2 w-full sm:w-auto">
+          <Button className="flex items-center gap-2 w-full sm:w-auto" onClick={() => setAddModalOpen(true)}>
             <UserPlus className="h-4 w-4" />
             <span className="sm:inline">{t("addUser")}</span>
           </Button>
@@ -328,6 +403,9 @@ const UserManagement = () => {
                       <Button variant="outline" size="sm" className="text-xs">
                         {t("edit")}
                       </Button>
+                      <Button variant="destructive" size="sm" className="text-xs" onClick={() => handleDeleteUser(user._id)} disabled={deleteLoading === user._id}>
+                        {deleteLoading === user._id ? "Deleting..." : "Delete"}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -392,6 +470,56 @@ const UserManagement = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Add User Modal */}
+      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add User</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              placeholder="Names"
+              value={form.Names}
+              onChange={e => setForm(f => ({ ...f, Names: e.target.value }))}
+            />
+            <Input
+              placeholder="Email"
+              type="email"
+              value={form.Email}
+              onChange={e => setForm(f => ({ ...f, Email: e.target.value }))}
+            />
+            <Input
+              placeholder="Password"
+              type="password"
+              value={form.password}
+              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+            />
+            <select
+              className="border rounded px-2 py-1 w-full"
+              value={form.role}
+              onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
+            >
+              <option value="admin">admin</option>
+              <option value="employee">employee</option>
+              <option value="manager">manager</option>
+            </select>
+            <Input
+              placeholder="Department"
+              value={form.department}
+              onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={handleAddUser} disabled={addLoading}>
+              {addLoading ? "Adding..." : "Add User"}
+            </Button>
+            <Button variant="outline" onClick={() => setAddModalOpen(false)} disabled={addLoading}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminPortalLayout>
   );
 };
