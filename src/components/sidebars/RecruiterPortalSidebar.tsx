@@ -64,11 +64,6 @@ export function RecruiterPortalSidebar() {
       icon: MessageSquare,
     },
     {
-      title: t("common.reports") || "Reports",
-      url: "/recruiter-portal/reports",
-      icon: BarChart,
-    },
-    {
       title: "AI Tools",
       url: "/ai-tools",
       icon: BarChart,

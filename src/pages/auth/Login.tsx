@@ -55,7 +55,13 @@ const Login: React.FC = () => {
           navigate("/dashboard");
       }
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      let errorMsg = "Login failed";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      setError(errorMsg);
       setLoading(false);
     }
   };

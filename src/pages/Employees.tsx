@@ -130,8 +130,13 @@ const Employees = () => {
       setShowModal(false);
       fetchEmployees();
     } catch (err: any) {
-      setFormError(err.message || "Failed to save employee");
-      toast({ title: "Error", description: err.message || "Failed to save employee", variant: "destructive" });
+      let errorMsg = "Operation failed";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -145,8 +150,13 @@ const Employees = () => {
       fetchEmployees();
       toast({ title: "Employee deleted", description: "The employee was deleted successfully." });
     } catch (err: any) {
-      alert("Failed to delete employee");
-      toast({ title: "Error", description: err.message || "Failed to delete employee", variant: "destructive" });
+      let errorMsg = "Operation failed";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     }
   };
 
@@ -160,7 +170,13 @@ const Employees = () => {
       const docs = await getEmployeeDocuments(employee._id);
       setDocuments(docs);
     } catch (err: any) {
-      setDocError(err.message || "Failed to load documents");
+      let errorMsg = "Operation failed";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     } finally {
       setDocLoading(false);
     }
@@ -180,8 +196,13 @@ const Employees = () => {
       e.currentTarget.reset();
       toast({ title: "Document uploaded", description: "The document(s) were uploaded successfully." });
     } catch (err: any) {
-      setDocError(err.message || "Failed to upload document");
-      toast({ title: "Error", description: err.message || "Failed to upload document", variant: "destructive" });
+      let errorMsg = "Operation failed";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     } finally {
       setUploading(false);
     }

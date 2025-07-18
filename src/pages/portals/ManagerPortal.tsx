@@ -25,7 +25,7 @@ const ManagerPortal = () => {
     Promise.all([
       apiFetch("/users"),
       apiFetch("/leave"),
-      apiFetch("/api/activity-log/system/recent?limit=4")
+      apiFetch("/activity-log/system/recent?limit=4")
     ])
       .then(([usersRes, leaveRes, activityRes]) => {
         const users = Array.isArray(usersRes.data) ? usersRes.data : [];

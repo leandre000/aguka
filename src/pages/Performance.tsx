@@ -89,8 +89,13 @@ const Performance = () => {
       setShowForm(false);
       fetchReviews();
     } catch (err: any) {
-      setFormError(err.message || "Failed to save review");
-      toast({ title: "Error", description: err.message || "Failed to save review", variant: "destructive" });
+      let errorMsg = "Operation failed";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -104,8 +109,13 @@ const Performance = () => {
       fetchReviews();
       toast({ title: "Review deleted", description: "The performance review was deleted successfully." });
     } catch (err: any) {
-      alert("Failed to delete review");
-      toast({ title: "Error", description: err.message || "Failed to delete review", variant: "destructive" });
+      let errorMsg = "Operation failed";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     }
   };
 

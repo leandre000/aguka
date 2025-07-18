@@ -67,11 +67,7 @@ export function AppSidebar() {
       url: "/compliance",
       icon: Shield,
     },
-    {
-      title: t("nav.reports"),
-      url: "/reports",
-      icon: BarChart,
-    },
+  
   ];
 
   const isActive = (path: string) => currentPath === path;

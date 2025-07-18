@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, useContext, useState } from "react";
+import { logout as apiLogout } from '@/lib/api';
 
 export interface AuthContextType {
   user: any;
@@ -24,6 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem("user", JSON.stringify(userObj));
   };
   const logout = () => {
+    apiLogout();
     setToken(null);
     setUser(null);
     localStorage.removeItem("token");

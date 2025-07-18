@@ -20,6 +20,12 @@ import {
   BarChart,
 } from "lucide-react";
 import {apiFetch} from "@/lib/api";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
+import axios from "axios";
 
 const translations = {
   en: {
@@ -141,6 +147,17 @@ const Performance = () => {
   const [devAreasLoading, setDevAreasLoading] = useState(true);
   const [devAreasError, setDevAreasError] = useState<string | null>(null);
 
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    employee: "",
+    period: "",
+    rating: "",
+    comments: "",
+    goals: ""
+  });
+  const [reviewFormError, setReviewFormError] = useState<string | null>(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+
   // TODO: Replace with real manager ID from auth/user context
   const managerId = "mock-manager-id";
 
@@ -193,10 +210,14 @@ const Performance = () => {
               {t("trackManage")}
             </p>
           </div>
-          <Button className="flex items-center gap-2 w-full sm:w-auto">
+          <Button className="flex items-center gap-2 w-full sm:w-auto" onClick={() => setReviewModalOpen(true)}>
             <BarChart className="h-4 w-4" />
             <span className="hidden sm:inline">{t("performanceReport")}</span>
             <span className="sm:hidden">{t("report")}</span>
+          </Button>
+          <Button className="flex items-center gap-2 w-full sm:w-auto bg-primary text-white" onClick={() => setReviewModalOpen(true)}>
+            <Star className="h-4 w-4" />
+            <span>New Performance Review</span>
           </Button>
         </div>
 
@@ -444,6 +465,91 @@ const Performance = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Performance Review Modal */}
+      <Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Performance Review</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Select value={reviewForm.employee} onValueChange={val => setReviewForm(f => ({ ...f, employee: val }))}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Employee" />
+              </SelectTrigger>
+              <SelectContent>
+                {team.map(emp => (
+                  <SelectItem key={emp._id} value={emp._id}>{emp.Names}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Review Period (e.g. Q1 2024)"
+              value={reviewForm.period}
+              onChange={e => setReviewForm(f => ({ ...f, period: e.target.value }))}
+            />
+            <Select value={reviewForm.rating} onValueChange={val => setReviewForm(f => ({ ...f, rating: val }))}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Rating" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="exceeds">Exceeds Expectations</SelectItem>
+                <SelectItem value="meets">Meets Expectations</SelectItem>
+                <SelectItem value="needs">Needs Improvement</SelectItem>
+              </SelectContent>
+            </Select>
+            <Textarea
+              placeholder="Comments"
+              value={reviewForm.comments}
+              onChange={e => setReviewForm(f => ({ ...f, comments: e.target.value }))}
+              rows={3}
+            />
+            <Textarea
+              placeholder="Goals for next period"
+              value={reviewForm.goals}
+              onChange={e => setReviewForm(f => ({ ...f, goals: e.target.value }))}
+              rows={2}
+            />
+            {reviewFormError && <div className="text-red-600 text-sm">{reviewFormError}</div>}
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={async () => {
+                // Validation
+                if (!reviewForm.employee || !reviewForm.period.trim() || !reviewForm.rating || !reviewForm.comments.trim() || !reviewForm.goals.trim()) {
+                  setReviewFormError("All fields are required.");
+                  return;
+                }
+                setReviewFormError(null);
+                setReviewLoading(true);
+                try {
+                  await axios.post("/performance-reviews/create", {
+                    employee: reviewForm.employee,
+                    period: reviewForm.period,
+                    rating: reviewForm.rating,
+                    comments: reviewForm.comments,
+                    goals: reviewForm.goals
+                  });
+                  toast({ title: "Performance review submitted" });
+                  setReviewModalOpen(false);
+                  setReviewForm({ employee: "", period: "", rating: "", comments: "", goals: "" });
+                  // Optionally refresh reviews here
+                } catch (err: any) {
+                  toast({ title: "Error", description: err.response?.data?.message || err.message || "Failed to submit review", variant: "destructive" });
+                } finally {
+                  setReviewLoading(false);
+                }
+              }}
+              disabled={reviewLoading}
+            >
+              {reviewLoading ? "Submitting..." : "Submit Review"}
+            </Button>
+            <Button variant="outline" onClick={() => setReviewModalOpen(false)} disabled={reviewLoading}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ManagerPortalLayout>
   );
 };

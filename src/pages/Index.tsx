@@ -1,7 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/use-toast";
 import { 
   Shield, 
   Users, 
@@ -15,6 +17,17 @@ import HomeNavbar from "@/components/HomeNavbar";
 
 const Index = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+
+  const handlePortalClick = (path: string) => {
+    if (!isAuthenticated) {
+      toast({ title: "Please sign in to access this portal." });
+      navigate("/login");
+      return;
+    }
+    navigate(path);
+  };
 
   const portals = [
     {
@@ -75,30 +88,20 @@ const Index = () => {
         </div>
 
         {/* Portal Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {portals.map((portal, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <div className={`p-3 rounded-lg ${portal.color}`}>
-                    <portal.icon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">{portal.title}</CardTitle>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+          {portals.map((portal, idx) => (
+            <Card
+              key={idx}
+              className={`cursor-pointer hover:shadow-lg transition-shadow ${portal.color}`}
+              onClick={() => handlePortalClick(portal.path)}
+            >
+              <CardHeader className="flex flex-row items-center gap-4">
+                <portal.icon className="h-8 w-8" />
+                <div>
+                  <CardTitle>{portal.title}</CardTitle>
+                  <CardDescription>{portal.description}</CardDescription>
                 </div>
-                <CardDescription className="text-sm">
-                  {portal.description}
-                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Link to={portal.path}>
-                  <Button className="w-full group">
-                    {t('home.accessPortal')}
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-              </CardContent>
             </Card>
           ))}
         </div>

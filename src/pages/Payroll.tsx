@@ -128,8 +128,13 @@ const Payroll = () => {
       setShowModal(false);
       fetchPayrolls();
     } catch (err: any) {
-      setFormError(err.message || "Failed to save payroll record");
-      toast({ title: "Error", description: err.message || "Failed to save payroll record", variant: "destructive" });
+      let errorMsg = "Operation failed";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -143,8 +148,13 @@ const Payroll = () => {
       fetchPayrolls();
       toast({ title: "Payroll deleted", description: "The payroll record was deleted successfully." });
     } catch (err: any) {
-      alert("Failed to delete payroll record");
-      toast({ title: "Error", description: err.message || "Failed to delete payroll record", variant: "destructive" });
+      let errorMsg = "Operation failed";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     }
   };
 
@@ -156,8 +166,13 @@ const Payroll = () => {
       fetchPayrolls();
       toast({ title: "Payroll disbursed", description: "The payroll was disbursed successfully." });
     } catch (err: any) {
-      alert("Failed to disburse payroll");
-      toast({ title: "Error", description: err.message || "Failed to disburse payroll", variant: "destructive" });
+      let errorMsg = "Operation failed";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     }
   };
 

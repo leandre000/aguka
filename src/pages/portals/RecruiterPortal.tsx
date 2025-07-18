@@ -24,11 +24,11 @@ const RecruiterPortal = () => {
     setLoading(true);
     setError("");
     Promise.all([
-      apiFetch("/api/jobs"),
-      apiFetch("/api/applications"),
-      apiFetch("/api/interviews"),
-      apiFetch("/api/offers"),
-      apiFetch("/api/activity-log/system/recent?limit=4")
+      apiFetch("/jobs"),
+      apiFetch("/applications"),
+      apiFetch("/interviews"),
+      apiFetch("/offers"),
+      apiFetch("/activity-log/system/recent?limit=4")
     ])
       .then(([jobsRes, applicationsRes, interviewsRes, offersRes, activityRes]) => {
         const jobs = Array.isArray(jobsRes) ? jobsRes : Array.isArray(jobsRes.data) ? jobsRes.data : [];

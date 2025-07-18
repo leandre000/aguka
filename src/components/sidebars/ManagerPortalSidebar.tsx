@@ -11,7 +11,8 @@ import {
   Clock,
   Target,
   MessageSquare,
-  BarChart
+  BarChart,
+  CheckCircle
 } from "lucide-react";
 
 import {
@@ -55,6 +56,11 @@ export function ManagerPortalSidebar() {
       icon: Calendar,
     },
     {
+      title: "Leave Approvals",
+      url: "/manager-portal/leave-approvals",
+      icon: CheckCircle,
+    },
+    {
       title: t("manager.performance"),
       url: "/manager-portal/performance",
       icon: TrendingUp,
@@ -73,11 +79,6 @@ export function ManagerPortalSidebar() {
       title: t("manager.successionPlanning") || "Succession Planning",
       url: "/manager-portal/succession",
       icon: Users,
-    },
-    {
-      title: t("common.reports") || "Reports",
-      url: "/manager-portal/reports",
-      icon: BarChart,
     },
     {
       title: t("common.messages") || "Messages",

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -169,7 +170,17 @@ const EmployeePortal = () => {
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-semibold">Time Off Requests</h2>
-              <p className="text-sm text-muted-foreground">Available PTO: {benefits.pto.available - benefits.pto.used} days</p>
+              {/* Fix PTO display: find PTO benefit in array */}
+              {(() => {
+                const pto = benefits.find(b => b.type?.toLowerCase() === "pto" || b.name?.toLowerCase() === "pto");
+                const available = pto?.available ?? 0;
+                const used = pto?.used ?? 0;
+                return (
+                  <p className="text-sm text-muted-foreground">
+                    Available PTO: {available - used} days
+                  </p>
+                );
+              })()}
             </div>
             <Button>
               <Calendar className="h-4 w-4 mr-2" />

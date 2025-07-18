@@ -1,4 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import axios from "axios";
+
+// Add axios interceptor to always include Authorization header
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      if (config.headers) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function apiFetch(path: string, options: RequestInit = {}) {
@@ -9,7 +25,15 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
     ...options.headers,
   };
   const res = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const text = await res.text();
+    try {
+      const json = JSON.parse(text);
+      throw json;
+    } catch {
+      throw new Error(text);
+    }
+  }
   return res.json();
 }
 
@@ -270,3 +294,10 @@ export const attritionCheck = (data: any) => apiFetch('/ai/attrition-check', { m
 export const trainingRecommend = (data: any) => apiFetch('/ai/training-recommend', { method: 'POST', body: JSON.stringify(data) });
 export const sentimentAnalysis = (data: any) => apiFetch('/ai/sentiment-analysis', { method: 'POST', body: JSON.stringify(data) });
 export const chatAssistant = (data: any) => apiFetch('/ai/chat-assistant', { method: 'POST', body: JSON.stringify(data) });
+
+// Centralized logout function
+export function logout() {
+  localStorage.removeItem('token');
+  // Optionally clear other user/session data here
+  localStorage.removeItem('user');
+}

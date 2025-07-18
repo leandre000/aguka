@@ -19,6 +19,7 @@ import { Select } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { useRef } from "react";
 import axios from "axios";
+import { useAuth } from "@/contexts/AuthContext";
 
 const translations = {
   en: {
@@ -100,6 +101,81 @@ const UserManagement = () => {
     department: ""
   });
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ _id: '', Names: '', Email: '', role: '', department: '' });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editFormError, setEditFormError] = useState<string | null>(null);
+
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewUser, setViewUser] = useState<any>(null);
+
+  const { isAuthenticated, user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
+  // Open edit modal and set form
+  const openEditModal = (user: any) => {
+    setEditForm({ _id: user._id, Names: user.Names, Email: user.Email, role: user.role, department: user.department });
+    setEditFormError(null);
+    setEditModalOpen(true);
+  };
+
+  const openViewModal = (user: any) => {
+    setViewUser(user);
+    setViewModalOpen(true);
+  };
+
+  // Edit user handler
+  const handleEditUser = async () => {
+    // Validation
+    if (!editForm.Names.trim() || !editForm.Email.trim() || !editForm.role.trim() || !editForm.department.trim()) {
+      setEditFormError("All fields are required.");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editForm.Email)) {
+      setEditFormError("Please enter a valid email address.");
+      return;
+    }
+    setEditFormError(null);
+    setEditLoading(true);
+    try {
+      await axios.put(`/api/users/${editForm._id}`, {
+        Names: editForm.Names,
+        Email: editForm.Email,
+        role: editForm.role,
+        department: editForm.department
+      });
+      toast({ title: "User updated successfully" });
+      setEditModalOpen(false);
+      // Refresh users
+      getUsers().then((res: any) => {
+        const userList = res.data || [];
+        setUsers(userList);
+        setActiveUsers(userList.filter((u: any) => u.status === "active").length);
+        setPendingApprovals(userList.filter((u: any) => u.status === "pending").length);
+        const now = new Date();
+        setNewThisMonth(
+          userList.filter((u: any) => {
+            const created = new Date(u.createdAt);
+            return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+          }).length
+        );
+      });
+    } catch (err: any) {
+      // Improved error message extraction
+      let errorMsg = "Failed to update user";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   useEffect(() => {
     getUsers().then((res: any) => {
@@ -152,7 +228,7 @@ const UserManagement = () => {
   const handleAddUser = async () => {
     setAddLoading(true);
     try {
-      await axios.post("/auth/register", form);
+      await axios.post("/api/auth/register", form);
       toast({ title: "User added successfully" });
       setAddModalOpen(false);
       setForm({ Names: "", Email: "", password: "", role: "admin", department: "" });
@@ -171,7 +247,14 @@ const UserManagement = () => {
         );
       });
     } catch (err: any) {
-      toast({ title: "Error", description: err.response?.data?.message || err.message || "Failed to add user", variant: "destructive" });
+      // Improved error message extraction
+      let errorMsg = "Failed to add user";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     } finally {
       setAddLoading(false);
     }
@@ -182,7 +265,7 @@ const UserManagement = () => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     setDeleteLoading(userId);
     try {
-      await axios.delete(`/auth/user/${userId}`);
+      await axios.delete(`/api/users/${userId}`);
       toast({ title: "User deleted successfully" });
       // Refresh users
       getUsers().then((res: any) => {
@@ -199,7 +282,14 @@ const UserManagement = () => {
         );
       });
     } catch (err: any) {
-      toast({ title: "Error", description: err.response?.data?.message || err.message || "Failed to delete user", variant: "destructive" });
+      // Improved error message extraction
+      let errorMsg = "Failed to delete user";
+      if (err?.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
     } finally {
       setDeleteLoading(null);
     }
@@ -217,10 +307,12 @@ const UserManagement = () => {
               {t("userManagementDesc")}
             </p>
           </div>
-          <Button className="flex items-center gap-2 w-full sm:w-auto" onClick={() => setAddModalOpen(true)}>
-            <UserPlus className="h-4 w-4" />
-            <span className="sm:inline">{t("addUser")}</span>
-          </Button>
+          {isAdmin && (
+            <Button className="flex items-center gap-2 w-full sm:w-auto" onClick={() => setAddModalOpen(true)}>
+              <UserPlus className="h-4 w-4" />
+              <span className="sm:inline">{t("addUser")}</span>
+            </Button>
+          )}
         </div>
 
         {/* Stats Cards */}
@@ -400,12 +492,19 @@ const UserManagement = () => {
                       >
                         {t(user.status === "active" ? "active" : "inactive")}
                       </Badge>
-                      <Button variant="outline" size="sm" className="text-xs">
-                        {t("edit")}
+                      {isAdmin && (
+                        <Button variant="outline" size="sm" className="text-xs" onClick={() => openEditModal(user)}>
+                          {t("edit")}
+                        </Button>
+                      )}
+                      <Button variant="secondary" size="sm" className="text-xs" onClick={() => openViewModal(user)}>
+                        View
                       </Button>
-                      <Button variant="destructive" size="sm" className="text-xs" onClick={() => handleDeleteUser(user._id)} disabled={deleteLoading === user._id}>
-                        {deleteLoading === user._id ? "Deleting..." : "Delete"}
-                      </Button>
+                      {isAdmin && (
+                        <Button variant="destructive" size="sm" className="text-xs" onClick={() => handleDeleteUser(user._id)} disabled={deleteLoading === user._id}>
+                          {deleteLoading === user._id ? "Deleting..." : "Delete"}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -509,13 +608,138 @@ const UserManagement = () => {
               value={form.department}
               onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
             />
+            {formError && <div className="text-red-600 text-sm">{formError}</div>}
           </div>
           <DialogFooter>
-            <Button onClick={handleAddUser} disabled={addLoading}>
+            <Button onClick={async () => {
+              // Validation
+              if (!form.Names.trim() || !form.Email.trim() || !form.password.trim() || !form.role.trim() || !form.department.trim()) {
+                setFormError("All fields are required.");
+                return;
+              }
+              // Email validation
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(form.Email)) {
+                setFormError("Please enter a valid email address.");
+                return;
+              }
+              if (form.password.length < 6) {
+                setFormError("Password must be at least 6 characters.");
+                return;
+              }
+              setFormError(null);
+              setAddLoading(true);
+              try {
+                await axios.post("/api/auth/register", form);
+                toast({ title: "User added successfully" });
+                setAddModalOpen(false);
+                setForm({ Names: "", Email: "", password: "", role: "admin", department: "" });
+                // Refresh users
+                getUsers().then((res: any) => {
+                  const userList = res.data || [];
+                  setUsers(userList);
+                  setActiveUsers(userList.filter((u: any) => u.status === "active").length);
+                  setPendingApprovals(userList.filter((u: any) => u.status === "pending").length);
+                  const now = new Date();
+                  setNewThisMonth(
+                    userList.filter((u: any) => {
+                      const created = new Date(u.createdAt);
+                      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+                    }).length
+                  );
+                });
+              } catch (err: any) {
+                // Improved error message extraction
+                let errorMsg = "Failed to add user";
+                if (err?.response?.data?.message) {
+                  errorMsg = err.response.data.message;
+                } else if (err?.message) {
+                  errorMsg = err.message;
+                }
+                toast({ title: "Error", description: errorMsg, variant: "destructive" });
+              } finally {
+                setAddLoading(false);
+              }
+            }} disabled={addLoading}>
               {addLoading ? "Adding..." : "Add User"}
             </Button>
             <Button variant="outline" onClick={() => setAddModalOpen(false)} disabled={addLoading}>
               Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              placeholder="Names"
+              value={editForm.Names}
+              onChange={e => setEditForm(f => ({ ...f, Names: e.target.value }))}
+            />
+            <Input
+              placeholder="Email"
+              type="email"
+              value={editForm.Email}
+              onChange={e => setEditForm(f => ({ ...f, Email: e.target.value }))}
+              disabled
+            />
+            <select
+              className="border rounded px-2 py-1 w-full"
+              value={editForm.role}
+              onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}
+            >
+              <option value="admin">admin</option>
+              <option value="employee">employee</option>
+              <option value="manager">manager</option>
+            </select>
+            <Input
+              placeholder="Department"
+              value={editForm.department}
+              onChange={e => setEditForm(f => ({ ...f, department: e.target.value }))}
+            />
+            {editFormError && <div className="text-red-600 text-sm">{editFormError}</div>}
+          </div>
+          <DialogFooter>
+            <Button onClick={handleEditUser} disabled={editLoading}>
+              {editLoading ? "Saving..." : "Save Changes"}
+            </Button>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)} disabled={editLoading}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View User Details Modal */}
+      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User Details</DialogTitle>
+          </DialogHeader>
+          {viewUser && (
+            <div className="space-y-2">
+              <div><strong>Names:</strong> {viewUser.Names}</div>
+              <div><strong>Email:</strong> {viewUser.Email}</div>
+              <div><strong>Role:</strong> {viewUser.role}</div>
+              <div><strong>Department:</strong> {viewUser.department}</div>
+              <div><strong>Status:</strong> {viewUser.status}</div>
+              {viewUser.createdAt && (
+                <div><strong>Created At:</strong> {new Date(viewUser.createdAt).toLocaleString()}</div>
+              )}
+              {viewUser.updatedAt && (
+                <div><strong>Updated At:</strong> {new Date(viewUser.updatedAt).toLocaleString()}</div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewModalOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

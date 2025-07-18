@@ -92,11 +92,6 @@ export function EmployeePortalSidebar() {
       icon: MessageSquare,
     },
     {
-      title: t("common.reports") || "Reports",
-      url: "/employee-portal/reports",
-      icon: BarChart,
-    },
-    {
       title: "AI Tools",
       url: "/ai-tools",
       icon: BarChart,

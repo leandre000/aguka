@@ -29,6 +29,9 @@ import {
 } from "@/components/ui/dialog";
 import { DollarSign, Plus, Upload, Eye, Calendar } from "lucide-react";
 import { EmployeePortalLayout } from "@/components/layouts/EmployeePortalLayout";
+import { useState, useRef } from "react";
+import axios from "axios";
+import { toast } from "@/components/ui/use-toast";
 
 export default function ExpenseClaims() {
   const { t } = useLanguage();
@@ -74,14 +77,26 @@ export default function ExpenseClaims() {
     .filter((e) => e.status === "pending")
     .reduce((sum, expense) => sum + expense.amount, 0);
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState({
+    category: "",
+    amount: "",
+    date: "",
+    description: "",
+    receipt: null as File | null,
+  });
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <EmployeePortalLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Expense Claims</h1>
-          <Dialog>
+          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={() => setModalOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Expense Claim
               </Button>
@@ -90,10 +105,45 @@ export default function ExpenseClaims() {
               <DialogHeader>
                 <DialogTitle>Submit Expense</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  // Validation
+                  if (!form.category || !form.amount || !form.date || !form.description || !form.receipt) {
+                    setFormError("All fields are required, including receipt.");
+                    return;
+                  }
+                  if (isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
+                    setFormError("Amount must be a positive number.");
+                    return;
+                  }
+                  setFormError(null);
+                  setSubmitting(true);
+                  try {
+                    const data = new FormData();
+                    data.append("category", form.category);
+                    data.append("amount", form.amount);
+                    data.append("date", form.date);
+                    data.append("description", form.description);
+                    if (form.receipt) data.append("receipt", form.receipt);
+                    await axios.post("/expenses/create", data, {
+                      headers: { "Content-Type": "multipart/form-data" },
+                    });
+                    toast({ title: "Expense claim submitted" });
+                    setModalOpen(false);
+                    setForm({ category: "", amount: "", date: "", description: "", receipt: null });
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                  } catch (err: any) {
+                    toast({ title: "Error", description: err.response?.data?.message || err.message || "Failed to submit expense claim", variant: "destructive" });
+                  } finally {
+                    setSubmitting(false);
+                  }
+                }}
+                className="space-y-4"
+              >
                 <div>
                   <Label htmlFor="category">Category</Label>
-                  <Select>
+                  <Select value={form.category} onValueChange={val => setForm(f => ({ ...f, category: val }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select Category" />
                     </SelectTrigger>
@@ -117,6 +167,8 @@ export default function ExpenseClaims() {
                       step="0.01"
                       className="pl-10"
                       placeholder="0.00"
+                      value={form.amount}
+                      onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
                     />
                   </div>
                 </div>
@@ -125,7 +177,13 @@ export default function ExpenseClaims() {
                   <Label htmlFor="date">Date</Label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input id="date" type="date" className="pl-10" />
+                    <Input
+                      id="date"
+                      type="date"
+                      className="pl-10"
+                      value={form.date}
+                      onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+                    />
                   </div>
                 </div>
 
@@ -134,6 +192,8 @@ export default function ExpenseClaims() {
                   <Textarea
                     id="description"
                     placeholder="Describe your expense"
+                    value={form.description}
+                    onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   />
                 </div>
 
@@ -144,17 +204,22 @@ export default function ExpenseClaims() {
                     <p className="text-sm text-muted-foreground">
                       Upload your receipt here
                     </p>
-                    <Button variant="outline" size="sm" className="mt-2">
-                      Choose File
-                    </Button>
+                    <Input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      ref={fileInputRef}
+                      onChange={e => setForm(f => ({ ...f, receipt: e.target.files?.[0] || null }))}
+                    />
                   </div>
                 </div>
 
+                {formError && <div className="text-red-600 text-sm text-center">{formError}</div>}
+
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline">{t("common.cancel")}</Button>
-                  <Button>Submit Claim</Button>
+                  <Button variant="outline" type="button" onClick={() => setModalOpen(false)} disabled={submitting}>{t("common.cancel")}</Button>
+                  <Button type="submit" disabled={submitting}>{submitting ? "Submitting..." : "Submit Claim"}</Button>
                 </div>
-              </div>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
