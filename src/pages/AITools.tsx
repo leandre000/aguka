@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,14 +21,21 @@ export default function AITools() {
   const [resumeLoading, setResumeLoading] = useState(false);
 
   // Attrition Risk
-  const [attritionInput, setAttritionInput] = useState("{
-  \"employeeId\": \"\",\n  \"features\": {\n    \"age\": 30, \"department\": \"Engineering\"\n  }\n}");
+  const [attritionInput, setAttritionInput] = useState(`{
+  "employeeId": "",
+  "features": {
+    "age": 30,
+    "department": "Engineering"
+  }
+}`);
   const [attritionResult, setAttritionResult] = useState<any>(null);
   const [attritionLoading, setAttritionLoading] = useState(false);
 
   // Training Recommender
-  const [trainingInput, setTrainingInput] = useState("{
-  \"employeeId\": \"\",\n  \"skills\": [\"React\", \"Node.js\"]\n}");
+  const [trainingInput, setTrainingInput] = useState(`{
+  "employeeId": "",
+  "skills": ["React", "Node.js"]
+}`);
   const [trainingResult, setTrainingResult] = useState<any>(null);
   const [trainingLoading, setTrainingLoading] = useState(false);
 
