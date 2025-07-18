@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,11 @@ export default function LeaveApprovals() {
   const [modalOpen, setModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
+  useEffect(() => {
+    if (!user) return;
+    fetchLeaves();
+  }, [user]);
+
   // Only managers can access
   if (!isAuthenticated || user?.role !== "manager") {
     return <div className="p-8 text-center text-red-600">Access denied. Managers only.</div>;
@@ -31,8 +37,6 @@ export default function LeaveApprovals() {
       .catch(err => setError(err.message || "Failed to load leave requests"))
       .finally(() => setLoading(false));
   };
-
-  useEffect(() => { fetchLeaves(); }, []);
 
   const handleApprove = async (leaveId: string) => {
     setActionLoading(true);

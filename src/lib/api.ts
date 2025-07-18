@@ -17,24 +17,30 @@ axios.interceptors.request.use(
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
-  const token = localStorage.getItem('token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...options.headers,
-  };
-  const res = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
-  if (!res.ok) {
-    const text = await res.text();
-    try {
-      const json = JSON.parse(text);
-      throw json;
-    } catch {
-      throw new Error(text);
+export async function apiFetch(path: string, options: any = {}) {
+  try {
+    const method = options.method ? options.method.toLowerCase() : 'get';
+    const url = `${API_BASE_URL}${path}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    };
+    let response;
+    if (method === 'get') {
+      response = await axios.get(url, { headers, params: options.params });
+    } else if (method === 'delete') {
+      response = await axios.delete(url, { headers });
+    } else {
+      response = await axios[method](url, options.body, { headers });
     }
+    return response.data;
+  } catch (err: any) {
+    // Try to throw a consistent error object
+    if (err.response && err.response.data) {
+      throw err.response.data;
+    }
+    throw err;
   }
-  return res.json();
 }
 
 // --- Employees API ---
@@ -189,16 +195,11 @@ export const getPayrollRecords = (params?: any) => {
 export const getEmployeeDocuments = (employeeId: string) => apiFetch(`/employees/${employeeId}/documents`);
 export const uploadEmployeeDocuments = (employeeId: string, formData: FormData) => {
   const token = localStorage.getItem('token');
-  return fetch(`${API_BASE_URL}/employees/${employeeId}/documents`, {
-    method: 'POST',
+  return axios.post(`${API_BASE_URL}/employees/${employeeId}/documents`, formData, {
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: formData,
-  }).then(async (res) => {
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  });
+  }).then(response => response.data);
 };
 export const listEmployeeDocuments = (employeeId: string) => apiFetch(`/employees/${employeeId}/documents`);
 // For download, just fetch the fileUrl provided in the document object

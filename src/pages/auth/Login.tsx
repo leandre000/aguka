@@ -123,7 +123,7 @@ const Login: React.FC = () => {
           <div className="mt-4 text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
             <Link to="/signup" className="text-primary hover:underline">
-              Sign up
+              Contact admin 
             </Link>
           </div>
         </CardContent>
