@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useMemo } from "react";
-import { getUsers, getLeaves } from "@/lib/api";
+import { getUsers, getLeaves, apiFetch } from "@/lib/api";
 import {
   Card,
   CardContent,
@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { useRef } from "react";
-import axios from "axios";
 import { useAuth } from "@/contexts/AuthContext";
 
 const translations = {
@@ -141,11 +140,14 @@ const UserManagement = () => {
     setEditFormError(null);
     setEditLoading(true);
     try {
-      await axios.put(`/api/users/${editForm._id}`, {
-        Names: editForm.Names,
-        Email: editForm.Email,
-        role: editForm.role,
-        department: editForm.department
+      await apiFetch(`/users/${editForm._id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          Names: editForm.Names,
+          Email: editForm.Email,
+          role: editForm.role,
+          department: editForm.department
+        })
       });
       toast({ title: "User updated successfully" });
       setEditModalOpen(false);
@@ -226,9 +228,28 @@ const UserManagement = () => {
 
   // Add user handler
   const handleAddUser = async () => {
+    // Validation
+    if (!form.Names.trim() || !form.Email.trim() || !form.password.trim() || !form.role.trim() || !form.department.trim()) {
+      setFormError("All fields are required.");
+      return;
+    }
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.Email)) {
+      setFormError("Please enter a valid email address.");
+      return;
+    }
+    if (form.password.length < 6) {
+      setFormError("Password must be at least 6 characters.");
+      return;
+    }
+    setFormError(null);
     setAddLoading(true);
     try {
-      await axios.post("/api/auth/register", form);
+      await apiFetch("/auth/register", {
+        method: "POST",
+        body: JSON.stringify(form)
+      });
       toast({ title: "User added successfully" });
       setAddModalOpen(false);
       setForm({ Names: "", Email: "", password: "", role: "admin", department: "" });
@@ -265,7 +286,9 @@ const UserManagement = () => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     setDeleteLoading(userId);
     try {
-      await axios.delete(`/api/users/${userId}`);
+      await apiFetch(`/users/${userId}`, {
+        method: "DELETE"
+      });
       toast({ title: "User deleted successfully" });
       // Refresh users
       getUsers().then((res: any) => {
@@ -611,56 +634,7 @@ const UserManagement = () => {
             {formError && <div className="text-red-600 text-sm">{formError}</div>}
           </div>
           <DialogFooter>
-            <Button onClick={async () => {
-              // Validation
-              if (!form.Names.trim() || !form.Email.trim() || !form.password.trim() || !form.role.trim() || !form.department.trim()) {
-                setFormError("All fields are required.");
-                return;
-              }
-              // Email validation
-              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              if (!emailRegex.test(form.Email)) {
-                setFormError("Please enter a valid email address.");
-                return;
-              }
-              if (form.password.length < 6) {
-                setFormError("Password must be at least 6 characters.");
-                return;
-              }
-              setFormError(null);
-              setAddLoading(true);
-              try {
-                await axios.post("/api/auth/register", form);
-                toast({ title: "User added successfully" });
-                setAddModalOpen(false);
-                setForm({ Names: "", Email: "", password: "", role: "admin", department: "" });
-                // Refresh users
-                getUsers().then((res: any) => {
-                  const userList = res.data || [];
-                  setUsers(userList);
-                  setActiveUsers(userList.filter((u: any) => u.status === "active").length);
-                  setPendingApprovals(userList.filter((u: any) => u.status === "pending").length);
-                  const now = new Date();
-                  setNewThisMonth(
-                    userList.filter((u: any) => {
-                      const created = new Date(u.createdAt);
-                      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-                    }).length
-                  );
-                });
-              } catch (err: any) {
-                // Improved error message extraction
-                let errorMsg = "Failed to add user";
-                if (err?.response?.data?.message) {
-                  errorMsg = err.response.data.message;
-                } else if (err?.message) {
-                  errorMsg = err.message;
-                }
-                toast({ title: "Error", description: errorMsg, variant: "destructive" });
-              } finally {
-                setAddLoading(false);
-              }
-            }} disabled={addLoading}>
+            <Button onClick={handleAddUser} disabled={addLoading}>
               {addLoading ? "Adding..." : "Add User"}
             </Button>
             <Button variant="outline" onClick={() => setAddModalOpen(false)} disabled={addLoading}>
