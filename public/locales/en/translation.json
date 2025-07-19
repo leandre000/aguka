@@ -135,7 +135,8 @@
     "userRegistered": "User registered",
     "leaveApproved": "Leave approved",
     "systemUpdate": "System update",
-    "systemHealth": "System Health"
+    "systemHealth": "System Health",
+    "recentActivity": "Recent Activity"
   },
   "employee": {
     "title": "Employee Portal",
