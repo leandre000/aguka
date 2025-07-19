@@ -128,7 +128,13 @@
     "requireAttention": "Require attention",
     "administrativeActions": "Administrative Actions",
     "quickAccess": "Quick access to key administrative functions",
-    "analyticsDescription": "View system analytics and metrics"
+    "analyticsDescription": "View system analytics and metrics",
+    "totalUsers": "Total Users",
+    "pendingLeaves": "Pending Leaves",
+    "requireApproval": "Require Approval",
+    "userRegistered": "User registered",
+    "leaveApproved": "Leave approved",
+    "systemUpdate": "System update"
   },
   "employee": {
     "title": "Employee Portal",
