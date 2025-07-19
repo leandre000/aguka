@@ -134,7 +134,8 @@
     "requireApproval": "Require Approval",
     "userRegistered": "User registered",
     "leaveApproved": "Leave approved",
-    "systemUpdate": "System update"
+    "systemUpdate": "System update",
+    "systemHealth": "System Health"
   },
   "employee": {
     "title": "Employee Portal",
