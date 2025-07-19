@@ -140,7 +140,12 @@
     "leaveApproved": "Leave approved",
     "systemUpdate": "System update",
     "systemHealth": "System Health",
-    "recentActivity": "Recent Activity"
+    "recentActivity": "Recent Activity",
+    "quickActionsDesc": "Quick actions description",
+    "operational": "System health",
+    "quickActions": "Quick actions",
+    "last24Hours": "Last 24 hours",
+    "recentActivityDesc": "Recent activity description"
   },
   "employee": {
     "title": "Employee Portal",
