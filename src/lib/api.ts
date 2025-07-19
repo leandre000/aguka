@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 // Add axios interceptor to always include Authorization header
 axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth');
+    const token = localStorage.getItem('token');
     if (token) {
       if (config.headers) {
         config.headers['Authorization'] = `Bearer ${token}`;
@@ -353,6 +353,6 @@ export async function trainingRecommend(employeeData: any, token: string) {
 
 // Centralized logout function
 export function logout() {
-  localStorage.removeItem('auth');
+  localStorage.removeItem('token');
   localStorage.removeItem('user');
 }
