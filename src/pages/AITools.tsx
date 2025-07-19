@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ArrowLeft, Home } from "lucide-react";
 import {
   matchResume,
   predictAttrition,
@@ -16,6 +19,22 @@ import {
 
 export default function AITools() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the portal path based on user role
+  const getPortalPath = () => {
+    switch (user?.role) {
+      case 'admin': return '/admin-portal';
+      case 'manager': return '/manager-portal';
+      case 'employee': return '/employee-portal';
+      case 'recruiter': return '/recruiter-portal';
+      case 'trainer': return '/trainer-portal';
+      case 'auditor': return '/auditor-portal';
+      default: return '/';
+    }
+  };
   
   // Resume Matcher
   const [resume, setResume] = useState("");
@@ -45,7 +64,28 @@ export default function AITools() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 p-4">
-      <h1 className="text-3xl font-bold mb-4">{t("aiTools.title")}</h1>
+      {/* Header with back button */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate(getPortalPath())}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>{t("common.backToPortal")}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="flex items-center space-x-2"
+          >
+            <Home className="h-4 w-4" />
+            <span>{t("common.home")}</span>
+          </Button>
+        </div>
+        <h1 className="text-3xl font-bold">{t("aiTools.title")}</h1>
+      </div>
       
       {/* Resume Matcher */}
       <Card>

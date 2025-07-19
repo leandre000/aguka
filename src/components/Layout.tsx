@@ -6,6 +6,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from './NotificationBell';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -37,9 +48,27 @@ export function Layout({ children }: LayoutProps) {
                 <LanguageSwitcher />
                 <NotificationBell />
                 <span className="text-sm text-muted-foreground">{user?.Names || user?.name}</span>
-                <Button variant="outline" size="sm" onClick={logout}>
-                  {t("common.logout")}
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      {t("common.logout")}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("common.confirmLogout")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("common.confirmLogoutDesc")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                      <AlertDialogAction onClick={logout}>
+                        {t("common.logout")}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             )}
           </header>
