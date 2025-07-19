@@ -129,23 +129,23 @@ const ManagerPortal = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">On Leave</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("manager.onLeave")}</CardTitle>
             <Calendar className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{teamStats.onLeave}</div>
-            <p className="text-xs text-muted-foreground">Currently away</p>
+            <p className="text-xs text-muted-foreground">{t("manager.currentlyAway")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("manager.pendingRequests")}</CardTitle>
             <Clock className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{teamStats.pendingRequests}</div>
-            <p className="text-xs text-muted-foreground">Need approval</p>
+            <p className="text-xs text-muted-foreground">{t("manager.needApproval")}</p>
           </CardContent>
         </Card>
       </div>

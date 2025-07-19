@@ -1,50 +1,53 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, Briefcase, TrendingUp, Calendar, FileText } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Dashboard = () => {
+  const { t } = useLanguage();
+  
   const stats = [
     {
-      title: "Total Employees",
+      title: t("dashboard.totalEmployees"),
       value: "1,247",
-      description: "+12% from last month",
+      description: t("dashboard.fromLastMonth"),
       icon: Users,
       trend: "up"
     },
     {
-      title: "New Hires",
+      title: t("dashboard.newHires"),
       value: "23",
-      description: "This month",
+      description: t("dashboard.thisMonth"),
       icon: UserPlus,
       trend: "up"
     },
     {
-      title: "Open Positions",
+      title: t("dashboard.openPositions"),
       value: "8",
-      description: "Active job postings",
+      description: t("dashboard.activePostings"),
       icon: Briefcase,
       trend: "neutral"
     },
     {
-      title: "Performance Score",
+      title: t("dashboard.performanceScore"),
       value: "87%",
-      description: "Average team performance",
+      description: t("dashboard.averagePerformance"),
       icon: TrendingUp,
       trend: "up"
     }
   ];
 
   const recentActivities = [
-    { type: "hire", message: "John Doe joined as Software Engineer", time: "2 hours ago" },
-    { type: "performance", message: "Q4 performance reviews completed", time: "1 day ago" },
-    { type: "training", message: "Security training session scheduled", time: "2 days ago" },
-    { type: "compliance", message: "Monthly compliance report generated", time: "3 days ago" }
+    { type: "hire", message: t("dashboard.activities.hire"), time: t("dashboard.activities.twoHoursAgo") },
+    { type: "performance", message: t("dashboard.activities.performance"), time: t("dashboard.activities.oneDayAgo") },
+    { type: "training", message: t("dashboard.activities.training"), time: t("dashboard.activities.twoDaysAgo") },
+    { type: "compliance", message: t("dashboard.activities.compliance"), time: t("dashboard.activities.threeDaysAgo") }
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome to your HR management dashboard</p>
+        <h1 className="text-3xl font-bold text-foreground">{t("nav.dashboard")}</h1>
+        <p className="text-muted-foreground">{t("dashboard.welcome")}</p>
       </div>
 
       {/* Stats Grid */}
@@ -67,8 +70,8 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activities</CardTitle>
-            <CardDescription>Latest updates across the organization</CardDescription>
+            <CardTitle>{t("dashboard.recentActivities")}</CardTitle>
+            <CardDescription>{t("dashboard.latestUpdates")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {recentActivities.map((activity, index) => (
@@ -85,26 +88,26 @@ const Dashboard = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks and shortcuts</CardDescription>
+            <CardTitle>{t("dashboard.quickActions")}</CardTitle>
+            <CardDescription>{t("dashboard.commonTasks")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <button className="w-full text-left p-3 rounded-md hover:bg-accent transition-colors">
               <div className="flex items-center space-x-3">
                 <UserPlus className="h-4 w-4" />
-                <span>Add New Employee</span>
+                <span>{t("dashboard.addEmployee")}</span>
               </div>
             </button>
             <button className="w-full text-left p-3 rounded-md hover:bg-accent transition-colors">
               <div className="flex items-center space-x-3">
                 <Calendar className="h-4 w-4" />
-                <span>Schedule Interview</span>
+                <span>{t("dashboard.scheduleInterview")}</span>
               </div>
             </button>
             <button className="w-full text-left p-3 rounded-md hover:bg-accent transition-colors">
               <div className="flex items-center space-x-3">
                 <FileText className="h-4 w-4" />
-                <span>Generate Report</span>
+                <span>{t("dashboard.generateReport")}</span>
               </div>
             </button>
           </CardContent>

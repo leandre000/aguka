@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useRef } from 'react';
 import { Bell, CheckCircle, Loader2 } from 'lucide-react';
 import { getNotifications, markNotificationRead } from '@/lib/api';
@@ -47,7 +48,10 @@ export function NotificationBell() {
     try {
       await markNotificationRead(id);
       setNotifications((prev) => prev.map((n) => n._id === id ? { ...n, read: true } : n));
-    } catch {}
+    } catch (error) {
+
+      console.error('Failed to mark notification as read:', error);
+    }
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;

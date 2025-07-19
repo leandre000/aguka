@@ -1,12 +1,15 @@
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { EmployeePortalSidebar } from "@/components/sidebars/EmployeePortalSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EmployeePortalLayoutProps {
   children: React.ReactNode;
 }
 
 export function EmployeePortalLayout({ children }: EmployeePortalLayoutProps) {
+  const { t } = useLanguage();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">

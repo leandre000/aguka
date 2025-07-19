@@ -1,12 +1,15 @@
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { ManagerPortalSidebar } from "@/components/sidebars/ManagerPortalSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ManagerPortalLayoutProps {
   children: React.ReactNode;
 }
 
 export function ManagerPortalLayout({ children }: ManagerPortalLayoutProps) {
+  const { t } = useLanguage();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">

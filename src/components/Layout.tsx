@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from './NotificationBell';
 
@@ -13,6 +14,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { isAuthenticated, logout, user } = useAuth();
+  const { t } = useLanguage();
   const isHomePage = location.pathname === '/';
   const isAuthPage = ['/login', '/signup'].includes(location.pathname);
   const isPortalPage = location.pathname.includes('-portal');
@@ -29,13 +31,14 @@ export function Layout({ children }: LayoutProps) {
         <SidebarInset className="flex-1">
           {/* Top bar with logout */}
           <header className="flex justify-between items-center px-4 py-2 bg-background border-b">
-            <div className="font-bold text-lg">HRMS</div>
+            <div className="font-bold text-lg">{t("common.hrms")}</div>
             {isAuthenticated && (
               <div className="flex items-center gap-2">
+                <LanguageSwitcher />
                 <NotificationBell />
                 <span className="text-sm text-muted-foreground">{user?.Names || user?.name}</span>
                 <Button variant="outline" size="sm" onClick={logout}>
-                  Logout
+                  {t("common.logout")}
                 </Button>
               </div>
             )}

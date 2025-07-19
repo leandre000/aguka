@@ -26,87 +26,7 @@ import { toast } from "react-hot-toast";
 import { createRiskAssessment, updateRiskAssessment, deleteRiskAssessment } from "@/lib/api";
 
 export default function RiskAssessment() {
-  const { language } = useLanguage();
-
-  const content = {
-    en: {
-      title: "Risk Assessment",
-      description: "Identify and evaluate organizational risks",
-      overallRisk: "Overall Risk Score",
-      highRisk: "High Risk",
-      mediumRisk: "Medium Risk",
-      lowRisk: "Low Risk",
-      riskCategory: "Risk Category",
-      allCategories: "All Categories",
-      operational: "Operational",
-      financial: "Financial",
-      compliance: "Compliance",
-      cybersecurity: "Cybersecurity",
-      reputation: "Reputation",
-      impact: "Impact",
-      probability: "Probability",
-      riskScore: "Risk Score",
-      mitigation: "Mitigation Status",
-      viewDetails: "View Details",
-      updateAssessment: "Update Assessment",
-      newAssessment: "New Assessment",
-      inProgress: "In Progress",
-      completed: "Completed",
-      notStarted: "Not Started",
-    },
-    es: {
-      title: "Evaluación de Riesgos",
-      description: "Identificar y evaluar riesgos organizacionales",
-      overallRisk: "Puntuación General de Riesgo",
-      highRisk: "Alto Riesgo",
-      mediumRisk: "Riesgo Medio",
-      lowRisk: "Bajo Riesgo",
-      riskCategory: "Categoría de Riesgo",
-      allCategories: "Todas las Categorías",
-      operational: "Operacional",
-      financial: "Financiero",
-      compliance: "Cumplimiento",
-      cybersecurity: "Ciberseguridad",
-      reputation: "Reputación",
-      impact: "Impacto",
-      probability: "Probabilidad",
-      riskScore: "Puntuación de Riesgo",
-      mitigation: "Estado de Mitigación",
-      viewDetails: "Ver Detalles",
-      updateAssessment: "Actualizar Evaluación",
-      newAssessment: "Nueva Evaluación",
-      inProgress: "En Progreso",
-      completed: "Completado",
-      notStarted: "No Iniciado",
-    },
-    fr: {
-      title: "Évaluation des risques",
-      description: "Identifier et évaluer les risques organisationnels",
-      overallRisk: "Score de risque global",
-      highRisk: "Risque élevé",
-      mediumRisk: "Risque moyen",
-      lowRisk: "Risque faible",
-      riskCategory: "Catégorie de risque",
-      allCategories: "Toutes les catégories",
-      operational: "Opérationnel",
-      financial: "Financier",
-      compliance: "Conformité",
-      cybersecurity: "Cybersécurité",
-      reputation: "Réputation",
-      impact: "Impact",
-      probability: "Probabilité",
-      riskScore: "Score de risque",
-      mitigation: "Statut de mitigation",
-      viewDetails: "Voir les détails",
-      updateAssessment: "Mettre à jour l'évaluation",
-      newAssessment: "Nouvelle évaluation",
-      inProgress: "En cours",
-      completed: "Terminé",
-      notStarted: "Non commencé",
-    },
-  };
-
-  const t = content[language];
+  const { t } = useLanguage();
 
   const [risks, setRisks] = useState<any[]>([]);
   const [risksLoading, setRisksLoading] = useState(false);
@@ -119,23 +39,23 @@ export default function RiskAssessment() {
     setRisksLoading(true);
     getRiskAssessments()
       .then((data) => { setRisks(data); setRisksError(null); })
-      .catch(() => setRisksError("Failed to load risks"))
+      .catch(() => setRisksError(t("errors.loadRisksFailed")))
       .finally(() => setRisksLoading(false));
-  }, []);
+  }, [t]);
 
   // Update stats to use dynamic risks
   const riskStats = [
-    { label: t.highRisk, value: risks.filter(r => r.riskScore >= 50).length, color: "text-red-600" },
-    { label: t.mediumRisk, value: risks.filter(r => r.riskScore >= 25 && r.riskScore < 50).length, color: "text-yellow-600" },
-    { label: t.lowRisk, value: risks.filter(r => r.riskScore < 25).length, color: "text-green-600" },
+    { label: t("auditor.highRisk"), value: risks.filter(r => r.riskScore >= 50).length, color: "text-red-600" },
+    { label: t("auditor.mediumRisk"), value: risks.filter(r => r.riskScore >= 25 && r.riskScore < 50).length, color: "text-yellow-600" },
+    { label: t("auditor.lowRisk"), value: risks.filter(r => r.riskScore < 25).length, color: "text-green-600" },
   ];
 
   const getRiskLevel = (score: number) => {
     if (score >= 50)
-      return { label: t.highRisk, variant: "destructive" as const };
+      return { label: t("auditor.highRisk"), variant: "destructive" as const };
     if (score >= 25)
-      return { label: t.mediumRisk, variant: "outline" as const };
-    return { label: t.lowRisk, variant: "default" as const };
+      return { label: t("auditor.mediumRisk"), variant: "outline" as const };
+    return { label: t("auditor.lowRisk"), variant: "default" as const };
   };
 
   const getStatusVariant = (status: string) => {
@@ -154,11 +74,11 @@ export default function RiskAssessment() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "completed":
-        return t.completed;
+        return t("auditor.completed");
       case "in-progress":
-        return t.inProgress;
+        return t("auditor.inProgress");
       case "not-started":
-        return t.notStarted;
+        return t("auditor.notStarted");
       default:
         return status;
     }
@@ -170,16 +90,16 @@ export default function RiskAssessment() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-              {t.title}
+              {t("auditor.riskAssessment")}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              {t.description}
+              {t("auditor.identifyAndEvaluate")}
             </p>
           </div>
           <Button className="w-full sm:w-auto" onClick={() => { setEditingRisk(null); setRiskModalOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">{t.newAssessment}</span>
-            <span className="sm:hidden">New</span>
+            <span className="hidden sm:inline">{t("auditor.newAssessment")}</span>
+            <span className="sm:hidden">{t("auditor.new")}</span>
           </Button>
         </div>
 
@@ -187,7 +107,7 @@ export default function RiskAssessment() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {t.overallRisk}
+                {t("auditor.overallRiskScore")}
               </CardTitle>
               <Shield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -195,7 +115,7 @@ export default function RiskAssessment() {
               <div className="text-2xl font-bold">7.2/10</div>
               <p className="text-xs text-muted-foreground">
                 <TrendingUp className="inline h-3 w-3 mr-1" />
-                +5% from last month
+                +5% {t("auditor.fromLastMonth")}
               </p>
             </CardContent>
           </Card>
@@ -219,24 +139,24 @@ export default function RiskAssessment() {
         <div className="flex flex-col sm:flex-row gap-4">
           <Select defaultValue="all">
             <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder={t.riskCategory} />
+              <SelectValue placeholder={t("auditor.riskCategory")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t.allCategories}</SelectItem>
-              <SelectItem value="operational">{t.operational}</SelectItem>
-              <SelectItem value="financial">{t.financial}</SelectItem>
-              <SelectItem value="compliance">{t.compliance}</SelectItem>
-              <SelectItem value="cybersecurity">{t.cybersecurity}</SelectItem>
-              <SelectItem value="reputation">{t.reputation}</SelectItem>
+              <SelectItem value="all">{t("auditor.allCategories")}</SelectItem>
+              <SelectItem value="operational">{t("auditor.operational")}</SelectItem>
+              <SelectItem value="financial">{t("auditor.financial")}</SelectItem>
+              <SelectItem value="compliance">{t("auditor.compliance")}</SelectItem>
+              <SelectItem value="cybersecurity">{t("auditor.cybersecurity")}</SelectItem>
+              <SelectItem value="reputation">{t("auditor.reputation")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="grid gap-4">
-          {risksLoading && <p>Loading risks...</p>}
+          {risksLoading && <p>{t("auditor.loadingRisks")}</p>}
           {risksError && <p style={{ color: "red" }}>{risksError}</p>}
           {!risksLoading && !risksError && risks.length === 0 && (
-            <p>No risks found for this assessment.</p>
+            <p>{t("auditor.noRisksFound")}</p>
           )}
           {!risksLoading && !risksError && risks.length > 0 && (
             risks.map((risk) => {
@@ -252,7 +172,7 @@ export default function RiskAssessment() {
                         <CardDescription className="flex flex-wrap items-center gap-2 mt-1">
                           <Badge variant="outline">{risk.category}</Badge>
                           <span className="text-xs">
-                            Last updated: {risk.lastUpdated}
+                            {t("auditor.lastUpdated")}: {risk.lastUpdated}
                           </span>
                         </CardDescription>
                       </div>
@@ -269,19 +189,19 @@ export default function RiskAssessment() {
                   <CardContent>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                       <div>
-                        <p className="text-sm font-medium">{t.impact}</p>
+                        <p className="text-sm font-medium">{t("auditor.impact")}</p>
                         <p className="text-lg font-bold">{risk.impact}/10</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{t.probability}</p>
+                        <p className="text-sm font-medium">{t("auditor.probability")}</p>
                         <p className="text-lg font-bold">{risk.probability}/10</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{t.riskScore}</p>
+                        <p className="text-sm font-medium">{t("auditor.riskScore")}</p>
                         <p className="text-lg font-bold">{risk.riskScore}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium mb-1">{t.mitigation}</p>
+                        <p className="text-sm font-medium mb-1">{t("auditor.mitigationStatus")}</p>
                         <Progress value={risk.mitigation} className="h-2" />
                         <p className="text-xs text-muted-foreground mt-1">
                           {risk.mitigation}%
@@ -296,18 +216,18 @@ export default function RiskAssessment() {
                         onClick={() => { setEditingRisk(risk); setRiskModalOpen(true); }}
                       >
                         <Eye className="mr-2 h-4 w-4" />
-                        <span className="hidden sm:inline">{t.viewDetails}</span>
-                        <span className="sm:hidden">View</span>
+                        <span className="hidden sm:inline">{t("auditor.viewDetails")}</span>
+                        <span className="sm:hidden">{t("common.view")}</span>
                       </Button>
                       <Button size="sm" className="w-full sm:w-auto" onClick={() => { setEditingRisk(risk); setRiskModalOpen(true); }}>
                         <span className="hidden sm:inline">
-                          {t.updateAssessment}
+                          {t("auditor.updateAssessment")}
                         </span>
-                        <span className="sm:hidden">Update</span>
+                        <span className="sm:hidden">{t("auditor.update")}</span>
                       </Button>
                       <Button size="sm" variant="destructive" className="w-full sm:w-auto" onClick={() => setRiskDeleteId(risk._id)}>
-                        <span className="hidden sm:inline">Delete</span>
-                        <span className="sm:hidden">Del</span>
+                        <span className="hidden sm:inline">{t("common.delete")}</span>
+                        <span className="sm:hidden">{t("common.delete")}</span>
                       </Button>
                     </div>
                   </CardContent>
@@ -321,8 +241,8 @@ export default function RiskAssessment() {
       <Dialog open={riskModalOpen} onOpenChange={setRiskModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingRisk ? 'Edit Assessment' : 'New Assessment'}</DialogTitle>
-            <DialogDescription>Enter risk assessment details below.</DialogDescription>
+            <DialogTitle>{editingRisk ? t("auditor.editAssessment") : t("auditor.newAssessment")}</DialogTitle>
+            <DialogDescription>{t("auditor.enterRiskAssessmentDetails")}</DialogDescription>
           </DialogHeader>
           <form onSubmit={async (e) => {
             e.preventDefault();
@@ -344,34 +264,34 @@ export default function RiskAssessment() {
             try {
               if (editingRisk) {
                 await updateRiskAssessment(editingRisk._id, data);
-                toast.success('Assessment updated');
+                toast.success(t("auditor.assessmentUpdated"));
               } else {
                 await createRiskAssessment(data);
-                toast.success('Assessment created');
+                toast.success(t("auditor.assessmentCreated"));
               }
               setRiskModalOpen(false);
               setEditingRisk(null);
               setRisksLoading(true);
               getRiskAssessments().then(setRisks).finally(() => setRisksLoading(false));
             } catch (err) {
-              toast.error('Failed to save assessment');
+              toast.error(t("auditor.failedToSaveAssessment"));
             }
           }}>
-            <input name="title" placeholder="Title" defaultValue={editingRisk?.title || ''} required className="input mb-2 w-full" />
-            <input name="category" placeholder="Category" defaultValue={editingRisk?.category || ''} required className="input mb-2 w-full" />
-            <input name="impact" type="number" min="1" max="10" placeholder="Impact (1-10)" defaultValue={editingRisk?.impact || ''} required className="input mb-2 w-full" />
-            <input name="probability" type="number" min="1" max="10" placeholder="Probability (1-10)" defaultValue={editingRisk?.probability || ''} required className="input mb-2 w-full" />
-            <input name="mitigation" type="number" min="0" max="100" placeholder="Mitigation (%)" defaultValue={editingRisk?.mitigation || ''} className="input mb-2 w-full" />
+            <input name="title" placeholder={t("auditor.title")} defaultValue={editingRisk?.title || ''} required className="input mb-2 w-full" />
+            <input name="category" placeholder={t("auditor.category")} defaultValue={editingRisk?.category || ''} required className="input mb-2 w-full" />
+            <input name="impact" type="number" min="1" max="10" placeholder={t("auditor.impactPlaceholder")} defaultValue={editingRisk?.impact || ''} required className="input mb-2 w-full" />
+            <input name="probability" type="number" min="1" max="10" placeholder={t("auditor.probabilityPlaceholder")} defaultValue={editingRisk?.probability || ''} required className="input mb-2 w-full" />
+            <input name="mitigation" type="number" min="0" max="100" placeholder={t("auditor.mitigationPlaceholder")} defaultValue={editingRisk?.mitigation || ''} className="input mb-2 w-full" />
             <select name="status" defaultValue={editingRisk?.status || 'not-started'} required className="input mb-2 w-full">
-              <option value="not-started">Not Started</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
+              <option value="not-started">{t("auditor.notStarted")}</option>
+              <option value="in-progress">{t("auditor.inProgress")}</option>
+              <option value="completed">{t("auditor.completed")}</option>
             </select>
             <input name="lastUpdated" type="date" defaultValue={editingRisk?.lastUpdated?.slice(0,10) || ''} required className="input mb-4 w-full" />
             <DialogFooter>
-              <Button type="submit">{editingRisk ? 'Update' : 'Create'}</Button>
+              <Button type="submit">{editingRisk ? t("auditor.update") : t("auditor.create")}</Button>
               <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="button" variant="outline">{t("common.cancel")}</Button>
               </DialogClose>
             </DialogFooter>
           </form>
@@ -381,22 +301,22 @@ export default function RiskAssessment() {
       <AlertDialog open={!!riskDeleteId} onOpenChange={open => !open && setRiskDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Assessment?</AlertDialogTitle>
-            <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+            <AlertDialogTitle>{t("auditor.deleteAssessment")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("auditor.cannotBeUndone")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setRiskDeleteId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setRiskDeleteId(null)}>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={async () => {
               try {
                 await deleteRiskAssessment(riskDeleteId);
-                toast.success('Assessment deleted');
+                toast.success(t("auditor.assessmentDeleted"));
                 setRiskDeleteId(null);
                 setRisksLoading(true);
                 getRiskAssessments().then(setRisks).finally(() => setRisksLoading(false));
               } catch {
-                toast.error('Failed to delete assessment');
+                toast.error(t("auditor.failedToDeleteAssessment"));
               }
-            }}>Delete</AlertDialogAction>
+            }}>{t("common.delete")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

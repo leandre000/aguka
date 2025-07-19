@@ -2,95 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    --foreground: 0 0% 0%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 0% 0%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 96%;
+    --ring: 0 0% 0%;
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 10%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 0% 100%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 0 0% 20%;
+    --input: 0 0% 10%;
+    --ring: 0 0% 100%;
   }
 }
 
@@ -98,8 +53,374 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom black and white styles */
+.bw-gradient {
+  background: linear-gradient(135deg, #000000 0%, #ffffff 100%);
+}
+
+.bw-border {
+  border-color: #000000;
+}
+
+.bw-shadow {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.bw-hover:hover {
+  background-color: #f5f5f5;
+  color: #000000;
+}
+
+.bw-active {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.bw-disabled {
+  background-color: #e5e5e5;
+  color: #666666;
+}
+
+/* Remove all colored backgrounds and use only grays */
+.bg-success {
+  background-color: #f5f5f5 !important;
+  color: #000000 !important;
+}
+
+.bg-error {
+  background-color: #e5e5e5 !important;
+  color: #000000 !important;
+}
+
+.bg-warning {
+  background-color: #f0f0f0 !important;
+  color: #000000 !important;
+}
+
+.bg-info {
+  background-color: #fafafa !important;
+  color: #000000 !important;
+}
+
+/* Status indicators using only black/white */
+.status-active {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.status-inactive {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+.status-pending {
+  background-color: #f5f5f5;
+  color: #000000;
+  border: 1px solid #cccccc;
+}
+
+/* Progress bars */
+.progress-bar {
+  background-color: #e5e5e5;
+}
+
+.progress-fill {
+  background-color: #000000;
+}
+
+/* Charts and graphs */
+.chart-line {
+  stroke: #000000;
+}
+
+.chart-fill {
+  fill: #000000;
+}
+
+.chart-background {
+  fill: #ffffff;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+}
+
+.btn-primary:hover {
+  background-color: #333333;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+.btn-secondary:hover {
+  background-color: #f5f5f5;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+.btn-outline:hover {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* Cards */
+.card {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Tables */
+.table-header {
+  background-color: #f5f5f5;
+  color: #000000;
+}
+
+.table-row:hover {
+  background-color: #fafafa;
+}
+
+.table-border {
+  border-color: #e5e5e5;
+}
+
+/* Forms */
+.form-input {
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  color: #000000;
+}
+
+.form-input:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.form-label {
+  color: #000000;
+}
+
+/* Alerts and notifications */
+.alert-success {
+  background-color: #f5f5f5;
+  border: 1px solid #cccccc;
+  color: #000000;
+}
+
+.alert-error {
+  background-color: #e5e5e5;
+  border: 1px solid #cccccc;
+  color: #000000;
+}
+
+.alert-warning {
+  background-color: #f0f0f0;
+  border: 1px solid #cccccc;
+  color: #000000;
+}
+
+.alert-info {
+  background-color: #fafafa;
+  border: 1px solid #cccccc;
+  color: #000000;
+}
+
+/* Badges */
+.badge {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.badge-outline {
+  background-color: transparent;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: #ffffff;
+  border-right: 1px solid #e5e5e5;
+}
+
+.sidebar-item {
+  color: #000000;
+}
+
+.sidebar-item:hover {
+  background-color: #f5f5f5;
+}
+
+.sidebar-item.active {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* Navigation */
+.nav-link {
+  color: #000000;
+}
+
+.nav-link:hover {
+  color: #333333;
+}
+
+.nav-link.active {
+  color: #000000;
+  border-bottom: 2px solid #000000;
+}
+
+/* Dropdown */
+.dropdown-menu {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+  color: #000000;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* Modal */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+}
+
+/* Tooltip */
+.tooltip {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* Loading spinner */
+.spinner {
+  border-color: #e5e5e5;
+  border-top-color: #000000;
+}
+
+/* Icons */
+.icon {
+  color: #000000;
+}
+
+.icon-primary {
+  color: #000000;
+}
+
+.icon-secondary {
+  color: #666666;
+}
+
+/* Links */
+.link {
+  color: #000000;
+  text-decoration: underline;
+}
+
+.link:hover {
+  color: #333333;
+}
+
+/* Text colors */
+.text-primary {
+  color: #000000;
+}
+
+.text-secondary {
+  color: #666666;
+}
+
+.text-muted {
+  color: #999999;
+}
+
+.text-light {
+  color: #cccccc;
+}
+
+/* Background colors */
+.bg-primary {
+  background-color: #000000;
+}
+
+.bg-secondary {
+  background-color: #f5f5f5;
+}
+
+.bg-muted {
+  background-color: #fafafa;
+}
+
+.bg-light {
+  background-color: #ffffff;
+}
+
+/* Override any existing color classes */
+[class*="bg-green"],
+[class*="bg-blue"],
+[class*="bg-red"],
+[class*="bg-yellow"],
+[class*="bg-purple"],
+[class*="bg-pink"],
+[class*="bg-indigo"],
+[class*="bg-teal"],
+[class*="bg-orange"],
+[class*="bg-cyan"] {
+  background-color: #f5f5f5 !important;
+  color: #000000 !important;
+}
+
+[class*="text-green"],
+[class*="text-blue"],
+[class*="text-red"],
+[class*="text-yellow"],
+[class*="text-purple"],
+[class*="text-pink"],
+[class*="text-indigo"],
+[class*="text-teal"],
+[class*="text-orange"],
+[class*="text-cyan"] {
+  color: #000000 !important;
+}
+
+[class*="border-green"],
+[class*="border-blue"],
+[class*="border-red"],
+[class*="border-yellow"],
+[class*="border-purple"],
+[class*="border-pink"],
+[class*="border-indigo"],
+[class*="border-teal"],
+[class*="border-orange"],
+[class*="border-cyan"] {
+  border-color: #e5e5e5 !important;
 }

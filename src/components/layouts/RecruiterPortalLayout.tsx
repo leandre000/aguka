@@ -1,12 +1,15 @@
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { RecruiterPortalSidebar } from "@/components/sidebars/RecruiterPortalSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface RecruiterPortalLayoutProps {
   children: React.ReactNode;
 }
 
 export function RecruiterPortalLayout({ children }: RecruiterPortalLayoutProps) {
+  const { t } = useLanguage();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">

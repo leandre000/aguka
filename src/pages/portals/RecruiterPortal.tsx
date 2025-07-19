@@ -52,9 +52,9 @@ const RecruiterPortal = () => {
           : [];
         setRecentActivity(sysActivity);
       })
-      .catch(() => setError("Failed to load dashboard data."))
+      .catch(() => setError(t("errors.loadFailed")))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   const activeJobs = [
     {
@@ -165,62 +165,62 @@ const RecruiterPortal = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Positions</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("recruiter.activePositions")}</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : recruitmentStats.activePositions}</div>
-            <p className="text-xs text-muted-foreground">Open job postings</p>
+            <p className="text-xs text-muted-foreground">{t("recruiter.openJobPostings")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Applicants</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("recruiter.totalApplicants")}</CardTitle>
             <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{recruitmentStats.totalApplicants}</div>
-            <p className="text-xs text-muted-foreground">Active candidates</p>
+            <p className="text-xs text-muted-foreground">{t("recruiter.activeCandidates")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Interviews Scheduled</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("recruiter.interviewsScheduled")}</CardTitle>
             <Calendar className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{recruitmentStats.interviewsScheduled}</div>
-            <p className="text-xs text-muted-foreground">This week</p>
+            <p className="text-xs text-muted-foreground">{t("recruiter.thisWeek")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Offers Extended</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("recruiter.offersExtended")}</CardTitle>
             <UserPlus className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{recruitmentStats.offersExtended}</div>
-            <p className="text-xs text-muted-foreground">Pending response</p>
+            <p className="text-xs text-muted-foreground">{t("recruiter.pendingResponse")}</p>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="jobs" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="jobs">Active Jobs</TabsTrigger>
-          <TabsTrigger value="candidates">Candidates</TabsTrigger>
-          <TabsTrigger value="interviews">Interviews</TabsTrigger>
+          <TabsTrigger value="jobs">{t("recruiter.activeJobs")}</TabsTrigger>
+          <TabsTrigger value="candidates">{t("recruiter.candidates")}</TabsTrigger>
+          <TabsTrigger value="interviews">{t("recruiter.interviews")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="jobs" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Active Job Postings</h2>
+            <h2 className="text-xl font-semibold">{t("recruiter.activeJobPostings")}</h2>
             <Button>
               <Briefcase className="h-4 w-4 mr-2" />
-              Create New Job
+              {t("recruiter.createNewJob")}
             </Button>
           </div>
 
@@ -246,10 +246,10 @@ const RecruiterPortal = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <Users className="h-4 w-4" />
-                        <span className="text-sm">{job.applicants} applicants</span>
+                        <span className="text-sm">{job.applicants} {t("recruiter.applicants")}</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Posted: {new Date(job.posted).toLocaleDateString()}
+                        {t("recruiter.posted")}: {new Date(job.posted).toLocaleDateString()}
                       </p>
                     </div>
                     
@@ -260,10 +260,10 @@ const RecruiterPortal = () => {
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm">
                           <Eye className="h-4 w-4 mr-1" />
-                          View
+                          {t("common.view")}
                         </Button>
                         <Button variant="outline" size="sm">
-                          Edit
+                          {t("common.edit")}
                         </Button>
                       </div>
                     </div>
@@ -275,7 +275,7 @@ const RecruiterPortal = () => {
         </TabsContent>
 
         <TabsContent value="candidates" className="space-y-4">
-          <h2 className="text-xl font-semibold">Candidate Pipeline</h2>
+          <h2 className="text-xl font-semibold">{t("recruiter.candidatePipeline")}</h2>
           
           <div className="space-y-4">
             {candidates.map((candidate) => (
@@ -284,16 +284,16 @@ const RecruiterPortal = () => {
                   <div className="flex justify-between items-start">
                     <div className="space-y-2">
                       <h3 className="text-lg font-semibold">{candidate.name}</h3>
-                      <p className="text-sm text-muted-foreground">Applied for: {candidate.position}</p>
+                      <p className="text-sm text-muted-foreground">{t("recruiter.appliedFor")}: {candidate.position}</p>
                       <p className="text-sm">{candidate.email}</p>
                       <div className="flex items-center space-x-4 text-sm">
-                        <span className="font-medium">Stage:</span>
+                        <span className="font-medium">{t("recruiter.stage")}:</span>
                         <span>{candidate.stage}</span>
-                        <span className="font-medium">Score:</span>
+                        <span className="font-medium">{t("recruiter.score")}:</span>
                         <span className="text-primary font-bold">{candidate.score}%</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Applied: {new Date(candidate.appliedDate).toLocaleDateString()}
+                        {t("recruiter.applied")}: {new Date(candidate.appliedDate).toLocaleDateString()}
                       </p>
                     </div>
                     
@@ -303,10 +303,10 @@ const RecruiterPortal = () => {
                       </Badge>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm">
-                          View Profile
+                          {t("recruiter.viewProfile")}
                         </Button>
                         <Button variant="outline" size="sm">
-                          Schedule Interview
+                          {t("recruiter.scheduleInterview")}
                         </Button>
                       </div>
                     </div>
@@ -318,7 +318,7 @@ const RecruiterPortal = () => {
         </TabsContent>
 
         <TabsContent value="interviews" className="space-y-4">
-          <h2 className="text-xl font-semibold">Upcoming Interviews</h2>
+          <h2 className="text-xl font-semibold">{t("recruiter.upcomingInterviews")}</h2>
           
           <div className="space-y-4">
             {upcomingInterviews.map((interview) => (
@@ -339,17 +339,17 @@ const RecruiterPortal = () => {
                         </div>
                       </div>
                       <p className="text-sm">
-                        <span className="font-medium">Interviewer:</span> {interview.interviewer}
+                        <span className="font-medium">{t("recruiter.interviewer")}:</span> {interview.interviewer}
                       </p>
                       <Badge variant="outline">{interview.type}</Badge>
                     </div>
                     
                     <div className="flex space-x-2">
                       <Button variant="outline" size="sm">
-                        Reschedule
+                        {t("recruiter.reschedule")}
                       </Button>
                       <Button size="sm">
-                        Join Interview
+                        {t("recruiter.joinInterview")}
                       </Button>
                     </div>
                   </div>

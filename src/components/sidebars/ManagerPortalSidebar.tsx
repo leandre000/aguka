@@ -71,7 +71,7 @@ export function ManagerPortalSidebar() {
       icon: Target,
     },
     {
-      title: t("manager.successionPlanning") || "Succession Planning",
+      title: t("manager.successionPlanning"),
       url: "/manager-portal/succession",
       icon: Users,
     },

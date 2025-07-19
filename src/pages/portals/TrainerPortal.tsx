@@ -26,11 +26,6 @@ const TrainerPortal = () => {
   const [coursesLoading, setCoursesLoading] = useState(false);
   const [coursesError, setCoursesError] = useState<string | null>(null);
 
-  // If learning paths are available from backend, add similar state here
-  // const [learningPaths, setLearningPaths] = useState<any[]>([]);
-  // const [learningPathsLoading, setLearningPathsLoading] = useState(false);
-  // const [learningPathsError, setLearningPathsError] = useState<string | null>(null);
-
   useEffect(() => {
     setLoading(true);
     setError("");
@@ -66,17 +61,17 @@ const TrainerPortal = () => {
           : [];
         setRecentActivity(sysActivity);
       })
-      .catch(() => setError("Failed to load dashboard data."))
+      .catch(() => setError(t("errors.loadFailed")))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     setCoursesLoading(true);
     getCourses()
       .then((data) => { setCourses(Array.isArray(data) ? data : data.data || []); setCoursesError(null); })
-      .catch(() => setCoursesError("Failed to load courses"))
+      .catch(() => setCoursesError(t("errors.loadCoursesFailed")))
       .finally(() => setCoursesLoading(false));
-  }, []);
+  }, [t]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -99,45 +94,45 @@ const TrainerPortal = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("trainer.totalCourses")}</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : trainingStats.totalCourses}</div>
-            <p className="text-xs text-muted-foreground">Available courses</p>
+            <p className="text-xs text-muted-foreground">{t("trainer.availableCourses")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Enrollments</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("trainer.activeEnrollments")}</CardTitle>
             <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{trainingStats.activeEnrollments}</div>
-            <p className="text-xs text-muted-foreground">Currently learning</p>
+            <p className="text-xs text-muted-foreground">{t("trainer.currentlyLearning")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("trainer.completed")}</CardTitle>
             <Award className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{trainingStats.completedCourses}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <p className="text-xs text-muted-foreground">{t("trainer.thisMonth")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Score</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("trainer.averageScore")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">{trainingStats.averageScore}%</div>
-            <p className="text-xs text-muted-foreground">Course performance</p>
+            <p className="text-xs text-muted-foreground">{t("trainer.coursePerformance")}</p>
           </CardContent>
         </Card>
       </div>
@@ -147,22 +142,22 @@ const TrainerPortal = () => {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Training Courses</CardTitle>
-              <CardDescription>Manage and monitor course progress</CardDescription>
+              <CardTitle>{t("trainer.trainingCourses")}</CardTitle>
+              <CardDescription>{t("trainer.manageAndMonitor")}</CardDescription>
             </div>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Create Course
+              {t("trainer.createCourse")}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {coursesLoading ? (
-            <div className="text-center py-8">Loading courses...</div>
+            <div className="text-center py-8">{t("trainer.loadingCourses")}</div>
           ) : coursesError ? (
             <div className="text-center py-8 text-red-500">{coursesError}</div>
           ) : courses.length === 0 ? (
-            <div className="text-center py-8">No courses available.</div>
+            <div className="text-center py-8">{t("trainer.noCoursesAvailable")}</div>
           ) : (
             <div className="space-y-4">
               {courses.map((course) => (
@@ -175,7 +170,7 @@ const TrainerPortal = () => {
                         <Badge variant="outline">{course.category}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">{course.description}</p>
-                      <p className="text-xs text-muted-foreground">Duration: {course.duration}</p>
+                      <p className="text-xs text-muted-foreground">{t("trainer.duration")}: {course.duration}</p>
                     </div>
                     
                     <div className="text-right space-y-2">
@@ -185,10 +180,10 @@ const TrainerPortal = () => {
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm">
                           <Play className="h-4 w-4 mr-1" />
-                          Preview
+                          {t("trainer.preview")}
                         </Button>
                         <Button variant="outline" size="sm">
-                          Edit
+                          {t("common.edit")}
                         </Button>
                       </div>
                     </div>
@@ -196,7 +191,7 @@ const TrainerPortal = () => {
                   
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Progress: {course.completed}/{course.enrolled} completed</span>
+                      <span>{t("trainer.progress")}: {course.completed}/{course.enrolled} {t("trainer.completed")}</span>
                       <span>{course.completionRate}%</span>
                     </div>
                     <Progress value={course.completionRate} className="h-2" />
@@ -213,45 +208,18 @@ const TrainerPortal = () => {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Learning Paths</CardTitle>
-              <CardDescription>Structured learning programs</CardDescription>
+              <CardTitle>{t("trainer.learningPaths")}</CardTitle>
+              <CardDescription>{t("trainer.structuredLearning")}</CardDescription>
             </div>
             <Button variant="outline">
               <Plus className="h-4 w-4 mr-2" />
-              Create Learning Path
+              {t("trainer.createLearningPath")}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
-            {/* This section will be updated if learning paths are fetched from backend */}
-            <div className="text-center py-8">Learning paths are not yet available from the backend.</div>
-            {/* {learningPaths.map((path) => (
-              <div key={path.id} className="p-4 border rounded-lg">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <h3 className="font-semibold">{path.title}</h3>
-                    <p className="text-sm text-muted-foreground">{path.description}</p>
-                    <div className="flex items-center space-x-4 text-sm">
-                      <span>{path.courses} courses</span>
-                      <span>•</span>
-                      <span>{path.duration}</span>
-                      <span>•</span>
-                      <span>{path.enrolled} enrolled</span>
-                    </div>
-                  </div>
-                  
-                  <div className="text-right space-y-2">
-                    <Badge className={getStatusColor(path.status)}>
-                      {path.status}
-                    </Badge>
-                    <Button variant="outline" size="sm">
-                      Manage
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))} */}
+            <div className="text-center py-8">{t("trainer.learningPathsNotAvailable")}</div>
           </div>
         </CardContent>
       </Card>
@@ -259,8 +227,8 @@ const TrainerPortal = () => {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Learning Activity</CardTitle>
-          <CardDescription>Latest employee training progress</CardDescription>
+          <CardTitle>{t("trainer.recentLearningActivity")}</CardTitle>
+          <CardDescription>{t("trainer.latestEmployeeProgress")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

@@ -34,7 +34,7 @@ const HomeNavbar = () => {
           {/* Mobile Hamburger */}
           <button
             className="md:hidden p-2 rounded focus:outline-none focus:ring"
-            aria-label="Open menu"
+            aria-label={t("common.openMenu")}
             onClick={() => setMenuOpen(!menuOpen)}
           >
             <Menu className="h-6 w-6 text-primary" />

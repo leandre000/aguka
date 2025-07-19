@@ -1,11 +1,12 @@
+/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, useContext, useState } from "react";
 import { logout as apiLogout } from '@/lib/api';
 
 export interface AuthContextType {
-  user: any;
-  token: string | null;
   isAuthenticated: boolean;
+  loading: boolean;
+  user: any;
   login: (token: string, user: any) => void;
   logout: () => void;
 }
@@ -17,6 +18,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const u = localStorage.getItem("user");
     return u ? JSON.parse(u) : null;
   });
+  const [loading, setLoading] = useState(false);
   const isAuthenticated = !!token;
 
   const login = (newToken: string, userObj: any) => {
@@ -29,13 +31,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     apiLogout();
     setToken(null);
     setUser(null);
-    localStorage.removeItem("token");
+    localStorage.removeItem("auth");
     localStorage.removeItem("user");
     window.location.href = "/login";
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -45,4 +47,5 @@ export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
-}; 
+};  
+

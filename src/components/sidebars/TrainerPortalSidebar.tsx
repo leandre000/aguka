@@ -54,7 +54,7 @@ export function TrainerPortalSidebar() {
       icon: Brain,
     },
     {
-      title: t("common.messages") || "Messages",
+      title: t("common.messages"),
       url: "/trainer-portal/messages",
       icon: MessageSquare,
     },

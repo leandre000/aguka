@@ -1,12 +1,15 @@
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AdminPortalSidebar } from "@/components/sidebars/AdminPortalSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AdminPortalLayoutProps {
   children: React.ReactNode;
 }
 
 export function AdminPortalLayout({ children }: AdminPortalLayoutProps) {
+  const { t } = useLanguage();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">

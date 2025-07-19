@@ -54,7 +54,7 @@ export function AuditorPortalSidebar() {
       icon: Archive,
     },
     {
-      title: t("common.messages") || "Messages",
+      title: t("common.messages"),
       url: "/auditor-portal/messages",
       icon: MessageSquare,
     },

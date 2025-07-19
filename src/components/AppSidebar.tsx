@@ -67,7 +67,6 @@ export function AppSidebar() {
       url: "/compliance",
       icon: Shield,
     },
-  
   ];
 
   const isActive = (path: string) => currentPath === path;
@@ -79,8 +78,8 @@ export function AppSidebar() {
           <Building2 className="h-6 w-6 text-primary" />
           {state === "expanded" && (
             <div>
-              <h2 className="text-lg font-semibold text-sidebar-foreground">HR System</h2>
-              <p className="text-xs text-sidebar-foreground/70">Management Portal</p>
+              <h2 className="text-lg font-semibold text-sidebar-foreground">{t("common.hrSystem")}</h2>
+              <p className="text-xs text-sidebar-foreground/70">{t("common.managementPortal")}</p>
             </div>
           )}
         </div>
@@ -88,7 +87,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("common.navigation")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (

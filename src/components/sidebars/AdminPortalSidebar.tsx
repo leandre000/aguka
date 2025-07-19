@@ -27,7 +27,7 @@ export function AdminPortalSidebar() {
   const location = useLocation();
   const { t } = useLanguage();
   const currentPath = location.pathname;
-  const { logout } = useAuth(); // Add this line
+  const { logout } = useAuth();
 
   const navigationItems = [
     {
@@ -51,18 +51,18 @@ export function AdminPortalSidebar() {
       icon: FileText,
     },
     {
-      title: t("common.messages") || "Messages",
+      title: t("common.messages"),
       url: "/admin-portal/messages",
       icon: MessageSquare,
     },
     {
-      title: t("admin.successionPlanning") || "Succession Planning",
+      title: t("admin.successionPlanning"),
       url: "/admin-portal/succession",
       icon: Users,
     },
     {
       title: "AI Tools",
-      url: "/ai-tools",
+      url: "/admin-portal/ai-tools",
       icon: BarChart,
     },
   ];
@@ -98,7 +98,6 @@ export function AdminPortalSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              {/* Logout Button */}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <button
@@ -115,7 +114,7 @@ export function AdminPortalSidebar() {
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
                     </svg>
-                    <span>{t("common.logout") || "Logout"}</span>
+                    <span>{t("common.logout")}</span>
                   </button>
                 </SidebarMenuButton>
               </SidebarMenuItem>

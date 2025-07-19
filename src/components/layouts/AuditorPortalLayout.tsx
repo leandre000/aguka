@@ -1,12 +1,15 @@
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AuditorPortalSidebar } from "@/components/sidebars/AuditorPortalSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AuditorPortalLayoutProps {
   children: React.ReactNode;
 }
 
 export function AuditorPortalLayout({ children }: AuditorPortalLayoutProps) {
+  const { t } = useLanguage();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">

@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { NotAuthorizedDialog } from "./NotAuthorizedDialog";
 
 export function RoleRoute({ allowedRoles }: { allowedRoles: string[] }) {
   const { isAuthenticated, user, logout } = useAuth();
+  const { t } = useLanguage();
   const [showDialog, setShowDialog] = useState(false);
   const navigate = useNavigate();
 
@@ -25,7 +27,7 @@ export function RoleRoute({ allowedRoles }: { allowedRoles: string[] }) {
         open={showDialog}
         onOpenChange={setShowDialog}
         showLogout={false}
-        message="You must be logged in to access this page."
+        message={t("auth.mustLogin")}
         onClose={() => navigate("/")}
       />
     );
@@ -39,7 +41,7 @@ export function RoleRoute({ allowedRoles }: { allowedRoles: string[] }) {
         onOpenChange={setShowDialog}
         showLogout={true}
         onLogout={logout}
-        message="You do not have permission to access this page."
+        message={t("auth.notAuthorized")}
       />
     );
   }

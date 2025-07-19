@@ -59,7 +59,7 @@ export function RecruiterPortalSidebar() {
       icon: Brain,
     },
     {
-      title: t("common.messages") || "Messages",
+      title: t("common.messages"),
       url: "/recruiter-portal/messages",
       icon: MessageSquare,
     },

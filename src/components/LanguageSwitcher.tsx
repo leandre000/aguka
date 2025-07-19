@@ -6,16 +6,25 @@ import { Languages } from 'lucide-react';
 export const LanguageSwitcher = () => {
   const { language, setLanguage, t } = useLanguage();
 
+  const languages = [
+    { code: 'en', name: t('common.english') },
+    { code: 'fr', name: t('common.french') },
+    { code: 'rw', name: t('common.kinyarwanda') },
+  ];
+
   return (
     <div className="flex items-center space-x-2">
       <Languages className="h-4 w-4 text-muted-foreground" />
-      <Select value={language} onValueChange={(value: 'en' | 'fr') => setLanguage(value)}>
-        <SelectTrigger className="w-32">
+      <Select value={language} onValueChange={(value: 'en' | 'fr' | 'rw') => setLanguage(value)}>
+        <SelectTrigger className="w-40">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="en">{t('common.english')}</SelectItem>
-          <SelectItem value="fr">{t('common.french')}</SelectItem>
+          {languages.map((lang) => (
+            <SelectItem key={lang.code} value={lang.code}>
+              {lang.name}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>

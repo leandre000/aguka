@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ManagerPortalLayout } from "@/components/layouts/ManagerPortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Calendar, Check, X, Clock, Users } from "lucide-react";
-import { getLeaveRequests, getTeamMembers } from '@/lib/api';
+import { getLeaves, getTeamMembers } from '@/lib/api';
 import { useAuth } from "@/contexts/AuthContext";
 
 const timeOffTranslations = {
@@ -137,7 +137,7 @@ const TimeOff = () => {
   useEffect(() => {
     setPendingLoading(true);
     setPendingError(null);
-    getLeaveRequests()
+    getLeaves()
       .then(data => setPendingRequests((data || []).filter((r: any) => r.status === 'Pending')))
       .catch(() => setPendingError('Failed to load pending requests.'))
       .finally(() => setPendingLoading(false));

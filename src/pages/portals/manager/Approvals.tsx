@@ -20,7 +20,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
-import { getLeaveRequests, approveLeave, rejectLeave } from '@/lib/api';
+import { getLeaves, approveLeave, rejectLeave } from '@/lib/api';
 import { toast } from '@/components/ui/use-toast';
 import { useEffect, useState } from "react";
 
@@ -145,9 +145,10 @@ const Approvals = () => {
   const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  
   useEffect(() => {
     setLoading(true);
-    getLeaveRequests()
+    getLeaves()
       .then(data => setPendingApprovals(Array.isArray(data) ? data.filter((r: any) => r.status === 'Pending') : []))
       .finally(() => setLoading(false));
   }, [managerId]);

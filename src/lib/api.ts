@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 // Add axios interceptor to always include Authorization header
 axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth');
     if (token) {
       if (config.headers) {
         config.headers['Authorization'] = `Bearer ${token}`;
@@ -13,6 +14,20 @@ axios.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response && error.response.status === 401) {
+      // Clear local/session storage
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      // Optionally, redirect to login
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
 );
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -43,8 +58,9 @@ export async function apiFetch(path: string, options: any = {}) {
   }
 }
 
-// --- Employees API ---
+//--Employee api--
 export const getEmployees = () => apiFetch("/employees");
+
 export const addEmployee = (data: any) =>
   apiFetch("/employees", { method: "POST", body: JSON.stringify(data) });
 export const updateEmployee = (id: string, data: any) =>
@@ -55,6 +71,12 @@ export const getTeamMembers = (managerId: string) => apiFetch(`/employees?manage
 
 // --- Users API ---
 export const getUsers = () => apiFetch("/users");
+export const getUser = (id: string) => apiFetch(`/users/${id}`);
+//export const addUser = (data: any) => apiFetch("/users", { method: "POST", body: JSON.stringify(data) });
+export const updateUser = (id: string, data: any) => apiFetch(`/users/${id}`, { method: "PUT", body: JSON.stringify(data) });
+export const deleteUser = (id: string) => apiFetch(`/users/${id}`, { method: "DELETE" });
+
+
 
 // --- Leave API ---
 export const getLeaves = () => apiFetch("/leave");
@@ -89,6 +111,7 @@ export const simulatePayroll = (params: Record<string, any>) => {
 
 // --- Announcements API ---
 export const getAnnouncements = () => apiFetch("/announcements");
+export const getAnnouncement = (id: string) => apiFetch(`/announcements/${id}`);
 export const addAnnouncement = (data: any) =>
   apiFetch("/announcements", { method: "POST", body: JSON.stringify(data) });
 export const deleteAnnouncement = (id: string) =>
@@ -121,13 +144,10 @@ export const deleteReview = (id: string) =>
 // --- Survey API ---
 export const getSurveys = () => apiFetch("/surveys");
 export const submitSurvey = (data: any) =>
-  apiFetch("/survey/submit", { method: "POST", body: JSON.stringify(data) });
+  apiFetch("/survey", { method: "POST", body: JSON.stringify(data) });
 
 // --- Messages API ---
-export const getMessages = (params?: any) => {
-  const query = params ? '?' + new URLSearchParams(params).toString() : '';
-  return apiFetch(`/messages${query}`);
-};
+export const getMessages = () => apiFetch("/messages");
 export const getMessage = (id: string) => apiFetch(`/messages/${id}`);
 export const sendMessage = (data: any) => apiFetch('/messages', { method: 'POST', body: JSON.stringify(data) });
 export const deleteMessage = (id: string) => apiFetch(`/messages/${id}`, { method: 'DELETE' });
@@ -175,21 +195,17 @@ export const getPerformanceReviews = (params?: any) => {
   const query = params ? '?' + new URLSearchParams(params).toString() : '';
   return apiFetch(`/performance-review${query}`);
 };
+export const addPerformaceReview = (data: any) => apiFetch("/performance-review", { method: "POST", body: JSON.stringify(data) });
+export const updatePerformaceReview = (id: string, data: any) => apiFetch(`/performance-review/${id}`, { method: "PUT", body: JSON.stringify(data) });
+export const deletePerformaceReview = (id: string) => apiFetch(`/performance-review/${id}`, { method: "DELETE" });
+
 // --- Training Enrollments API ---
 export const getTrainingEnrollments = (params?: any) => {
   const query = params ? '?' + new URLSearchParams(params).toString() : '';
   return apiFetch(`/training/enrollments${query}`);
 };
-// --- Leave Requests API ---
-export const getLeaveRequests = (params?: any) => {
-  const query = params ? '?' + new URLSearchParams(params).toString() : '';
-  return apiFetch(`/leave${query}`);
-};
-// --- Payroll Records API ---
-export const getPayrollRecords = (params?: any) => {
-  const query = params ? '?' + new URLSearchParams(params).toString() : '';
-  return apiFetch(`/payroll${query}`);
-};
+
+
 
 // --- Employee Documents API ---
 export const getEmployeeDocuments = (employeeId: string) => apiFetch(`/employees/${employeeId}/documents`);
@@ -290,15 +306,53 @@ export const createBackup = (data: any) => apiFetch('/backups', { method: 'POST'
 export const restoreBackup = (id: string) => apiFetch(`/backups/${id}/restore`, { method: 'POST' });
 export const deleteBackup = (id: string) => apiFetch(`/backups/${id}`, { method: 'DELETE' });
 
-export const resumeMatch = (data: any) => apiFetch('/ai/resume-match', { method: 'POST', body: JSON.stringify(data) });
-export const attritionCheck = (data: any) => apiFetch('/ai/attrition-check', { method: 'POST', body: JSON.stringify(data) });
-export const trainingRecommend = (data: any) => apiFetch('/ai/training-recommend', { method: 'POST', body: JSON.stringify(data) });
-export const sentimentAnalysis = (data: any) => apiFetch('/ai/sentiment-analysis', { method: 'POST', body: JSON.stringify(data) });
-export const chatAssistant = (data: any) => apiFetch('/ai/chat-assistant', { method: 'POST', body: JSON.stringify(data) });
+export async function attritionCheck(employeeData: any, token: string) {
+  const res = await axios.post(
+    `${API_BASE_URL}/ai/attrition`,
+    { employeeData },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+}
+
+export async function chatAssistant(message: string, token: string) {
+  const res = await axios.post(
+    `${API_BASE_URL}/ai/chat`,
+    { message },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+}
+
+export async function resumeMatch(resume: string, jobDescription: string, token: string) {
+  const res = await axios.post(
+    `${API_BASE_URL}/ai/resume-match`,
+    { resume, jobDescription },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+}
+
+export async function sentimentAnalysis(text: string, token: string) {
+  const res = await axios.post(
+    `${API_BASE_URL}/ai/sentiment`,
+    { text },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+}
+
+export async function trainingRecommend(employeeData: any, token: string) {
+  const res = await axios.post(
+    `${API_BASE_URL}/ai/training`,
+    { employeeData },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+}
 
 // Centralized logout function
 export function logout() {
-  localStorage.removeItem('token');
-  // Optionally clear other user/session data here
+  localStorage.removeItem('auth');
   localStorage.removeItem('user');
 }

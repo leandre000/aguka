@@ -87,7 +87,7 @@ export function EmployeePortalSidebar() {
       icon: Bot,
     },
     {
-      title: t("common.messages") || "Messages",
+      title: t("common.messages"),
       url: "/employee-portal/messages",
       icon: MessageSquare,
     },
@@ -96,11 +96,6 @@ export function EmployeePortalSidebar() {
       url: "/ai-tools",
       icon: BarChart,
     },
-    // {
-    //   title: t("employee.documents"),
-    //   url: "/employee-portal/documents",
-    //   icon: FileText,
-    // },
   ];
 
   const isActive = (path: string) => currentPath === path;

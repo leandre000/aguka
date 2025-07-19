@@ -26,72 +26,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { AuditorPortalLayout } from "@/components/layouts/AuditorPortalLayout";
 
 export default function ComplianceReports() {
-  const { language } = useLanguage();
-
-  const content = {
-    en: {
-      title: "Compliance Reports",
-      description: "Generate and review compliance reports",
-      filterByType: "Filter by Type",
-      allTypes: "All Types",
-      financial: "Financial",
-      safety: "Safety",
-      data_protection: "Data Protection",
-      hr: "HR Policies",
-      environmental: "Environmental",
-      status: "Status",
-      compliant: "Compliant",
-      nonCompliant: "Non-Compliant",
-      pending: "Pending Review",
-      reportDate: "Report Date",
-      nextReview: "Next Review",
-      viewReport: "View Report",
-      download: "Download",
-      generateReport: "Generate New Report",
-    },
-    es: {
-      title: "Informes de Cumplimiento",
-      description: "Generar y revisar informes de cumplimiento",
-      filterByType: "Filtrar por Tipo",
-      allTypes: "Todos los Tipos",
-      financial: "Financiero",
-      safety: "Seguridad",
-      data_protection: "Protección de Datos",
-      hr: "Políticas de RR.HH.",
-      environmental: "Ambiental",
-      status: "Estado",
-      compliant: "Cumple",
-      nonCompliant: "No Cumple",
-      pending: "Revisión Pendiente",
-      reportDate: "Fecha del Informe",
-      nextReview: "Próxima Revisión",
-      viewReport: "Ver Informe",
-      download: "Descargar",
-      generateReport: "Generar Nuevo Informe",
-    },
-    fr: {
-      title: "Rapports de conformité",
-      description: "Générer et examiner les rapports de conformité",
-      filterByType: "Filtrer par type",
-      allTypes: "Tous les types",
-      financial: "Financier",
-      safety: "Sécurité",
-      data_protection: "Protection des données",
-      hr: "Politiques RH",
-      environmental: "Environnemental",
-      status: "Statut",
-      compliant: "Conforme",
-      nonCompliant: "Non conforme",
-      pending: "En attente de révision",
-      reportDate: "Date du rapport",
-      nextReview: "Prochaine révision",
-      viewReport: "Voir le rapport",
-      download: "Télécharger",
-      generateReport: "Générer un nouveau rapport",
-    },
-  };
-
-  const t = content[language];
+  const { t } = useLanguage();
 
   const reports = [
     {
@@ -165,11 +100,11 @@ export default function ComplianceReports() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "compliant":
-        return t.compliant;
+        return t("auditor.compliant");
       case "non-compliant":
-        return t.nonCompliant;
+        return t("auditor.nonCompliant");
       case "pending":
-        return t.pending;
+        return t("auditor.pending");
       default:
         return status;
     }
@@ -181,33 +116,33 @@ export default function ComplianceReports() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-              {t.title}
+              {t("auditor.complianceReports")}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              {t.description}
+              {t("auditor.generateAndReview")}
             </p>
           </div>
           <Button className="w-full sm:w-auto">
             <FileText className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">{t.generateReport}</span>
-            <span className="sm:hidden">New Report</span>
+            <span className="hidden sm:inline">{t("auditor.generateNewReport")}</span>
+            <span className="sm:hidden">{t("auditor.newReport")}</span>
           </Button>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
           <Select defaultValue="all">
             <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder={t.filterByType} />
+              <SelectValue placeholder={t("auditor.filterByType")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t.allTypes}</SelectItem>
-              <SelectItem value="financial">{t.financial}</SelectItem>
-              <SelectItem value="safety">{t.safety}</SelectItem>
+              <SelectItem value="all">{t("auditor.allTypes")}</SelectItem>
+              <SelectItem value="financial">{t("auditor.financial")}</SelectItem>
+              <SelectItem value="safety">{t("auditor.safety")}</SelectItem>
               <SelectItem value="data-protection">
-                {t.data_protection}
+                {t("auditor.dataProtection")}
               </SelectItem>
-              <SelectItem value="hr">{t.hr}</SelectItem>
-              <SelectItem value="environmental">{t.environmental}</SelectItem>
+              <SelectItem value="hr">{t("auditor.hrPolicies")}</SelectItem>
+              <SelectItem value="environmental">{t("auditor.environmental")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -239,25 +174,25 @@ export default function ComplianceReports() {
               <CardContent>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                   <div>
-                    <p className="text-sm font-medium">{t.reportDate}</p>
+                    <p className="text-sm font-medium">{t("auditor.reportDate")}</p>
                     <p className="text-sm text-muted-foreground">
                       {report.reportDate}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{t.nextReview}</p>
+                    <p className="text-sm font-medium">{t("auditor.nextReview")}</p>
                     <p className="text-sm text-muted-foreground">
                       {report.nextReview}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Issues</p>
+                    <p className="text-sm font-medium">{t("auditor.issues")}</p>
                     <p className="text-sm text-muted-foreground">
                       {report.issues}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Recommendations</p>
+                    <p className="text-sm font-medium">{t("auditor.recommendations")}</p>
                     <p className="text-sm text-muted-foreground">
                       {report.recommendations}
                     </p>
@@ -270,8 +205,8 @@ export default function ComplianceReports() {
                     className="w-full sm:w-auto"
                   >
                     <Eye className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">{t.viewReport}</span>
-                    <span className="sm:hidden">View</span>
+                    <span className="hidden sm:inline">{t("auditor.viewReport")}</span>
+                    <span className="sm:hidden">{t("common.view")}</span>
                   </Button>
                   <Button
                     variant="outline"
@@ -279,8 +214,8 @@ export default function ComplianceReports() {
                     className="w-full sm:w-auto"
                   >
                     <Download className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">{t.download}</span>
-                    <span className="sm:hidden">Download</span>
+                    <span className="hidden sm:inline">{t("common.download")}</span>
+                    <span className="sm:hidden">{t("common.download")}</span>
                   </Button>
                 </div>
               </CardContent>

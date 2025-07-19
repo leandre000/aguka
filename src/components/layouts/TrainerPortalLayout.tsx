@@ -1,12 +1,15 @@
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { TrainerPortalSidebar } from "@/components/sidebars/TrainerPortalSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TrainerPortalLayoutProps {
   children: React.ReactNode;
 }
 
 export function TrainerPortalLayout({ children }: TrainerPortalLayoutProps) {
+  const { t } = useLanguage();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">

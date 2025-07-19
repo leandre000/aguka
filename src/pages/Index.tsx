@@ -22,7 +22,7 @@ const Index = () => {
 
   const handlePortalClick = (path: string) => {
     if (!isAuthenticated) {
-      toast({ title: "Please sign in to access this portal." });
+      toast({ title: t("auth.mustLogin") });
       navigate("/login");
       return;
     }
@@ -31,43 +31,43 @@ const Index = () => {
 
   const portals = [
     {
-      title: t('home.administrator'),
-      description: t('home.administrator.desc'),
+      title: t("admin.title"),
+      description: t("admin.subtitle"),
       icon: Shield,
       path: "/admin-portal",
       color: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
     },
     {
-      title: t('home.manager'),
-      description: t('home.manager.desc'),
+      title: t("manager.title"),
+      description: t("manager.subtitle"),
       icon: Users,
       path: "/manager-portal",
       color: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
     },
     {
-      title: t('home.employee'),
-      description: t('home.employee.desc'),
+      title: t("employee.title"),
+      description: t("employee.subtitle"),
       icon: User,
       path: "/employee-portal",
       color: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
     },
     {
-      title: t('home.recruiter'),
-      description: t('home.recruiter.desc'),
+      title: t("recruiter.title"),
+      description: t("recruiter.subtitle"),
       icon: UserPlus,
       path: "/recruiter-portal",
       color: "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
     },
     {
-      title: t('home.trainer'),
-      description: t('home.trainer.desc'),
+      title: t("trainer.title"),
+      description: t("trainer.subtitle"),
       icon: GraduationCap,
       path: "/trainer-portal",
       color: "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
     },
     {
-      title: t('home.auditor'),
-      description: t('home.auditor.desc'),
+      title: t("auditor.title"),
+      description: t("auditor.subtitle"),
       icon: FileCheck,
       path: "/auditor-portal",
       color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
@@ -81,9 +81,9 @@ const Index = () => {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-foreground mb-4">{t('home.selectRole')}</h2>
+          <h2 className="text-4xl font-bold text-foreground mb-4">{t("home.selectPortal")}</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {t('home.subtitle')}
+            {t("home.subtitle")}
           </p>
         </div>
 

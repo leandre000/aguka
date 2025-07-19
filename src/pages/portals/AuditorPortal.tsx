@@ -77,39 +77,39 @@ const AuditorPortal = () => {
           : [];
         setRecentActivity(sysActivity);
       })
-      .catch(() => setError("Failed to load dashboard data."))
+      .catch(() => setError(t("errors.loadFailed")))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   // Individual tab loading/error
   useEffect(() => {
     setReportsLoading(true);
     getReports()
       .then((data) => { setReports(Array.isArray(data) ? data : data.data || []); setReportsError(null); })
-      .catch(() => setReportsError("Failed to load reports"))
+      .catch(() => setReportsError(t("errors.loadReportsFailed")))
       .finally(() => setReportsLoading(false));
-  }, []);
+  }, [t]);
   useEffect(() => {
     setAuditsLoading(true);
     getAudits()
       .then((data) => { setAudits(Array.isArray(data) ? data : data.data || []); setAuditsError(null); })
-      .catch(() => setAuditsError("Failed to load audits"))
+      .catch(() => setAuditsError(t("errors.loadAuditsFailed")))
       .finally(() => setAuditsLoading(false));
-  }, []);
+  }, [t]);
   useEffect(() => {
     setRisksLoading(true);
     getRiskAssessments()
       .then((data) => { setRisks(Array.isArray(data) ? data : data.data || []); setRisksError(null); })
-      .catch(() => setRisksError("Failed to load risks"))
+      .catch(() => setRisksError(t("errors.loadRisksFailed")))
       .finally(() => setRisksLoading(false));
-  }, []);
+  }, [t]);
   useEffect(() => {
     setDocumentsLoading(true);
     getPolicies()
       .then((data) => { setDocuments(Array.isArray(data) ? data : data.data || []); setDocumentsError(null); })
-      .catch(() => setDocumentsError("Failed to load documents"))
+      .catch(() => setDocumentsError(t("errors.loadDocumentsFailed")))
       .finally(() => setDocumentsLoading(false));
-  }, []);
+  }, [t]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -150,65 +150,65 @@ const AuditorPortal = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("auditor.totalReports")}</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : auditStats.totalReports}</div>
-            <p className="text-xs text-muted-foreground">Available reports</p>
+            <p className="text-xs text-muted-foreground">{t("auditor.availableReports")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Compliance Score</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("auditor.complianceScore")}</CardTitle>
             <Shield className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{auditStats.complianceScore}%</div>
-            <p className="text-xs text-muted-foreground">Overall compliance</p>
+            <p className="text-xs text-muted-foreground">{t("auditor.overallCompliance")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Open Findings</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("auditor.openFindings")}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{auditStats.openFindings}</div>
-            <p className="text-xs text-muted-foreground">Require attention</p>
+            <p className="text-xs text-muted-foreground">{t("auditor.requireAttention")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Closed Findings</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("auditor.closedFindings")}</CardTitle>
             <BarChart className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{auditStats.closedFindings}</div>
-            <p className="text-xs text-muted-foreground">This quarter</p>
+            <p className="text-xs text-muted-foreground">{t("auditor.thisQuarter")}</p>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="reports" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="reports">Compliance Reports</TabsTrigger>
-          <TabsTrigger value="findings">Audit Findings</TabsTrigger>
-          <TabsTrigger value="risks">Risk Assessments</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="reports">{t("auditor.complianceReports")}</TabsTrigger>
+          <TabsTrigger value="findings">{t("auditor.auditFindings")}</TabsTrigger>
+          <TabsTrigger value="risks">{t("auditor.riskAssessments")}</TabsTrigger>
+          <TabsTrigger value="documents">{t("auditor.documents")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="reports" className="space-y-4">
           <div className="space-y-4">
             {reportsLoading ? (
-              <p>Loading reports...</p>
+              <p>{t("common.loading")}</p>
             ) : reportsError ? (
               <p className="text-red-500">{reportsError}</p>
             ) : reports.length === 0 ? (
-              <p>No compliance reports found.</p>
+              <p>{t("auditor.noComplianceReports")}</p>
             ) : (
               reports.map((report) => (
                 <Card key={report.id}>
@@ -221,12 +221,12 @@ const AuditorPortal = () => {
                         </div>
                         <p className="text-sm text-muted-foreground">{report.type}</p>
                         <div className="flex items-center space-x-4 text-sm">
-                          <span>Score: <span className="font-bold text-primary">{report.score}%</span></span>
+                          <span>{t("auditor.score")}: <span className="font-bold text-primary">{report.score}%</span></span>
                           <span>•</span>
-                          <span>Findings: {report.findings}</span>
+                          <span>{t("auditor.findings")}: {report.findings}</span>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Generated: {new Date(report.date).toLocaleDateString()}
+                          {t("auditor.generated")}: {new Date(report.date).toLocaleDateString()}
                         </p>
                       </div>
                       
@@ -237,11 +237,11 @@ const AuditorPortal = () => {
                         <div className="flex space-x-2">
                           <Button variant="outline" size="sm">
                             <Eye className="h-4 w-4 mr-1" />
-                            View
+                            {t("common.view")}
                           </Button>
                           <Button variant="outline" size="sm">
                             <Download className="h-4 w-4 mr-1" />
-                            Download
+                            {t("common.download")}
                           </Button>
                         </div>
                       </div>
@@ -256,11 +256,11 @@ const AuditorPortal = () => {
         <TabsContent value="findings" className="space-y-4">
           <div className="space-y-4">
             {auditsLoading ? (
-              <p>Loading audit findings...</p>
+              <p>{t("auditor.loadingAuditFindings")}</p>
             ) : auditsError ? (
               <p className="text-red-500">{auditsError}</p>
             ) : audits.length === 0 ? (
-              <p>No audit findings found.</p>
+              <p>{t("auditor.noAuditFindings")}</p>
             ) : (
               audits.map((finding) => (
                 <Card key={finding.id}>
@@ -280,7 +280,7 @@ const AuditorPortal = () => {
                           </div>
                           <p className="text-sm text-muted-foreground">{finding.description}</p>
                           <div className="text-sm">
-                            <span className="font-medium">Department:</span> {finding.department}
+                            <span className="font-medium">{t("auditor.department")}:</span> {finding.department}
                           </div>
                         </div>
                         
@@ -290,8 +290,8 @@ const AuditorPortal = () => {
                       </div>
                       
                       <div className="flex justify-between text-xs text-muted-foreground pt-2 border-t">
-                        <span>Reported: {new Date(finding.reportDate).toLocaleDateString()}</span>
-                        <span>Due: {new Date(finding.dueDate).toLocaleDateString()}</span>
+                        <span>{t("auditor.reported")}: {new Date(finding.reportDate).toLocaleDateString()}</span>
+                        <span>{t("auditor.due")}: {new Date(finding.dueDate).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -304,11 +304,11 @@ const AuditorPortal = () => {
         <TabsContent value="risks" className="space-y-4">
           <div className="space-y-4">
             {risksLoading ? (
-              <p>Loading risk assessments...</p>
+              <p>{t("auditor.loadingRiskAssessments")}</p>
             ) : risksError ? (
               <p className="text-red-500">{risksError}</p>
             ) : risks.length === 0 ? (
-              <p>No risk assessments found.</p>
+              <p>{t("auditor.noRiskAssessments")}</p>
             ) : (
               risks.map((risk) => (
                 <Card key={risk.id}>
@@ -318,21 +318,21 @@ const AuditorPortal = () => {
                         <h3 className="text-lg font-semibold">{risk.area}</h3>
                         <div className="flex items-center space-x-2">
                           <Badge className={getRiskColor(risk.riskLevel)}>
-                            Risk: {risk.riskLevel}
+                            {t("auditor.risk")}: {risk.riskLevel}
                           </Badge>
                           <Badge className={getStatusColor(risk.status)}>
                             {risk.status}
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          <p>Last assessed: {new Date(risk.lastAssessed).toLocaleDateString()}</p>
-                          <p>Next assessment: {new Date(risk.nextAssessment).toLocaleDateString()}</p>
+                          <p>{t("auditor.lastAssessed")}: {new Date(risk.lastAssessed).toLocaleDateString()}</p>
+                          <p>{t("auditor.nextAssessment")}: {new Date(risk.nextAssessment).toLocaleDateString()}</p>
                         </div>
                       </div>
                       
                       <Button variant="outline" size="sm">
                         <Eye className="h-4 w-4 mr-1" />
-                        View Details
+                        {t("auditor.viewDetails")}
                       </Button>
                     </div>
                   </CardContent>
@@ -345,11 +345,11 @@ const AuditorPortal = () => {
         <TabsContent value="documents" className="space-y-4">
           <div className="space-y-4">
             {documentsLoading ? (
-              <p>Loading documents...</p>
+              <p>{t("auditor.loadingDocuments")}</p>
             ) : documentsError ? (
               <p className="text-red-500">{documentsError}</p>
             ) : documents.length === 0 ? (
-              <p>No documents found.</p>
+              <p>{t("auditor.noDocuments")}</p>
             ) : (
               documents.map((doc) => (
                 <Card key={doc.id}>
@@ -362,7 +362,7 @@ const AuditorPortal = () => {
                             <h3 className="font-semibold">{doc.name}</h3>
                             {doc.confidential && (
                               <Badge variant="outline" className="text-red-600">
-                                Confidential
+                                {t("auditor.confidential")}
                               </Badge>
                             )}
                           </div>
@@ -374,11 +374,11 @@ const AuditorPortal = () => {
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm">
                           <Eye className="h-4 w-4 mr-1" />
-                          View
+                          {t("common.view")}
                         </Button>
                         <Button variant="outline" size="sm">
                           <Download className="h-4 w-4 mr-1" />
-                          Download
+                          {t("common.download")}
                         </Button>
                       </div>
                     </div>
