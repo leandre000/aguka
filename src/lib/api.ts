@@ -30,7 +30,7 @@ axios.interceptors.response.use(
   }
 );
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5500/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 export async function apiFetch(path: string, options: any = {}) {
   try {
@@ -132,6 +132,27 @@ export const updateProgress = (id: string, data: any) =>
   apiFetch(`/training/progress/${id}`, { method: "PUT", body: JSON.stringify(data) });
 export const getTrainingStats = () => apiFetch("/training/stats");
 
+// --- Training Sessions API ---
+export const getTrainingSessions = (params?: any) => {
+  const query = params ? '?' + new URLSearchParams(params).toString() : '';
+  return apiFetch(`/training/sessions${query}`);
+};
+export const getTrainingSession = (id: string) => apiFetch(`/training/sessions/${id}`);
+export const createTrainingSession = (data: any) =>
+  apiFetch("/training/sessions", { method: "POST", body: JSON.stringify(data) });
+export const updateTrainingSession = (id: string, data: any) =>
+  apiFetch(`/training/sessions/${id}`, { method: "PUT", body: JSON.stringify(data) });
+export const deleteTrainingSession = (id: string) =>
+  apiFetch(`/training/sessions/${id}`, { method: "DELETE" });
+export const registerForTrainingSession = (id: string) =>
+  apiFetch(`/training/sessions/${id}/register`, { method: "POST" });
+export const startTrainingSession = (id: string) =>
+  apiFetch(`/training/sessions/${id}/start`, { method: "PUT" });
+export const completeTrainingSession = (id: string) =>
+  apiFetch(`/training/sessions/${id}/complete`, { method: "PUT" });
+export const cancelTrainingSession = (id: string) =>
+  apiFetch(`/training/sessions/${id}/cancel`, { method: "PUT" });
+
 // --- Performance Review API ---
 export const getReviews = () => apiFetch("/performance-review");
 export const addReview = (data: any) =>
@@ -190,14 +211,7 @@ export const getSystemActivityByResource = (resource: string, params?: any) => {
   const query = params ? '?' + new URLSearchParams(params).toString() : '';
   return apiFetch(`/activity-log/system/resource/${resource}${query}`);
 };
-// --- Performance Review API (already exists, but add for clarity) ---
-export const getPerformanceReviews = (params?: any) => {
-  const query = params ? '?' + new URLSearchParams(params).toString() : '';
-  return apiFetch(`/performance-review${query}`);
-};
-export const addPerformaceReview = (data: any) => apiFetch("/performance-review", { method: "POST", body: JSON.stringify(data) });
-export const updatePerformaceReview = (id: string, data: any) => apiFetch(`/performance-review/${id}`, { method: "PUT", body: JSON.stringify(data) });
-export const deletePerformaceReview = (id: string) => apiFetch(`/performance-review/${id}`, { method: "DELETE" });
+
 
 // --- Training Enrollments API ---
 export const getTrainingEnrollments = (params?: any) => {
@@ -244,6 +258,28 @@ export const getInterviews = () => apiFetch('/interviews');
 // --- Offer Management API ---
 export const getOffers = () => apiFetch('/offers');
 export const createOffer = (data: any) => apiFetch('/offers', { method: 'POST', body: JSON.stringify(data) });
+
+// --- Security API ---
+export const getSecurityEvents = (params?: any) => {
+  const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
+  return apiFetch(`/security/events${queryString}`);
+};
+export const getSecurityOverview = () => apiFetch("/security/overview");
+export const getRolePermissions = () => apiFetch("/security/permissions");
+export const getActiveSessions = () => apiFetch("/security/sessions");
+export const terminateSession = (sessionId: string) =>
+  apiFetch(`/security/sessions/${sessionId}`, { method: "DELETE" });
+
+// --- Profile API ---
+export const getCurrentUserProfile = () => apiFetch("/users/me");
+export const updateCurrentUserProfile = (data: any) =>
+  apiFetch("/users/me", { method: "PUT", body: JSON.stringify(data) });
+
+// --- GDPR API ---
+export const exportUserData = () => apiFetch("/users/me/export");
+export const anonymizeUserData = () => apiFetch("/users/me/anonymize", { method: "PUT" });
+export const deleteUserAccount = () => apiFetch("/users/me", { method: "DELETE" });
+
 export const updateOffer = (id: string, data: any) => apiFetch(`/offers/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const withdrawOffer = (id: string) => apiFetch(`/offers/${id}`, { method: 'DELETE' });
 
@@ -306,69 +342,53 @@ export const createBackup = (data: any) => apiFetch('/backups', { method: 'POST'
 export const restoreBackup = (id: string) => apiFetch(`/backups/${id}/restore`, { method: 'POST' });
 export const deleteBackup = (id: string) => apiFetch(`/backups/${id}`, { method: 'DELETE' });
 
+// --- AI API ---
+export const predictAttrition = (employeeData: any) =>
+  apiFetch("/ai/attrition", { method: "POST", body: JSON.stringify({ employeeData }) });
+
+export const getChatResponse = (message: string, user: any) =>
+  apiFetch("/ai/chat", { method: "POST", body: JSON.stringify({ message, user }) });
+
+export const matchResume = (resumeText: string, jobDescription: string) =>
+  apiFetch("/ai/resume-match", { method: "POST", body: JSON.stringify({ resumeText, jobDescription }) });
+
+export const analyzeSentiment = (text: string) =>
+  apiFetch("/ai/sentiment", { method: "POST", body: JSON.stringify({ text }) });
+
+export const getTrainingRecommendations = (employeeData: any) =>
+  apiFetch("/ai/training", { method: "POST", body: JSON.stringify({ employeeData }) });
+
+export const bulkAnalysis = (data: any) =>
+  apiFetch("/ai/bulk", { method: "POST", body: JSON.stringify(data) });
+
+export const getAISampleData = () => apiFetch("/ai/sample-data");
+
+export const getAIHealth = () => apiFetch("/ai/health");
+
+// Legacy functions for backward compatibility (deprecated)
 export async function attritionCheck(employeeData: any, token: string) {
-  const res = await axios.post(
-    `${API_BASE_URL}/ai/attrition`,
-    { 
-      type: "attrition_check",
-      inputData: { employeeData },
-      result: null
-    },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  return res.data;
+  console.warn('attritionCheck is deprecated. Use predictAttrition instead.');
+  return predictAttrition(employeeData);
 }
 
 export async function chatAssistant(message: string, token: string) {
-  const res = await axios.post(
-    `${API_BASE_URL}/ai/chat`,
-    { 
-      type: "chat_assistant",
-      inputData: { message },
-      result: null
-    },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  return res.data;
+  console.warn('chatAssistant is deprecated. Use getChatResponse instead.');
+  return getChatResponse(message, {});
 }
 
 export async function resumeMatch(resume: string, jobDescription: string, token: string) {
-  const res = await axios.post(
-    `${API_BASE_URL}/ai/resume-match`,
-    { 
-      type: "resume_match",
-      inputData: { resume, jobDescription },
-      result: null
-    },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  return res.data;
+  console.warn('resumeMatch is deprecated. Use matchResume instead.');
+  return matchResume(resume, jobDescription);
 }
 
 export async function sentimentAnalysis(text: string, token: string) {
-  const res = await axios.post(
-    `${API_BASE_URL}/ai/sentiment`,
-    { 
-      type: "sentiment_analysis",
-      inputData: { text },
-      result: null
-    },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  return res.data;
+  console.warn('sentimentAnalysis is deprecated. Use analyzeSentiment instead.');
+  return analyzeSentiment(text);
 }
 
 export async function trainingRecommend(employeeData: any, token: string) {
-  const res = await axios.post(
-    `${API_BASE_URL}/ai/training`,
-    { 
-      type: "training_recommend",
-      inputData: { employeeData },
-      result: null
-    },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  return res.data;
+  console.warn('trainingRecommend is deprecated. Use getTrainingRecommendations instead.');
+  return getTrainingRecommendations(employeeData);
 }
 
 // Centralized logout function

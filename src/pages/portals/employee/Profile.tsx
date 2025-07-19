@@ -7,19 +7,163 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Mail, Phone, MapPin, Calendar, Edit } from "lucide-react";
 import { EmployeePortalLayout } from "@/components/layouts/EmployeePortalLayout";
+import { getCurrentUserProfile, updateCurrentUserProfile } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/use-toast";
+import { useState, useEffect } from "react";
 
 export default function EmployeeProfile() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: ''
+  });
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const data = await getCurrentUserProfile();
+        setProfile(data);
+        
+        // Initialize form data
+        if (data?.user) {
+          const names = data.user.Names?.split(' ') || ['', ''];
+          setFormData({
+            firstName: names[0] || '',
+            lastName: names[1] || '',
+            email: data.user.Email || '',
+            phone: data.user.phone || '',
+            address: data.employee?.address || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load profile data",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  // Handle form input changes
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle save
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      
+      const userData = {
+        Names: `${formData.firstName} ${formData.lastName}`.trim(),
+        Email: formData.email,
+        phone: formData.phone
+      };
+      
+      const employeeData = {
+        address: formData.address
+      };
+      
+      const updatedProfile = await updateCurrentUserProfile({
+        userData,
+        employeeData
+      });
+      
+      setProfile(updatedProfile);
+      setIsEditing(false);
+      
+      toast({
+        title: "Success",
+        description: "Profile updated successfully"
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Handle cancel
+  const handleCancel = () => {
+    if (profile?.user) {
+      const names = profile.user.Names?.split(' ') || ['', ''];
+      setFormData({
+        firstName: names[0] || '',
+        lastName: names[1] || '',
+        email: profile.user.Email || '',
+        phone: profile.user.phone || '',
+        address: profile.employee?.address || ''
+      });
+    }
+    setIsEditing(false);
+  };
+
+  if (loading) {
+    return (
+      <EmployeePortalLayout>
+        <div className="space-y-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-32 mb-4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1">
+                <div className="h-64 bg-muted rounded"></div>
+              </div>
+              <div className="md:col-span-2">
+                <div className="h-96 bg-muted rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </EmployeePortalLayout>
+    );
+  }
 
   return (
     <EmployeePortalLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Profile</h1>
-          <Button>
-            <Edit className="h-4 w-4 mr-2" />
-            {t("common.edit")}
-          </Button>
+          {!isEditing ? (
+            <Button onClick={() => setIsEditing(true)}>
+              <Edit className="h-4 w-4 mr-2" />
+              {t("common.edit")}
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleCancel}>
+                {t("common.cancel")}
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "Saving..." : t("common.save")}
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -29,10 +173,12 @@ export default function EmployeeProfile() {
             </CardHeader>
             <CardContent className="flex flex-col items-center space-y-4">
               <Avatar className="w-32 h-32">
-                <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage src={profile?.user?.profilePicture || "/placeholder.svg"} />
+                <AvatarFallback>
+                  {profile?.user?.Names?.split(' ').map((n: string) => n[0]).join('') || 'U'}
+                </AvatarFallback>
               </Avatar>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" disabled={!isEditing}>
                 Change Photo
               </Button>
             </CardContent>
@@ -46,11 +192,21 @@ export default function EmployeeProfile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" defaultValue="John" />
+                  <Input 
+                    id="firstName" 
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    disabled={!isEditing}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" defaultValue="Doe" />
+                  <Input 
+                    id="lastName" 
+                    value={formData.lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    disabled={!isEditing}
+                  />
                 </div>
               </div>
 
@@ -62,7 +218,9 @@ export default function EmployeeProfile() {
                     <Input
                       id="email"
                       className="pl-10"
-                      defaultValue="john.doe@company.com"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      disabled={!isEditing}
                     />
                   </div>
                 </div>
@@ -73,7 +231,9 @@ export default function EmployeeProfile() {
                     <Input
                       id="phone"
                       className="pl-10"
-                      defaultValue="+1 (555) 123-4567"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      disabled={!isEditing}
                     />
                   </div>
                 </div>
@@ -86,7 +246,9 @@ export default function EmployeeProfile() {
                   <Textarea
                     id="address"
                     className="pl-10"
-                    defaultValue="123 Main St, City, State 12345"
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    disabled={!isEditing}
                   />
                 </div>
               </div>
@@ -94,13 +256,13 @@ export default function EmployeeProfile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="department">Department</Label>
-                  <Input id="department" defaultValue="Engineering" readOnly />
+                  <Input id="department" value={profile?.user?.department || 'Not assigned'} readOnly />
                 </div>
                 <div>
                   <Label htmlFor="position">Position</Label>
                   <Input
                     id="position"
-                    defaultValue="Software Developer"
+                    value={profile?.employee?.position || 'Not assigned'}
                     readOnly
                   />
                 </div>
@@ -114,21 +276,18 @@ export default function EmployeeProfile() {
                     <Input
                       id="startDate"
                       className="pl-10"
-                      defaultValue="2023-01-15"
+                      value={profile?.employee?.startDate ? new Date(profile.employee.startDate).toLocaleDateString() : 'Not assigned'}
                       readOnly
                     />
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="employeeId">Employee ID</Label>
-                  <Input id="employeeId" defaultValue="EMP001" readOnly />
+                  <Input id="employeeId" value={profile?.employee?._id || profile?.user?._id || 'Not assigned'} readOnly />
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline">{t("common.cancel")}</Button>
-                <Button>{t("common.save")}</Button>
-              </div>
+
             </CardContent>
           </Card>
         </div>

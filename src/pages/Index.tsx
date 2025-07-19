@@ -21,11 +21,6 @@ const Index = () => {
   const { isAuthenticated, user } = useAuth();
 
   const handlePortalClick = (path: string) => {
-    if (!isAuthenticated) {
-      toast({ title: t("auth.mustLogin") });
-      navigate("/login");
-      return;
-    }
     navigate(path);
   };
 

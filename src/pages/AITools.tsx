@@ -7,16 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
-  resumeMatch,
-  attritionCheck,
-  trainingRecommend,
-  sentimentAnalysis,
-  chatAssistant,
+  matchResume,
+  predictAttrition,
+  getTrainingRecommendations,
+  analyzeSentiment,
+  getChatResponse,
 } from "@/lib/api";
 
 export default function AITools() {
   const { t } = useLanguage();
-  const token = localStorage.getItem('token');
   
   // Resume Matcher
   const [resume, setResume] = useState("");
@@ -77,7 +76,7 @@ We are looking for a senior software engineer with experience in JavaScript, Rea
               setResumeLoading(true);
               setResumeResult(null);
               try {
-                const result = await resumeMatch(resume, jobDesc, token!);
+                const result = await matchResume(resume, jobDesc);
                 setResumeResult(result);
               } catch (err: any) {
                 toast({ title: t("common.error"), description: err.message || t("aiTools.analyzeError"), variant: "destructive" });
@@ -129,7 +128,7 @@ Sample Employee Data:
               setAttritionResult(null);
               try {
                 const inputData = JSON.parse(attritionInput);
-                const result = await attritionCheck(inputData, token!);
+                const result = await predictAttrition(inputData);
                 setAttritionResult(result);
               } catch (err: any) {
                 toast({ title: t("common.error"), description: err.message || t("aiTools.checkError"), variant: "destructive" });
@@ -178,7 +177,7 @@ Sample Employee Data:
               setTrainingResult(null);
               try {
                 const employeeData = JSON.parse(trainingInput);
-                const result = await trainingRecommend(employeeData, token!);
+                const result = await getTrainingRecommendations(employeeData);
                 setTrainingResult(result);
               } catch (err: any) {
                 toast({ title: t("common.error"), description: err.message || t("aiTools.recommendError"), variant: "destructive" });
@@ -218,7 +217,7 @@ I absolutely love working here! The team is amazing and the work environment is 
               setSentimentLoading(true);
               setSentimentResult(null);
               try {
-                const result = await sentimentAnalysis(sentimentText, token!);
+                const result = await analyzeSentiment(sentimentText);
                 setSentimentResult(result);
               } catch (err: any) {
                 toast({ title: t("common.error"), description: err.message || t("aiTools.analyzeError"), variant: "destructive" });
@@ -262,7 +261,7 @@ I absolutely love working here! The team is amazing and the work environment is 
               setChatLoading(true);
               setChatHistory(h => [...h, { role: "user", message: chatInput }]);
               try {
-                const result = await chatAssistant(chatInput, token!);
+                const result = await getChatResponse(chatInput, {});
                 setChatHistory(h => [...h, { role: "ai", message: result.answer || JSON.stringify(result) }]);
                 setChatInput("");
               } catch (err: any) {

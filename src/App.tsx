@@ -58,6 +58,7 @@ import Messages from "./pages/Messages";
 import SuccessionPlanning from "./pages/SuccessionPlanning";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AITools from "./pages/AITools";
+import GDPR from "./pages/GDPR";
 import { RoleRoute } from "@/components/RoleRoute";
 import NotAuthorized from "./pages/NotAuthorized";
 import { useTranslation } from 'react-i18next';
@@ -104,6 +105,7 @@ const App = () => (
                     <Route path="/recruitment" element={<Recruitment />} />
                     <Route path="/payroll" element={<Payroll />} />
                     <Route path="/performance" element={<Performance />} />
+                    <Route path="/gdpr" element={<GDPR />} />
                     {/* Remove the global ai-tools route */}
                     {/* <Route path="/ai-tools" element={<AITools />} /> */}
                     

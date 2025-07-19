@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import {
   Card,
@@ -13,6 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CalendarDays, Clock, Users, Video, MapPin, Play } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { TrainerPortalLayout } from "@/components/layouts/TrainerPortalLayout";
+import { getTrainingSessions, startTrainingSession, completeTrainingSession, cancelTrainingSession } from "@/lib/api";
+import { toast } from "@/components/ui/use-toast";
 
 export default function TrainingSessions() {
   const { language } = useLanguage();
@@ -81,52 +84,22 @@ export default function TrainingSessions() {
 
   useEffect(() => {
     setLoading(true);
-    // Uncomment if available
-    // getTrainingSessions()
-    //   .then((data) => { setSessions(Array.isArray(data) ? data : data.data || []); setError(null); })
-    //   .catch(() => setError("Failed to load training sessions"))
-    //   .finally(() => setLoading(false));
-    // If backend endpoint is not available, show a placeholder message
-    // Remove static sessions array
-    setSessions([
-      {
-        id: 1,
-        title: "React Development Workshop",
-        time: "9:00 AM",
-        duration: "3 hours",
-        attendees: 12,
-        maxAttendees: 15,
-        type: "online",
-        status: "scheduled",
-        instructor: "John Smith",
-        avatar: "/placeholder.svg",
-      },
-      {
-        id: 2,
-        title: "Leadership Training",
-        time: "2:00 PM",
-        duration: "2 hours",
-        attendees: 8,
-        maxAttendees: 10,
-        type: "in-person",
-        status: "scheduled",
-        instructor: "Jane Doe",
-        avatar: "/placeholder.svg",
-      },
-      {
-        id: 3,
-        title: "Data Privacy Compliance",
-        time: "4:00 PM",
-        duration: "1.5 hours",
-        attendees: 20,
-        maxAttendees: 25,
-        type: "online",
-        status: "completed",
-        instructor: "Mike Johnson",
-        avatar: "/placeholder.svg",
-      },
-    ]);
-    setLoading(false);
+    setError(null);
+    
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+    
+    getTrainingSessions({ 
+      startDate: today, 
+      endDate: today,
+      status: 'scheduled,in-progress'
+    })
+      .then((data) => { 
+        setSessions(Array.isArray(data) ? data : []); 
+        setError(null); 
+      })
+      .catch(() => setError("Failed to load training sessions"))
+      .finally(() => setLoading(false));
   }, []);
 
   const getTypeIcon = (type: string) => {
@@ -141,12 +114,78 @@ export default function TrainingSessions() {
     switch (status) {
       case "scheduled":
         return "default";
+      case "in-progress":
+        return "default";
       case "completed":
         return "secondary";
       case "cancelled":
         return "destructive";
       default:
         return "outline";
+    }
+  };
+
+  // Session management functions
+  const handleStartSession = async (sessionId: string) => {
+    try {
+      await startTrainingSession(sessionId);
+      toast({ title: "Session started successfully" });
+      // Refresh sessions
+      const today = new Date().toISOString().split('T')[0];
+      const data = await getTrainingSessions({ 
+        startDate: today, 
+        endDate: today,
+        status: 'scheduled,in-progress'
+      });
+      setSessions(Array.isArray(data) ? data : []);
+    } catch (error: any) {
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to start session", 
+        variant: "destructive" 
+      });
+    }
+  };
+
+  const handleCompleteSession = async (sessionId: string) => {
+    try {
+      await completeTrainingSession(sessionId);
+      toast({ title: "Session completed successfully" });
+      // Refresh sessions
+      const today = new Date().toISOString().split('T')[0];
+      const data = await getTrainingSessions({ 
+        startDate: today, 
+        endDate: today,
+        status: 'scheduled,in-progress'
+      });
+      setSessions(Array.isArray(data) ? data : []);
+    } catch (error: any) {
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to complete session", 
+        variant: "destructive" 
+      });
+    }
+  };
+
+  const handleCancelSession = async (sessionId: string) => {
+    try {
+      await cancelTrainingSession(sessionId);
+      toast({ title: "Session cancelled successfully" });
+      // Refresh sessions
+      const today = new Date().toISOString().split('T')[0];
+      const data = await getTrainingSessions({ 
+        startDate: today, 
+        endDate: today,
+        status: 'scheduled,in-progress'
+      });
+      setSessions(Array.isArray(data) ? data : []);
+    } catch (error: any) {
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to cancel session", 
+        variant: "destructive" 
+      });
     }
   };
 
@@ -183,7 +222,7 @@ export default function TrainingSessions() {
                 ) : (
                   sessions.map((session) => (
                     <div
-                      key={session.id}
+                      key={session._id}
                       className="p-4 border rounded-lg space-y-3"
                     >
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
@@ -194,7 +233,7 @@ export default function TrainingSessions() {
                           <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {session.time}
+                              {session.startTime}
                             </span>
                             <span className="flex items-center gap-1">
                               {getTypeIcon(session.type)}
@@ -214,30 +253,48 @@ export default function TrainingSessions() {
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
-                            <AvatarImage src={session.avatar} />
+                            <AvatarImage src="/placeholder.svg" />
                             <AvatarFallback>
-                              {session.instructor
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
+                              {session.instructor?.Names
+                                ? session.instructor.Names.split(" ")
+                                    .map((n: string) => n[0])
+                                    .join("")
+                                : "IN"}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-sm">{session.instructor}</span>
+                          <span className="text-sm">{session.instructor?.Names || "Instructor"}</span>
                         </div>
                         <div className="flex items-center gap-1 text-sm">
                           <Users className="h-4 w-4" />
-                          {session.attendees}/{session.maxAttendees} {t.attendees}
+                          {session.attendeeCount || 0}/{session.maxAttendees} {t.attendees}
                         </div>
                       </div>
 
                       <div className="flex flex-col sm:flex-row gap-2">
                         {session.status === "scheduled" && (
-                          <Button size="sm" className="w-full sm:w-auto">
+                          <Button 
+                            size="sm" 
+                            className="w-full sm:w-auto"
+                            onClick={() => handleStartSession(session._id)}
+                          >
                             <Play className="mr-2 h-4 w-4" />
                             <span className="hidden sm:inline">
                               {t.startSession}
                             </span>
                             <span className="sm:hidden">Start</span>
+                          </Button>
+                        )}
+                        {session.status === "in-progress" && (
+                          <Button 
+                            size="sm" 
+                            className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                            onClick={() => handleCompleteSession(session._id)}
+                          >
+                            <Play className="mr-2 h-4 w-4" />
+                            <span className="hidden sm:inline">
+                              Complete Session
+                            </span>
+                            <span className="sm:hidden">Complete</span>
                           </Button>
                         )}
                         <Button
@@ -250,27 +307,16 @@ export default function TrainingSessions() {
                           </span>
                           <span className="sm:hidden">Details</span>
                         </Button>
-                        {session.status === "scheduled" && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full sm:w-auto"
-                            >
-                              <span className="hidden sm:inline">
-                                {t.reschedule}
-                              </span>
-                              <span className="sm:hidden">Reschedule</span>
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="w-full sm:w-auto"
-                            >
-                              <span className="hidden sm:inline">{t.cancel}</span>
-                              <span className="sm:hidden">Cancel</span>
-                            </Button>
-                          </>
+                        {(session.status === "scheduled" || session.status === "in-progress") && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="w-full sm:w-auto"
+                            onClick={() => handleCancelSession(session._id)}
+                          >
+                            <span className="hidden sm:inline">{t.cancel}</span>
+                            <span className="sm:hidden">Cancel</span>
+                          </Button>
                         )}
                       </div>
                     </div>

@@ -18,6 +18,8 @@ import {
   UserCheck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getSecurityEvents, getSecurityOverview, getRolePermissions } from '@/lib/api';
+import { toast } from "@/components/ui/use-toast";
 
 const translations = {
   en: {
@@ -88,69 +90,36 @@ const Security = () => {
     translations[language][key];
 
   // Dynamic state for security events and permissions
-  // const [securityEvents, setSecurityEvents] = useState<any[]>([]);
-  // const [permissions, setPermissions] = useState<any[]>([]);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null);
+  const [securityEvents, setSecurityEvents] = useState<any[]>([]);
+  const [permissions, setPermissions] = useState<any[]>([]);
+  const [securityOverview, setSecurityOverview] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   setLoading(true);
-  //   Promise.all([
-  //     getSecurityEvents(),
-  //     getPermissions()
-  //   ])
-  //     .then(([events, perms]) => {
-  //       setSecurityEvents(Array.isArray(events) ? events : events.data || []);
-  //       setPermissions(Array.isArray(perms) ? perms : perms.data || []);
-  //       setError(null);
-  //     })
-  //     .catch(() => setError("Failed to load security data"))
-  //     .finally(() => setLoading(false));
-  // }, []);
-
-  // If backend endpoint is not available, show a placeholder message
-  // Remove static arrays for securityEvents and permissions
-  const securityEvents = [
-    {
-      id: 1,
-      event: t("failedLogin"),
-      user: "john@company.com",
-      time: "2 minutes ago",
-      severity: "medium",
-    },
-    {
-      id: 2,
-      event: t("passwordChanged"),
-      user: "jane@company.com",
-      time: "1 hour ago",
-      severity: "low",
-    },
-    {
-      id: 3,
-      event: t("multipleFailed"),
-      user: "unknown@external.com",
-      time: "3 hours ago",
-      severity: "high",
-    },
-  ];
-
-  const permissions = [
-    {
-      role: "Administrator",
-      users: 3,
-      permissions: ["Full Access", "User Management", "System Settings"],
-    },
-    {
-      role: "Manager",
-      users: 12,
-      permissions: ["Team Management", "Reports", "Approvals"],
-    },
-    {
-      role: "Employee",
-      users: 140,
-      permissions: ["Self Service", "Time Tracking", "Documents"],
-    },
-  ];
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      getSecurityEvents({ limit: 10 }),
+      getRolePermissions(),
+      getSecurityOverview()
+    ])
+      .then(([events, perms, overview]) => {
+        setSecurityEvents(Array.isArray(events) ? events : events.data || []);
+        setPermissions(Array.isArray(perms) ? perms : perms.data || []);
+        setSecurityOverview(overview);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error('Error loading security data:', err);
+        setError("Failed to load security data");
+        toast({
+          title: "Error",
+          description: "Failed to load security data",
+          variant: "destructive"
+        });
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <AdminPortalLayout>
@@ -174,9 +143,15 @@ const Security = () => {
               <Shield className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold text-green-600">
-                92%
-              </div>
+              {loading ? (
+                <div className="animate-pulse h-6 w-8 bg-muted rounded" />
+              ) : error ? (
+                <div className="text-xs text-red-500">{error}</div>
+              ) : (
+                <div className="text-xl md:text-2xl font-bold text-green-600">
+                  {securityOverview?.securityScore || 0}%
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 {t("excellentSecurity")}
               </p>
@@ -190,7 +165,15 @@ const Security = () => {
               <Activity className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">47</div>
+              {loading ? (
+                <div className="animate-pulse h-6 w-8 bg-muted rounded" />
+              ) : error ? (
+                <div className="text-xs text-red-500">{error}</div>
+              ) : (
+                <div className="text-xl md:text-2xl font-bold">
+                  {securityOverview?.activeSessions || 0}
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 {t("currentlyLoggedIn")}
               </p>
@@ -204,7 +187,15 @@ const Security = () => {
               <AlertTriangle className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">12</div>
+              {loading ? (
+                <div className="animate-pulse h-6 w-8 bg-muted rounded" />
+              ) : error ? (
+                <div className="text-xs text-red-500">{error}</div>
+              ) : (
+                <div className="text-xl md:text-2xl font-bold">
+                  {securityOverview?.failedAttempts24h || 0}
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 {t("last24Hours")}
               </p>
@@ -218,7 +209,15 @@ const Security = () => {
               <UserCheck className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">85%</div>
+              {loading ? (
+                <div className="animate-pulse h-6 w-8 bg-muted rounded" />
+              ) : error ? (
+                <div className="text-xs text-red-500">{error}</div>
+              ) : (
+                <div className="text-xl md:text-2xl font-bold">
+                  {securityOverview?.twoFAPercentage || 0}%
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 {t("usersWith2FA")}
               </p>
@@ -238,54 +237,66 @@ const Security = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 md:space-y-4">
-              {securityEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 border rounded-lg gap-4"
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div
-                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                        event.severity === "high"
-                          ? "bg-red-500"
-                          : event.severity === "medium"
-                          ? "bg-yellow-500"
-                          : "bg-green-500"
-                      }`}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-medium text-sm md:text-base">
-                        {event.event}
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground truncate">
-                        {event.user}
-                      </p>
+            {loading ? (
+              <div className="animate-pulse space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-16 bg-muted rounded-lg" />
+                ))}
+              </div>
+            ) : error ? (
+              <div className="text-center text-red-500 py-4">{error}</div>
+            ) : securityEvents.length === 0 ? (
+              <div className="text-center text-muted-foreground py-4">No security events found.</div>
+            ) : (
+              <div className="space-y-3 md:space-y-4">
+                {securityEvents.map((event) => (
+                  <div
+                    key={event._id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 border rounded-lg gap-4"
+                  >
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div
+                        className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                          event.severity === "high"
+                            ? "bg-red-500"
+                            : event.severity === "medium"
+                            ? "bg-yellow-500"
+                            : "bg-green-500"
+                        }`}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-medium text-sm md:text-base">
+                          {event.event.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </h3>
+                        <p className="text-xs md:text-sm text-muted-foreground truncate">
+                          {event.user?.Names || event.userEmail || 'Unknown User'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                      <Badge
+                        variant={
+                          event.severity === "high"
+                            ? "destructive"
+                            : event.severity === "medium"
+                            ? "default"
+                            : "secondary"
+                        }
+                        className="text-xs"
+                      >
+                        {t(event.severity as "high" | "medium" | "low")}
+                      </Badge>
+                      <span className="text-xs md:text-sm text-muted-foreground">
+                        {event.timeAgo || new Date(event.createdAt).toLocaleString()}
+                      </span>
+                      <Button variant="outline" size="sm" className="text-xs">
+                        {t("details")}
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                    <Badge
-                      variant={
-                        event.severity === "high"
-                          ? "destructive"
-                          : event.severity === "medium"
-                          ? "default"
-                          : "secondary"
-                      }
-                      className="text-xs"
-                    >
-                      {t(event.severity as "high" | "medium" | "low")}
-                    </Badge>
-                    <span className="text-xs md:text-sm text-muted-foreground">
-                      {event.time}
-                    </span>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      {t("details")}
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -301,36 +312,48 @@ const Security = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4 md:space-y-6">
-              {permissions.map((role, index) => (
-                <div key={index} className="border rounded-lg p-3 md:p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-                    <div>
-                      <h3 className="font-medium text-sm md:text-base">
-                        {role.role}
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground">
-                        {role.users} {t("users")}
-                      </p>
+            {loading ? (
+              <div className="animate-pulse space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-24 bg-muted rounded-lg" />
+                ))}
+              </div>
+            ) : error ? (
+              <div className="text-center text-red-500 py-4">{error}</div>
+            ) : permissions.length === 0 ? (
+              <div className="text-center text-muted-foreground py-4">No role permissions found.</div>
+            ) : (
+              <div className="space-y-4 md:space-y-6">
+                {permissions.map((role, index) => (
+                  <div key={index} className="border rounded-lg p-3 md:p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                      <div>
+                        <h3 className="font-medium text-sm md:text-base">
+                          {role.role}
+                        </h3>
+                        <p className="text-xs md:text-sm text-muted-foreground">
+                          {role.users} {t("users")}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs w-full sm:w-auto"
+                      >
+                        {t("edit")}
+                      </Button>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs w-full sm:w-auto"
-                    >
-                      {t("edit")}
-                    </Button>
+                    <div className="flex flex-wrap gap-1 md:gap-2">
+                      {role.permissions.map((permission, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          {permission}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-1 md:gap-2">
-                    {role.permissions.map((permission, idx) => (
-                      <Badge key={idx} variant="outline" className="text-xs">
-                        {permission}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

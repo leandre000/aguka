@@ -9,7 +9,8 @@ import {
   User,
   Shield,
   BarChart,
-  Building2
+  Building2,
+  Eye
 } from "lucide-react";
 
 import {
@@ -66,6 +67,11 @@ export function AppSidebar() {
       title: t("nav.compliance"),
       url: "/compliance",
       icon: Shield,
+    },
+    {
+      title: t("nav.gdpr"),
+      url: "/gdpr",
+      icon: Eye,
     },
   ];
 
