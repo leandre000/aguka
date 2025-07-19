@@ -51,28 +51,28 @@ export default function AdminPortal() {
       description: t('admin.manageUsersDesc'),
       icon: Users,
       color: 'bg-secondary',
-      onClick: () => navigate('/admin/users'),
+      onClick: () => navigate('/admin-portal/users'),
     },
     {
       title: t('admin.systemSettings'),
       description: t('admin.systemSettingsDesc'),
       icon: Settings,
       color: 'bg-secondary',
-      onClick: () => navigate('/admin/settings'),
+      onClick: () => navigate('/admin-portal/settings'),
     },
     {
       title: t('admin.security'),
       description: t('admin.securityDesc'),
       icon: Shield,
       color: 'bg-secondary',
-      onClick: () => navigate('/admin/security'),
+      onClick: () => navigate('/admin-portal/security'),
     },
     {
       title: t('admin.analytics'),
       description: t('admin.analyticsDesc'),
       icon: BarChart,
       color: 'bg-secondary',
-      onClick: () => navigate('/admin/analytics'),
+      onClick: () => navigate('/admin-portal/analytics'),
     },
   ];
 
