@@ -129,8 +129,18 @@ We are looking for a senior software engineer with experience in JavaScript, Rea
             {resumeLoading ? t("aiTools.analyzing") : t("aiTools.analyze")}
           </Button>
           {resumeResult && (
-            <div className="mt-2 p-2 bg-muted rounded">
-              <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(resumeResult, null, 2)}</pre>
+            <div className="mt-2 p-4 bg-muted rounded">
+              <div className="text-lg font-semibold mb-2">Resume Match Results:</div>
+              <div className="space-y-2">
+                <div><strong>Match Score:</strong> {resumeResult.score ? Math.round(resumeResult.score * 100) : resumeResult.matchPercentage || 0}%</div>
+                {resumeResult.matchedKeywords && (
+                  <div><strong>Matched Keywords:</strong> {resumeResult.matchedKeywords} out of {resumeResult.totalKeywords}</div>
+                )}
+                <div className="mt-3 p-2 bg-background rounded">
+                  <div className="text-sm text-muted-foreground">Raw Data:</div>
+                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(resumeResult, null, 2)}</pre>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
@@ -181,8 +191,28 @@ Sample Employee Data:
             {attritionLoading ? t("aiTools.checking") : t("aiTools.checkAttrition")}
           </Button>
           {attritionResult && (
-            <div className="mt-2 p-2 bg-muted rounded">
-              <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(attritionResult, null, 2)}</pre>
+            <div className="mt-2 p-4 bg-muted rounded">
+              <div className="text-lg font-semibold mb-2">Attrition Risk Analysis:</div>
+              <div className="space-y-2">
+                <div><strong>Risk Level:</strong> <span className={`font-bold ${attritionResult.risk === 'high' ? 'text-red-600' : attritionResult.risk === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>{attritionResult.risk?.toUpperCase()}</span></div>
+                {attritionResult.riskScore !== undefined && (
+                  <div><strong>Risk Score:</strong> {Math.round(attritionResult.riskScore * 100)}%</div>
+                )}
+                {attritionResult.riskFactors && attritionResult.riskFactors.length > 0 && (
+                  <div>
+                    <strong>Risk Factors:</strong>
+                    <ul className="list-disc list-inside ml-2">
+                      {attritionResult.riskFactors.map((factor, idx) => (
+                        <li key={idx} className="text-sm">{factor}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="mt-3 p-2 bg-background rounded">
+                  <div className="text-sm text-muted-foreground">Raw Data:</div>
+                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(attritionResult, null, 2)}</pre>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
@@ -230,8 +260,26 @@ Sample Employee Data:
             {trainingLoading ? t("aiTools.recommending") : t("aiTools.recommendTraining")}
           </Button>
           {trainingResult && (
-            <div className="mt-2 p-2 bg-muted rounded">
-              <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(trainingResult, null, 2)}</pre>
+            <div className="mt-2 p-4 bg-muted rounded">
+              <div className="text-lg font-semibold mb-2">Training Recommendations:</div>
+              <div className="space-y-2">
+                {trainingResult.recommended && trainingResult.recommended.length > 0 ? (
+                  <div>
+                    <strong>Recommended Courses:</strong>
+                    <ul className="list-decimal list-inside ml-2">
+                      {trainingResult.recommended.map((course, idx) => (
+                        <li key={idx} className="text-sm">{course}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground">No specific recommendations available.</div>
+                )}
+                <div className="mt-3 p-2 bg-background rounded">
+                  <div className="text-sm text-muted-foreground">Raw Data:</div>
+                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(trainingResult, null, 2)}</pre>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
@@ -270,8 +318,24 @@ I absolutely love working here! The team is amazing and the work environment is 
             {sentimentLoading ? t("aiTools.analyzing") : t("aiTools.analyzeSentiment")}
           </Button>
           {sentimentResult && (
-            <div className="mt-2 p-2 bg-muted rounded">
-              <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(sentimentResult, null, 2)}</pre>
+            <div className="mt-2 p-4 bg-muted rounded">
+              <div className="text-lg font-semibold mb-2">Sentiment Analysis Results:</div>
+              <div className="space-y-2">
+                <div><strong>Sentiment:</strong> <span className={`font-bold ${sentimentResult.sentiment === 'positive' ? 'text-green-600' : sentimentResult.sentiment === 'negative' ? 'text-red-600' : 'text-yellow-600'}`}>{sentimentResult.sentiment?.toUpperCase()}</span></div>
+                {sentimentResult.score !== undefined && (
+                  <div><strong>Confidence Score:</strong> {Math.round(sentimentResult.score * 100)}%</div>
+                )}
+                {sentimentResult.positiveWords !== undefined && (
+                  <div><strong>Positive Words Found:</strong> {sentimentResult.positiveWords}</div>
+                )}
+                {sentimentResult.negativeWords !== undefined && (
+                  <div><strong>Negative Words Found:</strong> {sentimentResult.negativeWords}</div>
+                )}
+                <div className="mt-3 p-2 bg-background rounded">
+                  <div className="text-sm text-muted-foreground">Raw Data:</div>
+                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(sentimentResult, null, 2)}</pre>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
@@ -302,7 +366,7 @@ I absolutely love working here! The team is amazing and the work environment is 
               setChatHistory(h => [...h, { role: "user", message: chatInput }]);
               try {
                 const result = await getChatResponse(chatInput, {});
-                setChatHistory(h => [...h, { role: "ai", message: result.answer || JSON.stringify(result) }]);
+                setChatHistory(h => [...h, { role: "ai", message: result.answer || result.data?.answer || "Sorry, I couldn't process your request." }]);
                 setChatInput("");
               } catch (err: any) {
                 toast({ title: t("common.error"), description: err.message || t("aiTools.chatError"), variant: "destructive" });
