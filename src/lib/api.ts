@@ -309,7 +309,11 @@ export const deleteBackup = (id: string) => apiFetch(`/backups/${id}`, { method:
 export async function attritionCheck(employeeData: any, token: string) {
   const res = await axios.post(
     `${API_BASE_URL}/ai/attrition`,
-    { employeeData },
+    { 
+      type: "attrition_check",
+      inputData: { employeeData },
+      result: null
+    },
     { headers: { Authorization: `Bearer ${token}` } }
   );
   return res.data;
@@ -318,7 +322,11 @@ export async function attritionCheck(employeeData: any, token: string) {
 export async function chatAssistant(message: string, token: string) {
   const res = await axios.post(
     `${API_BASE_URL}/ai/chat`,
-    { message },
+    { 
+      type: "chat_assistant",
+      inputData: { message },
+      result: null
+    },
     { headers: { Authorization: `Bearer ${token}` } }
   );
   return res.data;
@@ -327,7 +335,11 @@ export async function chatAssistant(message: string, token: string) {
 export async function resumeMatch(resume: string, jobDescription: string, token: string) {
   const res = await axios.post(
     `${API_BASE_URL}/ai/resume-match`,
-    { resume, jobDescription },
+    { 
+      type: "resume_match",
+      inputData: { resume, jobDescription },
+      result: null
+    },
     { headers: { Authorization: `Bearer ${token}` } }
   );
   return res.data;
@@ -336,7 +348,11 @@ export async function resumeMatch(resume: string, jobDescription: string, token:
 export async function sentimentAnalysis(text: string, token: string) {
   const res = await axios.post(
     `${API_BASE_URL}/ai/sentiment`,
-    { text },
+    { 
+      type: "sentiment_analysis",
+      inputData: { text },
+      result: null
+    },
     { headers: { Authorization: `Bearer ${token}` } }
   );
   return res.data;
@@ -345,7 +361,11 @@ export async function sentimentAnalysis(text: string, token: string) {
 export async function trainingRecommend(employeeData: any, token: string) {
   const res = await axios.post(
     `${API_BASE_URL}/ai/training`,
-    { employeeData },
+    { 
+      type: "training_recommend",
+      inputData: { employeeData },
+      result: null
+    },
     { headers: { Authorization: `Bearer ${token}` } }
   );
   return res.data;

@@ -19,47 +19,28 @@ export default function AITools() {
   const token = localStorage.getItem('token');
   
   // Resume Matcher
-  const [resume, setResume] = useState("Experienced software engineer with 5 years of experience in JavaScript, React, Node.js, and MongoDB. Led development of multiple web applications and managed teams of 3-5 developers.");
-  const [jobDesc, setJobDesc] = useState("We are looking for a senior software engineer with experience in JavaScript, React, Node.js, and MongoDB. The ideal candidate should have 3+ years of experience and team leadership skills.");
+  const [resume, setResume] = useState("");
+  const [jobDesc, setJobDesc] = useState("");
   const [resumeResult, setResumeResult] = useState<any>(null);
   const [resumeLoading, setResumeLoading] = useState(false);
 
   // Attrition Risk
-  const [attritionInput, setAttritionInput] = useState(`{
-  "age": 30,
-  "department": "Engineering",
-  "yearsAtCompany": 3,
-  "performance": "good",
-  "salary": 75000,
-  "jobSatisfaction": 4,
-  "workLifeBalance": 3,
-  "managerRating": 4,
-  "lastPromotion": "2023-01-15",
-  "trainingCompleted": 5
-}`);
+  const [attritionInput, setAttritionInput] = useState("");
   const [attritionResult, setAttritionResult] = useState<any>(null);
   const [attritionLoading, setAttritionLoading] = useState(false);
 
   // Training Recommender
-  const [trainingInput, setTrainingInput] = useState(`{
-  "position": "Software Engineer",
-  "department": "Engineering",
-  "yearsOfExperience": 3,
-  "skills": ["JavaScript", "React", "Node.js"],
-  "performance": "good",
-  "education": "Bachelor's Degree",
-  "goals": ["Technical Leadership", "Full Stack Development"]
-}`);
+  const [trainingInput, setTrainingInput] = useState("");
   const [trainingResult, setTrainingResult] = useState<any>(null);
   const [trainingLoading, setTrainingLoading] = useState(false);
 
   // Sentiment Analyzer
-  const [sentimentText, setSentimentText] = useState("I absolutely love working here! The team is amazing and the work environment is fantastic. I feel valued and supported in my role.");
+  const [sentimentText, setSentimentText] = useState("");
   const [sentimentResult, setSentimentResult] = useState<any>(null);
   const [sentimentLoading, setSentimentLoading] = useState(false);
 
   // AI Chat Assistant
-  const [chatInput, setChatInput] = useState("How do I request time off?");
+  const [chatInput, setChatInput] = useState("");
   const [chatHistory, setChatHistory] = useState<{ role: string; message: string }[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
 
@@ -74,16 +55,22 @@ export default function AITools() {
         </CardHeader>
         <CardContent className="space-y-2">
           <Textarea
-            placeholder={t("aiTools.uploadResume")}
+            placeholder={`${t("aiTools.uploadResume")}
+
+Sample Resume:
+Experienced software engineer with 5 years of experience in JavaScript, React, Node.js, and MongoDB. Led development of multiple web applications and managed teams of 3-5 developers. Strong problem-solving skills and experience with agile methodologies.`}
             value={resume}
             onChange={e => setResume(e.target.value)}
-            rows={4}
+            rows={6}
           />
           <Textarea
-            placeholder={t("aiTools.jobDescription")}
+            placeholder={`${t("aiTools.jobDescription")}
+
+Sample Job Description:
+We are looking for a senior software engineer with experience in JavaScript, React, Node.js, and MongoDB. The ideal candidate should have 3+ years of experience and team leadership skills. Responsibilities include leading development teams, architecting solutions, and mentoring junior developers.`}
             value={jobDesc}
             onChange={e => setJobDesc(e.target.value)}
-            rows={4}
+            rows={6}
           />
           <Button
             onClick={async () => {
@@ -117,10 +104,24 @@ export default function AITools() {
         </CardHeader>
         <CardContent className="space-y-2">
           <Textarea
-            placeholder={t("aiTools.employeeDataJson")}
+            placeholder={`${t("aiTools.employeeDataJson")}
+
+Sample Employee Data:
+{
+  "age": 30,
+  "department": "Engineering",
+  "yearsAtCompany": 3,
+  "performance": "good",
+  "salary": 75000,
+  "jobSatisfaction": 4,
+  "workLifeBalance": 3,
+  "managerRating": 4,
+  "lastPromotion": "2023-01-15",
+  "trainingCompleted": 5
+}`}
             value={attritionInput}
             onChange={e => setAttritionInput(e.target.value)}
-            rows={6}
+            rows={8}
           />
           <Button
             onClick={async () => {
@@ -155,10 +156,21 @@ export default function AITools() {
         </CardHeader>
         <CardContent className="space-y-2">
           <Textarea
-            placeholder={t("aiTools.employeeDataJson")}
+            placeholder={`${t("aiTools.employeeDataJson")}
+
+Sample Employee Data:
+{
+  "position": "Software Engineer",
+  "department": "Engineering",
+  "yearsOfExperience": 3,
+  "skills": ["JavaScript", "React", "Node.js"],
+  "performance": "good",
+  "education": "Bachelor's Degree",
+  "goals": ["Technical Leadership", "Full Stack Development"]
+}`}
             value={trainingInput}
             onChange={e => setTrainingInput(e.target.value)}
-            rows={6}
+            rows={8}
           />
           <Button
             onClick={async () => {
@@ -193,10 +205,13 @@ export default function AITools() {
         </CardHeader>
         <CardContent className="space-y-2">
           <Textarea
-            placeholder={t("aiTools.textToAnalyze")}
+            placeholder={`${t("aiTools.textToAnalyze")}
+
+Sample Text:
+I absolutely love working here! The team is amazing and the work environment is fantastic. I feel valued and supported in my role. The management is very supportive and the benefits are great.`}
             value={sentimentText}
             onChange={e => setSentimentText(e.target.value)}
-            rows={4}
+            rows={6}
           />
           <Button
             onClick={async () => {
@@ -261,7 +276,7 @@ export default function AITools() {
             <Input
               value={chatInput}
               onChange={e => setChatInput(e.target.value)}
-              placeholder={t("aiTools.typeMessage")}
+              placeholder={`${t("aiTools.typeMessage")} (e.g., "How do I request time off?")`}
               disabled={chatLoading}
             />
             <Button type="submit" disabled={chatLoading}>
