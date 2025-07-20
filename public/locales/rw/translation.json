@@ -4,9 +4,11 @@
     "french": "Igifaransa",
     "kinyarwanda": "Kinyarwanda",
     "cofirmLogout":"Logout",
+    "logout": "Gusohoka",
+    "confirmLogout": "Emeza Gusohoka",
+    "confirmLogoutDesc": "Uzi neza ko ushaka gusohoka? Ukenewe kwinjira nanone kugira ngo ujye kuri konti yawe.",
     "navigation": "umuyobora",
     "backToPortal": "Subira kurukuta rwawe",
-    "logout": "Gusohoka",
     "login": "Kwinjira",
     "signup": "Kwiyandikisha",
     "save": "Kubika",
@@ -91,7 +93,7 @@
     "recruitment": "Gushaka Abakozi",
     "payroll": "Amafaranga y'Abakozi",
     "performance": "Ibikorwa",
-    "employeePortal": "Urufunguzo rw'Umukozi",
+    "employeePortal": "Umukozi Usanzwe",
     "compliance": "Kurikiranwa",
     "aiTools": "Ibikoresho by'Ubumenyi"
   },
@@ -138,7 +140,7 @@
     "systemUpdate": "Guhindura ububiko"
   },
   "employee": {
-    "title": "Urufunguzo rw'Umukozi",
+    "title": "Umukozi Usanzwe",
     "subtitle": "Serivisi y'Umukozi",
     "dashboard": "Ikibaho cy'Umukozi",
     "profile": "Umwirondoro Wanjye",
@@ -148,12 +150,27 @@
     "training": "Amafaranga",
     "announcements": "Amatangazo",
     "wellbeingSurvey": "Ibishuzo by'Ubuzima",
+    "loadMoreAnnouncements": "Kubona nandi matangazo",
     "hrFaq": "Ibibazo bya RH",
+    "AnnouncementsloadMore": "Kubona nandi matangazo",
     "aiAssistant": "Umufasha wa Ubumenyi",
-    "documents": "Inyandiko"
+    "documents": "Inyandiko",
+    "payroll": {
+      "title": "Inyandiko z'Amafaranga",
+      "loading": "Kubona inyandiko z'amafaranga...",
+      "noStubs": "Nta nyandiko z'amafaranga zibashije kuboneka",
+      "noStubsDesc": "Inyandiko z'amafaranga zawe zizagaragara hano nyuma yo guhindurwa.",
+      "baseSalary": "Amafaranga y'ibanze",
+      "bonus": "Ibihano",
+      "overtime": "Igihe gisaga",
+      "deductions": "Kugabanuka",
+      "netPay": "Amafaranga Yose",
+      "payPeriod": "Igihe cy'Amafaranga",
+      "download": "Kuramo"
+    }
   },
   "manager": {
-    "title": "Urufunguzo rw'Umutekano",
+    "title": "Manager",
     "subtitle": "Gucunga Itsinda",
     "dashboard": "Ikibaho cy'Umutekano",
     "teamMembers": "Abanyamuryango b'Itsinda",
@@ -165,7 +182,7 @@
     "successionPlanning": "Gutegura Abandi"
   },
   "recruiter": {
-    "title": "Urufunguzo rw'Umushaka",
+    "title": "Utanga Akazi",
     "subtitle": "Gushaka Abantu",
     "dashboard": "Ikibaho cy'Umushaka",
     "jobs": "Akazi",
@@ -200,7 +217,7 @@
     "joinInterview": "Injira Isuzumizo"
   },
   "trainer": {
-    "title": "Urufunguzo rw'Umwarimu",
+    "title": "Utanga amahugurwa",
     "subtitle": "Kwigisha & Iterambere",
     "dashboard": "Ikibaho cy'Umwarimu",
     "courses": "Gutegura Amasomo",
@@ -230,7 +247,7 @@
     "latestEmployeeProgress": "Iterambere rya Nyuma rya Umukozi"
   },
   "auditor": {
-    "title": "Urufunguzo rw'Umusuzumizi",
+    "title": "Umusesenguzi",
     "subtitle": "Kurikiranwa & Ingari",
     "dashboard": "Ikibaho cy'Umusuzumizi",
     "complianceReports": "Ibyegeranyo byo Kurikiranwa",

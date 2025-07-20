@@ -6,6 +6,8 @@
     "navigation": "Navigation",
     "cofirmLogout": "Logout",
     "logout": "Logout",
+    "confirmLogout": "Confirm Logout",
+    "confirmLogoutDesc": "Are you sure you want to logout? You will need to sign in again to access your account.",
     "backToPortal": "Back to Portal",
     "login": "Login",
     "signup": "Sign Up",
@@ -146,6 +148,7 @@
     "quickActionsDesc": "Quick actions description",
     "operational": "System health",
     "quickActions": "Quick actions",
+    "loadMore": "Load more",
     "last24Hours": "Last 24 hours",
     "recentActivityDesc": "Recent activity description"
   },
@@ -161,8 +164,23 @@
     "announcements": "Announcements",
     "wellbeingSurvey": "Wellbeing Survey",
     "hrFaq": "HR FAQ",
+    "loadMoreAnnouncements": "Load more announcements",
+    "AnnouncementsloadMore": "Load more announcements",
     "aiAssistant": "AI Assistant",
-    "documents": "Documents"
+    "documents": "Documents",
+    "payroll": {
+      "title": "Pay Stubs",
+      "loading": "Loading payroll stubs...",
+      "noStubs": "No pay stubs found",
+      "noStubsDesc": "Your pay stubs will appear here once they are generated.",
+      "baseSalary": "Base Salary",
+      "bonus": "Bonus",
+      "overtime": "Overtime",
+      "deductions": "Deductions",
+      "netPay": "Net Pay",
+      "payPeriod": "Pay Period",
+      "download": "Download"
+    }
   },
   "manager": {
     "title": "Manager Portal",

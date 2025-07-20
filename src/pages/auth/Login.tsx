@@ -122,9 +122,9 @@ const Login: React.FC = () => {
           </form>
           <div className="mt-4 text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
-            <Link to="/signup" className="text-primary hover:underline">
+            <a href="mailto:iamshemaleandre@gmail.com" className="text-primary hover:underline">
               Contact admin 
-            </Link>
+            </a>
           </div>
         </CardContent>
       </Card>

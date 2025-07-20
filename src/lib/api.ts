@@ -32,6 +32,11 @@ axios.interceptors.response.use(
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
+// Utility function to get backend URL for file access (without /api)
+export const getBackendUrl = () => {
+  return import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
+};
+
 export async function apiFetch(path: string, options: any = {}) {
   try {
     const method = options.method ? options.method.toLowerCase() : 'get';
@@ -102,6 +107,7 @@ export const disbursePayroll = (id: string) =>
   apiFetch(`/payroll/${id}/disburse`, { method: "POST" });
 export const getPayslips = (userId: string) => apiFetch(`/payroll/employee/${userId}`);
 export const getEmployeePayroll = (userId: string) => apiFetch(`/payroll/employee/${userId}`);
+export const getMyPayroll = () => apiFetch(`/payroll/employee/me`);
 export const simulatePayroll = (params: Record<string, any>) => {
   const query = new URLSearchParams(params).toString();
   return apiFetch(`/payroll/simulate?${query}`);
@@ -226,6 +232,16 @@ export const getTrainingEnrollments = (params?: any) => {
 
 // --- Employee Documents API ---
 export const getEmployeeDocuments = (employeeId: string) => apiFetch(`/employees/${employeeId}/documents`);
+export const getMyDocuments = () => apiFetch('/employees/me/documents');
+export const getMyEmployeeProfile = () => apiFetch('/employees/me/profile');
+export const uploadMyDocuments = (formData: FormData) => {
+  const token = localStorage.getItem('token');
+  return axios.post(`${API_BASE_URL}/employees/me/documents`, formData, {
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  }).then(response => response.data);
+};
 export const uploadEmployeeDocuments = (employeeId: string, formData: FormData) => {
   const token = localStorage.getItem('token');
   return axios.post(`${API_BASE_URL}/employees/${employeeId}/documents`, formData, {

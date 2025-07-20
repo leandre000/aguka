@@ -250,7 +250,7 @@ export default function Announcements() {
 
         <div className="text-center py-8">
           <Button variant="outline">
-            {t("employee.loadMoreAnnouncements")}
+            {t("employee.AnnouncementsloadMore")}
           </Button>
         </div>
       </div>

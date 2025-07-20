@@ -7,6 +7,8 @@
     "backToPortal": "Retour au portail",
     "cofirmLogout": "Déconnexion",
     "logout": "Déconnexion",
+    "confirmLogout": "Confirmer la déconnexion",
+    "confirmLogoutDesc": "Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter pour accéder à votre compte.",
     "login": "Connexion",
     "signup": "S'inscrire",
     "save": "Enregistrer",
@@ -165,8 +167,27 @@
     "announcements": "Annonces",
     "wellbeingSurvey": "Sondage de bien-être",
     "hrFaq": "FAQ RH",
+    "loadMoreAnnouncements": "Charger plus d'annonces",
+    "AnnouncementsloadMore": "Charger plus d'annonces",
     "aiAssistant": "Assistant IA",
-    "documents": "Documents"
+    "documents": "Documents",
+    "payroll": {
+      "title": "Bulletins de paie",
+      "loading": "Chargement des bulletins de paie...",
+      "noStubs": "Aucun bulletin de paie trouvé",
+      "noStubsDesc": "Vos bulletins de paie apparaîtront ici une fois générés.",
+      "baseSalary": "Salaire de base",
+      "bonus": "Prime",
+      "overtime": "Heures supplémentaires",
+      "deductions": "Déductions",
+      "tax": "Impôt",
+      "netPay": "Salaire net",
+      "generated": "Généré",
+      "payDate": "Date de paiement",
+      "download": "Télécharger",
+      "paymentId": "ID de paiement",
+      "payPeriod": "Période de paie"
+    }
   },
   "manager": {
     "title": "Portail manager",

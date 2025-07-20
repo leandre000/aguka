@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard,
   User,
@@ -13,7 +14,8 @@ import {
   Heart,
   HelpCircle,
   Receipt,
-  BarChart
+  BarChart,
+  LogOut
 } from "lucide-react";
 
 import {
@@ -29,10 +31,23 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 export function EmployeePortalSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { t } = useLanguage();
+  const { logout } = useAuth();
   const currentPath = location.pathname;
 
   const navigationItems = [
@@ -129,6 +144,38 @@ export function EmployeePortalSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Logout Section */}
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <SidebarMenuButton>
+                      <LogOut className="h-4 w-4" />
+                      <span>{t("common.logout")}</span>
+                    </SidebarMenuButton>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("common.confirmLogout")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("common.confirmLogoutDesc")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                      <AlertDialogAction onClick={logout}>
+                        {t("common.logout")}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

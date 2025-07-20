@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Mail, Phone, MapPin, Calendar, Edit } from "lucide-react";
 import { EmployeePortalLayout } from "@/components/layouts/EmployeePortalLayout";
-import { getCurrentUserProfile, updateCurrentUserProfile } from "@/lib/api";
+import { getMyEmployeeProfile, updateCurrentUserProfile } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
@@ -33,18 +33,20 @@ export default function EmployeeProfile() {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const data = await getCurrentUserProfile();
-        setProfile(data);
+        const response = await getMyEmployeeProfile();
+        // Handle the nested data structure from API
+        const employeeData = response?.data || response;
+        setProfile(employeeData);
         
         // Initialize form data
-        if (data?.user) {
-          const names = data.user.Names?.split(' ') || ['', ''];
+        if (employeeData?.user) {
+          const names = employeeData.user.Names?.split(' ') || ['', ''];
           setFormData({
             firstName: names[0] || '',
             lastName: names[1] || '',
-            email: data.user.Email || '',
-            phone: data.user.phone || '',
-            address: data.employee?.address || ''
+            email: employeeData.user.Email || '',
+            phone: employeeData.user.phoneNumber || '',
+            address: employeeData.address || ''
           });
         }
       } catch (error) {
@@ -117,8 +119,8 @@ export default function EmployeeProfile() {
         firstName: names[0] || '',
         lastName: names[1] || '',
         email: profile.user.Email || '',
-        phone: profile.user.phone || '',
-        address: profile.employee?.address || ''
+        phone: profile.user.phoneNumber || '',
+        address: profile.address || ''
       });
     }
     setIsEditing(false);
@@ -262,7 +264,7 @@ export default function EmployeeProfile() {
                   <Label htmlFor="position">Position</Label>
                   <Input
                     id="position"
-                    value={profile?.employee?.position || 'Not assigned'}
+                    value={profile?.position || 'Not assigned'}
                     readOnly
                   />
                 </div>
@@ -276,14 +278,10 @@ export default function EmployeeProfile() {
                     <Input
                       id="startDate"
                       className="pl-10"
-                      value={profile?.employee?.startDate ? new Date(profile.employee.startDate).toLocaleDateString() : 'Not assigned'}
+                      value={profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'Not assigned'}
                       readOnly
                     />
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="employeeId">Employee ID</Label>
-                  <Input id="employeeId" value={profile?.employee?._id || profile?.user?._id || 'Not assigned'} readOnly />
                 </div>
               </div>
 

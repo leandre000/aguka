@@ -27,9 +27,6 @@ const HomeNavbar = () => {
             <Link to="/login">
               <Button variant="outline">{t("auth.signIn")}</Button>
             </Link>
-            <Link to="/signup">
-              <Button>{t("auth.signUp")}</Button>
-            </Link>
           </div>
           {/* Mobile Hamburger */}
           <button
@@ -48,9 +45,6 @@ const HomeNavbar = () => {
               <Button variant="outline" className="w-full">
                 {t("auth.signIn")}
               </Button>
-            </Link>
-            <Link to="/signup" onClick={() => setMenuOpen(false)}>
-              <Button className="w-full">{t("auth.signUp")}</Button>
             </Link>
           </div>
         )}

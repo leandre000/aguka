@@ -13,7 +13,6 @@ import Recruitment from "./pages/Recruitment";
 import Payroll from "./pages/Payroll";
 // import Performance from "./pages/Performance";   <Route path="/reports" element={<Reports />} />
 import Login from "./pages/auth/Login";
-import Signup from "./pages/auth/Signup";
 import AdminPortal from "./pages/portals/AdminPortal";
 import ManagerPortal from "./pages/portals/ManagerPortal";
 import RecruiterPortal from "./pages/portals/RecruiterPortal";
@@ -97,7 +96,6 @@ const App = () => (
                   {/* Public routes */}
                   <Route path="/" element={<Index />} />
                   <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
                   {/* Protected routes */}
                   <Route element={<PrivateRoute />}>
                     <Route path="/dashboard" element={<Dashboard />} />

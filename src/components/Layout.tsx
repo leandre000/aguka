@@ -27,7 +27,7 @@ export function Layout({ children }: LayoutProps) {
   const { isAuthenticated, logout, user } = useAuth();
   const { t } = useLanguage();
   const isHomePage = location.pathname === '/';
-  const isAuthPage = ['/login', '/signup'].includes(location.pathname);
+  const isAuthPage = ['/login'].includes(location.pathname);
   const isPortalPage = location.pathname.includes('-portal');
 
   // Don't show sidebar on homepage, auth pages, or portal pages (they have their own layouts)
@@ -56,7 +56,7 @@ export function Layout({ children }: LayoutProps) {
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>{t("common.confirmLogout")}</AlertDialogTitle>
+                      <AlertDialogTitle>{t("common.logout")}</AlertDialogTitle>
                       <AlertDialogDescription>
                         {t("common.confirmLogoutDesc")}
                       </AlertDialogDescription>

@@ -8,27 +8,43 @@ import { Calendar, FileText, User, Clock, MessageSquare, BookOpen, Award } from 
 import { EmployeePortalLayout } from "@/components/layouts/EmployeePortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect } from "react";
-import { getMyLeaveRequests, getEmployeePayroll, getTrainingEnrollments, getEmployeeDocuments } from "@/lib/api";
+import { getMyLeaveRequests, getTrainingEnrollments, getMyDocuments, getMyEmployeeProfile, getBenefits, getBackendUrl, getMyPayroll } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { uploadMyDocuments } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
 
 const EmployeePortal = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
   const [benefits, setBenefits] = useState<any[]>([]);
   const [benefitsLoading, setBenefitsLoading] = useState(false);
   const [benefitsError, setBenefitsError] = useState<string | null>(null);
 
-  // Mock employee data
-  const employee = {
-    name: "John Doe",
-    employeeId: "EMP001",
-    position: "Senior Software Engineer",
-    department: "Engineering",
-    manager: "Sarah Wilson",
-    startDate: "2023-01-15",
-    email: "john.doe@company.com",
-    phone: "+1 (555) 123-4567",
-    address: "123 Main St, San Francisco, CA 94105"
-  };
+  // Real employee data
+  const [employee, setEmployee] = useState<any>(null);
+  const [employeeLoading, setEmployeeLoading] = useState(true);
+  const [employeeError, setEmployeeError] = useState<string | null>(null);
+
+  // Fetch employee profile
+  useEffect(() => {
+    if (user?._id) {
+      setEmployeeLoading(true);
+      getMyEmployeeProfile()
+        .then((response) => { 
+          // Handle the nested data structure from API
+          const employeeData = response?.data || response;
+          setEmployee(employeeData); 
+          setEmployeeError(null); 
+        })
+        .catch((err) => {
+          console.error('Employee profile error:', err);
+          setEmployeeError("Failed to load employee profile");
+          setEmployee(null);
+        })
+        .finally(() => setEmployeeLoading(false));
+    }
+  }, [user]);
 
   // --- Time Off ---
   const [timeOffRequests, setTimeOffRequests] = useState<any[]>([]);
@@ -37,8 +53,18 @@ const EmployeePortal = () => {
   useEffect(() => {
     setTimeOffLoading(true);
     getMyLeaveRequests()
-      .then((data) => { setTimeOffRequests(data); setTimeOffError(null); })
-      .catch(() => setTimeOffError("Failed to load time off requests"))
+      .then((response) => { 
+        // Handle the nested data structure from API
+        const requests = response?.data || response;
+        const requestsArray = Array.isArray(requests) ? requests : [];
+        setTimeOffRequests(requestsArray); 
+        setTimeOffError(null); 
+      })
+      .catch((err) => {
+        console.error('Time off requests error:', err);
+        setTimeOffError("Failed to load time off requests");
+        setTimeOffRequests([]); // Ensure it's an empty array on error
+      })
       .finally(() => setTimeOffLoading(false));
   }, []);
 
@@ -48,11 +74,21 @@ const EmployeePortal = () => {
   const [payrollError, setPayrollError] = useState<string | null>(null);
   useEffect(() => {
     setPayrollLoading(true);
-    getEmployeePayroll(employee.employeeId)
-      .then((data) => { setPayStubs(data); setPayrollError(null); })
-      .catch(() => setPayrollError("Failed to load payroll"))
+    getMyPayroll()
+      .then((response) => { 
+        // Handle the nested data structure from API
+        const payrollData = response?.data || response;
+        const stubs = Array.isArray(payrollData) ? payrollData : [];
+        setPayStubs(stubs); 
+        setPayrollError(null); 
+      })
+      .catch((err) => {
+        console.error('Payroll error:', err);
+        setPayrollError("Failed to load payroll");
+        setPayStubs([]);
+      })
       .finally(() => setPayrollLoading(false));
-  }, [employee.employeeId]);
+  }, []);
 
   // --- Training ---
   const [trainingCourses, setTrainingCourses] = useState<any[]>([]);
@@ -61,8 +97,18 @@ const EmployeePortal = () => {
   useEffect(() => {
     setTrainingLoading(true);
     getTrainingEnrollments()
-      .then((data) => { setTrainingCourses(data); setTrainingError(null); })
-      .catch(() => setTrainingError("Failed to load training"))
+      .then((response) => { 
+        // Handle the nested data structure from API
+        const trainingData = response?.data || response;
+        const courses = Array.isArray(trainingData) ? trainingData : [];
+        setTrainingCourses(courses); 
+        setTrainingError(null); 
+      })
+      .catch((err) => {
+        console.error('Training error:', err);
+        setTrainingError("Failed to load training");
+        setTrainingCourses([]);
+      })
       .finally(() => setTrainingLoading(false));
   }, []);
 
@@ -72,11 +118,40 @@ const EmployeePortal = () => {
   const [documentsError, setDocumentsError] = useState<string | null>(null);
   useEffect(() => {
     setDocumentsLoading(true);
-    getEmployeeDocuments(employee.employeeId)
-      .then((data) => { setDocuments(data); setDocumentsError(null); })
-      .catch(() => setDocumentsError("Failed to load documents"))
+    getMyDocuments()
+      .then((response) => { 
+        // Handle the nested data structure from API
+        const docsData = response?.data || response;
+        const docs = Array.isArray(docsData) ? docsData : [];
+        setDocuments(docs); 
+        setDocumentsError(null); 
+      })
+      .catch((err) => {
+        console.error('Documents error:', err);
+        setDocumentsError("Failed to load documents");
+        setDocuments([]);
+      })
       .finally(() => setDocumentsLoading(false));
-  }, [employee.employeeId]);
+  }, []);
+
+  // --- Benefits ---
+  useEffect(() => {
+    setBenefitsLoading(true);
+    getBenefits()
+      .then((response) => { 
+        // Handle the nested data structure from API
+        const benefitsData = response?.data || response;
+        const benefitsList = Array.isArray(benefitsData) ? benefitsData : [];
+        setBenefits(benefitsList); 
+        setBenefitsError(null); 
+      })
+      .catch((err) => {
+        console.error('Benefits error:', err);
+        setBenefitsError("Failed to load benefits");
+        setBenefits([]);
+      })
+      .finally(() => setBenefitsLoading(false));
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -87,12 +162,26 @@ const EmployeePortal = () => {
     }
   };
 
+  const { toast } = useToast();
+
+  // Utility function to handle API response structure
+  const extractDataFromResponse = (response: any) => {
+    return response?.data || response;
+  };
+
+  // Utility function to ensure data is an array
+  const ensureArray = (data: any) => {
+    return Array.isArray(data) ? data : [];
+  };
+
   return (
     <EmployeePortalLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">{t("employee.title")}</h1>
-          <p className="text-muted-foreground">Welcome back, {employee.name}</p>
+          <p className="text-muted-foreground">
+            Welcome back, {employee?.user?.Names || user?.Names || 'Employee'}!
+          </p>
         </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -106,64 +195,104 @@ const EmployeePortal = () => {
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <User className="h-5 w-5" />
-                <span>Personal Information</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium">Full Name</label>
-                    <p className="text-lg">{employee.name}</p>
+          {employeeLoading && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading employee profile...</p>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium">Employee ID</label>
-                    <p>{employee.employeeId}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {employeeError && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8">
+                  <p className="text-red-500 mb-4">{employeeError}</p>
+                  <Button onClick={() => window.location.reload()}>Retry</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {!employeeLoading && !employeeError && employee && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <User className="h-5 w-5" />
+                  <span>Personal Information</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Full Name</label>
+                      <p className="text-lg">{employee?.user?.Names || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Position</label>
+                      <p>{employee?.position || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Department</label>
+                      <p>{employee?.user?.department || 'N/A'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium">Position</label>
-                    <p>{employee.position}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Department</label>
-                    <p>{employee.department}</p>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Manager</label>
+                      <p>{employee?.manager ? 'Assigned' : 'Not Assigned'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Start Date</label>
+                      <p>{employee?.createdAt ? new Date(employee.createdAt).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Email</label>
+                      <p>{employee?.user?.Email || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Phone</label>
+                      <p>{employee?.user?.phoneNumber || 'N/A'}</p>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="space-y-4">
+                <div className="pt-4 border-t">
                   <div>
-                    <label className="text-sm font-medium">Manager</label>
-                    <p>{employee.manager}</p>
+                    <label className="text-sm font-medium">Address</label>
+                    <p>{employee?.address || 'N/A'}</p>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium">Start Date</label>
-                    <p>{new Date(employee.startDate).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Email</label>
-                    <p>{employee.email}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Phone</label>
-                    <p>{employee.phone}</p>
-                  </div>
+                  {employee?.emergencyContact && (
+                    <div className="mt-4">
+                      <label className="text-sm font-medium">Emergency Contact</label>
+                      <p>{employee.emergencyContact.name} ({employee.emergencyContact.relation})</p>
+                      <p className="text-sm text-muted-foreground">{employee.emergencyContact.phone}</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-              
-              <div className="pt-4 border-t">
-                <div>
-                  <label className="text-sm font-medium">Address</label>
-                  <p>{employee.address}</p>
+                
+                <Button disabled>Update Profile</Button>
+              </CardContent>
+            </Card>
+          )}
+          
+          {!employeeLoading && !employeeError && !employee && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">No employee profile found.</p>
+                  <p className="text-sm text-muted-foreground">Please contact HR to create your employee profile.</p>
                 </div>
-              </div>
-              
-              <Button>Update Profile</Button>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="timeoff" className="space-y-4">
@@ -194,7 +323,7 @@ const EmployeePortal = () => {
             {!timeOffLoading && !timeOffError && timeOffRequests.length === 0 && (
               <p>No time off requests found.</p>
             )}
-            {timeOffRequests.map((request) => (
+            {Array.isArray(timeOffRequests) && timeOffRequests.map((request) => (
               <Card key={request.id}>
                 <CardContent className="pt-6">
                   <div className="flex justify-between items-start">
@@ -221,39 +350,111 @@ const EmployeePortal = () => {
 
         <TabsContent value="payroll" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Pay Stubs</h2>
+            <h2 className="text-xl font-semibold">{t("employee.payroll.title")}</h2>
           </div>
 
           <div className="space-y-4">
-            {payrollLoading && <p>Loading payroll stubs...</p>}
-            {payrollError && <p className="text-red-500">{payrollError}</p>}
-            {!payrollLoading && !payrollError && payStubs.length === 0 && (
-              <p>No pay stubs found.</p>
-            )}
-            {payStubs.map((stub) => (
-              <Card key={stub.id}>
+            {payrollLoading && (
+              <Card>
                 <CardContent className="pt-6">
-                  <div className="flex justify-between items-center">
-                    <div className="space-y-2">
-                      <h3 className="font-semibold">{stub.period}</h3>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">{t("employee.payroll.loading")}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {payrollError && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-8">
+                    <p className="text-red-500 mb-4">{payrollError}</p>
+                    <Button onClick={() => window.location.reload()}>Retry</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {!payrollLoading && !payrollError && payStubs.length === 0 && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-2">{t("employee.payroll.noStubs")}</p>
+                    <p className="text-sm text-muted-foreground">{t("employee.payroll.noStubsDesc")}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {!payrollLoading && !payrollError && payStubs.length > 0 && payStubs.map((stub) => (
+              <Card key={stub._id || stub.id}>
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-3 flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-lg">
+                          {stub.period || `${t("employee.payroll.payPeriod")} ${stub._id ? stub._id.slice(-6) : 'N/A'}`}
+                        </h3>
+                        <Badge className={getStatusColor(stub.status || 'Pending')}>
+                          {stub.status || 'Pending'}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <span className="font-medium">Gross Pay:</span>
-                          <span className="ml-2">${stub.grossPay.toLocaleString()}</span>
+                          <span className="font-medium text-muted-foreground">{t("employee.payroll.baseSalary")}:</span>
+                          <p className="text-lg">${stub.baseSalary?.toLocaleString() || 'N/A'}</p>
                         </div>
                         <div>
-                          <span className="font-medium">Net Pay:</span>
-                          <span className="ml-2 text-primary font-bold">${stub.netPay.toLocaleString()}</span>
+                          <span className="font-medium text-muted-foreground">{t("employee.payroll.bonus")}:</span>
+                          <p className="text-lg">${stub.bonus?.toLocaleString() || '0'}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-muted-foreground">{t("employee.payroll.overtime")}:</span>
+                          <p className="text-lg">${stub.overtime?.toLocaleString() || '0'}</p>
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Pay Date: {new Date(stub.date).toLocaleDateString()}
-                      </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium text-muted-foreground">{t("employee.payroll.deductions")}:</span>
+                          <p className="text-lg text-red-600">-${stub.deductions?.toLocaleString() || '0'}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-muted-foreground">{t("employee.payroll.tax")}:</span>
+                          <p className="text-lg text-red-600">-${stub.tax?.toLocaleString() || '0'}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-muted-foreground">{t("employee.payroll.netPay")}:</span>
+                          <p className="text-lg font-bold text-primary">${stub.netPay?.toLocaleString() || 'N/A'}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+                        <span>
+                          {t("employee.payroll.generated")}: {stub.createdAt ? new Date(stub.createdAt).toLocaleDateString() : 'N/A'}
+                        </span>
+                        <span>
+                          {t("employee.payroll.payDate")}: {stub.payDate ? new Date(stub.payDate).toLocaleDateString() : stub.createdAt ? new Date(stub.createdAt).toLocaleDateString() : 'N/A'}
+                        </span>
+                      </div>
                     </div>
-                    <Button variant="outline" size="sm">
-                      <FileText className="h-4 w-4 mr-1" />
-                      Download
-                    </Button>
+                    
+                    <div className="ml-4 flex flex-col gap-2">
+                      <Button variant="outline" size="sm">
+                        <FileText className="h-4 w-4 mr-1" />
+                        {t("employee.payroll.download")}
+                      </Button>
+                      {stub.iremboBillId && (
+                        <Badge variant="secondary" className="text-xs">
+                          {t("employee.payroll.paymentId")}: {stub.iremboBillId}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -315,28 +516,115 @@ const EmployeePortal = () => {
         </TabsContent>
 
         <TabsContent value="documents" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Documents</h2>
+            <Button onClick={() => document.getElementById('documentUpload')?.click()}>
+              <FileText className="h-4 w-4 mr-2" />
+              Upload Document
+            </Button>
+          </div>
+
+          <input
+            id="documentUpload"
+            type="file"
+            multiple
+            className="hidden"
+            onChange={async (e) => {
+              const files = e.target.files;
+              if (!files || files.length === 0) return;
+              
+              const formData = new FormData();
+              Array.from(files).forEach(file => {
+                formData.append('documents', file);
+              });
+              
+              try {
+                await uploadMyDocuments(formData);
+                // Refresh documents
+                const newDocsResponse = await getMyDocuments();
+                const newDocs = newDocsResponse?.data || newDocsResponse || [];
+                setDocuments(newDocs);
+                toast({ title: "Success", description: "Documents uploaded successfully!" });
+              } catch (err: any) {
+                const errorMsg = err?.response?.data?.message || err?.message || "Failed to upload documents";
+                toast({ title: "Error", description: errorMsg, variant: "destructive" });
+              }
+              
+              // Reset input
+              e.target.value = '';
+            }}
+          />
+
           <div className="space-y-4">
-            {documentsLoading && <p>Loading documents...</p>}
-            {documentsError && <p className="text-red-500">{documentsError}</p>}
-            {!documentsLoading && !documentsError && documents.length === 0 && (
-              <p>No documents found.</p>
+            {documentsLoading && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">Loading documents...</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
-            {documents.map((doc) => (
-              <Card key={doc.id}>
+            
+            {documentsError && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-8">
+                    <p className="text-red-500 mb-4">{documentsError}</p>
+                    <Button onClick={() => window.location.reload()}>Retry</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {!documentsLoading && !documentsError && documents.length === 0 && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-2">No documents found</p>
+                    <p className="text-sm text-muted-foreground">Upload your first document to get started.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {!documentsLoading && !documentsError && documents.length > 0 && documents.map((doc, index) => (
+              <Card key={index}>
                 <CardContent className="pt-6">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                       <FileText className="h-8 w-8 text-primary" />
                       <div>
-                        <h3 className="font-semibold">{doc.name}</h3>
+                        <h3 className="font-semibold">{doc.originalName || doc.type || 'Document'}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {doc.type} • {doc.size} • Uploaded: {new Date(doc.uploadDate).toLocaleDateString()}
+                          {doc.originalName || doc.fileUrl?.split('/').pop() || 'Document'} • 
+                          {doc.uploadedAt ? ` Uploaded: ${new Date(doc.uploadedAt).toLocaleDateString()}` : ''}
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
-                      Download
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm" onClick={() => {
+                        const backendUrl = getBackendUrl();
+                        const fullUrl = doc.fileUrl?.startsWith('http') ? doc.fileUrl : `${backendUrl}${doc.fileUrl}`;
+                        window.open(fullUrl, '_blank');
+                      }}>
+                        View
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => {
+                        const backendUrl = getBackendUrl();
+                        const fullUrl = doc.fileUrl?.startsWith('http') ? doc.fileUrl : `${backendUrl}${doc.fileUrl}`;
+                        const link = document.createElement('a');
+                        link.href = fullUrl;
+                        link.download = doc.originalName || doc.fileUrl?.split('/').pop() || 'document';
+                        link.click();
+                      }}>
+                        Download
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -345,62 +633,69 @@ const EmployeePortal = () => {
         </TabsContent>
 
         <TabsContent value="training" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Training & Development</h2>
+          </div>
+
           <div className="space-y-4">
-            {trainingLoading && <p>Loading training courses...</p>}
-            {trainingError && <p className="text-red-500">{trainingError}</p>}
-            {!trainingLoading && !trainingError && trainingCourses.length === 0 && (
-              <p>No training courses found.</p>
+            {trainingLoading && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">Loading training courses...</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
-            {trainingCourses.map((course) => (
+            
+            {trainingError && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-8">
+                    <p className="text-red-500 mb-4">{trainingError}</p>
+                    <Button onClick={() => window.location.reload()}>Retry</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {!trainingLoading && !trainingError && trainingCourses.length === 0 && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-8">
+                    <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-2">No training courses found</p>
+                    <p className="text-sm text-muted-foreground">Enroll in training courses to develop your skills.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {!trainingLoading && !trainingError && trainingCourses.length > 0 && trainingCourses.map((course) => (
               <Card key={course.id}>
                 <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <BookOpen className="h-5 w-5 text-primary" />
-                          <h3 className="font-semibold">{course.title}</h3>
-                          {course.certificate && (
-                            <Award className="h-4 w-4 text-yellow-500" />
-                          )}
-                        </div>
-                        {course.completedDate && (
-                          <p className="text-sm text-muted-foreground">
-                            Completed: {new Date(course.completedDate).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                      <Badge className={getStatusColor(course.status)}>
-                        {course.status}
-                      </Badge>
-                    </div>
-                    
+                  <div className="flex justify-between items-start">
                     <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Progress</span>
-                        <span>{course.progress}%</span>
+                      <div className="flex items-center space-x-2">
+                        <BookOpen className="h-4 w-4" />
+                        <h3 className="font-semibold">{course.name || course.title}</h3>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-primary h-2 rounded-full transition-all"
-                          style={{ width: `${course.progress}%` }}
-                        ></div>
-                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {course.description || 'No description available'}
+                      </p>
+                      <p className="text-sm">
+                        Duration: {course.duration || 'N/A'} • 
+                        Status: <span className={`font-medium ${getStatusColor(course.status || 'Not Started').replace('bg-', 'text-').replace('text-', '')}`}>
+                          {course.status || 'Not Started'}
+                        </span>
+                      </p>
                     </div>
-
-                    <div className="flex justify-between items-center">
-                      <div>
-                        {course.certificate && course.status === "Completed" && (
-                          <Button variant="outline" size="sm">
-                            <Award className="h-4 w-4 mr-1" />
-                            Download Certificate
-                          </Button>
-                        )}
-                      </div>
-                      <Button size="sm">
-                        {course.status === "Completed" ? "Review" : course.status === "In Progress" ? "Continue" : "Start Course"}
-                      </Button>
-                    </div>
+                    <Button variant="outline" size="sm">
+                      View Details
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
