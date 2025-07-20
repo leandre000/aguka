@@ -168,7 +168,10 @@ export const submitSurvey = (data: any) =>
   apiFetch("/survey", { method: "POST", body: JSON.stringify(data) });
 
 // --- Messages API ---
-export const getMessages = () => apiFetch("/messages");
+export const getMessages = (params?: any) => {
+  const query = params ? '?' + new URLSearchParams(params).toString() : '';
+  return apiFetch(`/messages${query}`);
+};
 export const getMessage = (id: string) => apiFetch(`/messages/${id}`);
 export const sendMessage = (data: any) => apiFetch('/messages', { method: 'POST', body: JSON.stringify(data) });
 export const deleteMessage = (id: string) => apiFetch(`/messages/${id}`, { method: 'DELETE' });
