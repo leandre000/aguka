@@ -6,6 +6,7 @@
     "navigation": "Navigation",
     "cofirmLogout": "Logout",
     "logout": "Logout",
+    "home":"Home",
     "confirmLogout": "Confirm Logout",
     "confirmLogoutDesc": "Are you sure you want to logout? You will need to sign in again to access your account.",
     "backToPortal": "Back to Portal",

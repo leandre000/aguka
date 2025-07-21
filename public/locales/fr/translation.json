@@ -10,6 +10,7 @@
     "confirmLogout": "Confirmer la déconnexion",
     "confirmLogoutDesc": "Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter pour accéder à votre compte.",
     "login": "Connexion",
+    "home":"Accueil",
     "signup": "S'inscrire",
     "save": "Enregistrer",
     "cancel": "Annuler",

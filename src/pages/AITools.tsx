@@ -17,6 +17,24 @@ import {
   getChatResponse,
 } from "@/lib/api";
 
+const fieldLabels: Record<string, string> = {
+  age: "Age",
+  department: "Department",
+  yearsAtCompany: "Years at Company",
+  performance: "Performance",
+  salary: "Salary",
+  jobSatisfaction: "Job Satisfaction (1-5)",
+  workLifeBalance: "Work-Life Balance (1-5)",
+  managerRating: "Manager Rating (1-5)",
+  lastPromotion: "Last Promotion Date",
+  trainingCompleted: "Training Completed",
+  position: "Position",
+  yearsOfExperience: "Years of Experience",
+  education: "Education",
+  skills: "Skills (comma separated)",
+  goals: "Goals (comma separated)",
+};
+
 export default function AITools() {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -43,12 +61,31 @@ export default function AITools() {
   const [resumeLoading, setResumeLoading] = useState(false);
 
   // Attrition Risk
-  const [attritionInput, setAttritionInput] = useState("");
+  const [attritionForm, setAttritionForm] = useState({
+    age: '',
+    department: '',
+    yearsAtCompany: '',
+    performance: '',
+    salary: '',
+    jobSatisfaction: '',
+    workLifeBalance: '',
+    managerRating: '',
+    lastPromotion: '',
+    trainingCompleted: '',
+  });
   const [attritionResult, setAttritionResult] = useState<any>(null);
   const [attritionLoading, setAttritionLoading] = useState(false);
 
   // Training Recommender
-  const [trainingInput, setTrainingInput] = useState("");
+  const [trainingForm, setTrainingForm] = useState({
+    position: '',
+    department: '',
+    yearsOfExperience: '',
+    performance: '',
+    education: '',
+    skills: '',
+    goals: '',
+  });
   const [trainingResult, setTrainingResult] = useState<any>(null);
   const [trainingLoading, setTrainingLoading] = useState(false);
 
@@ -136,10 +173,6 @@ We are looking for a senior software engineer with experience in JavaScript, Rea
                 {resumeResult.matchedKeywords && (
                   <div><strong>Matched Keywords:</strong> {resumeResult.matchedKeywords} out of {resumeResult.totalKeywords}</div>
                 )}
-                <div className="mt-3 p-2 bg-background rounded">
-                  <div className="text-sm text-muted-foreground">Raw Data:</div>
-                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(resumeResult, null, 2)}</pre>
-                </div>
               </div>
             </div>
           )}
@@ -152,32 +185,36 @@ We are looking for a senior software engineer with experience in JavaScript, Rea
           <CardTitle>{t("aiTools.attritionCheck")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Textarea
-            placeholder={`${t("aiTools.employeeDataJson")}
-
-Sample Employee Data:
-{
-  "age": 30,
-  "department": "Engineering",
-  "yearsAtCompany": 3,
-  "performance": "good",
-  "salary": 75000,
-  "jobSatisfaction": 4,
-  "workLifeBalance": 3,
-  "managerRating": 4,
-  "lastPromotion": "2023-01-15",
-  "trainingCompleted": 5
-}`}
-            value={attritionInput}
-            onChange={e => setAttritionInput(e.target.value)}
-            rows={8}
-          />
+          {/* New Form Fields for Attrition Risk */}
+          <div className="grid grid-cols-2 gap-2">
+            <Input type="number" placeholder={fieldLabels.age} value={attritionForm.age} onChange={e => setAttritionForm(f => ({ ...f, age: e.target.value }))} />
+            <Input placeholder={fieldLabels.department} value={attritionForm.department} onChange={e => setAttritionForm(f => ({ ...f, department: e.target.value }))} />
+            <Input type="number" placeholder={fieldLabels.yearsAtCompany} value={attritionForm.yearsAtCompany} onChange={e => setAttritionForm(f => ({ ...f, yearsAtCompany: e.target.value }))} />
+            <Input placeholder={fieldLabels.performance} value={attritionForm.performance} onChange={e => setAttritionForm(f => ({ ...f, performance: e.target.value }))} />
+            <Input type="number" placeholder={fieldLabels.salary} value={attritionForm.salary} onChange={e => setAttritionForm(f => ({ ...f, salary: e.target.value }))} />
+            <Input type="number" placeholder={fieldLabels.jobSatisfaction} value={attritionForm.jobSatisfaction} onChange={e => setAttritionForm(f => ({ ...f, jobSatisfaction: e.target.value }))} />
+            <Input type="number" placeholder={fieldLabels.workLifeBalance} value={attritionForm.workLifeBalance} onChange={e => setAttritionForm(f => ({ ...f, workLifeBalance: e.target.value }))} />
+            <Input type="number" placeholder={fieldLabels.managerRating} value={attritionForm.managerRating} onChange={e => setAttritionForm(f => ({ ...f, managerRating: e.target.value }))} />
+            <Input type="date" placeholder={fieldLabels.lastPromotion} value={attritionForm.lastPromotion} onChange={e => setAttritionForm(f => ({ ...f, lastPromotion: e.target.value }))} />
+            <Input type="number" placeholder={fieldLabels.trainingCompleted} value={attritionForm.trainingCompleted} onChange={e => setAttritionForm(f => ({ ...f, trainingCompleted: e.target.value }))} />
+          </div>
           <Button
             onClick={async () => {
               setAttritionLoading(true);
               setAttritionResult(null);
               try {
-                const inputData = JSON.parse(attritionInput);
+                const inputData = {
+                  age: Number(attritionForm.age),
+                  department: attritionForm.department,
+                  yearsAtCompany: Number(attritionForm.yearsAtCompany),
+                  performance: attritionForm.performance,
+                  salary: Number(attritionForm.salary),
+                  jobSatisfaction: Number(attritionForm.jobSatisfaction),
+                  workLifeBalance: Number(attritionForm.workLifeBalance),
+                  managerRating: Number(attritionForm.managerRating),
+                  lastPromotion: attritionForm.lastPromotion,
+                  trainingCompleted: Number(attritionForm.trainingCompleted),
+                };
                 const result = await predictAttrition(inputData);
                 setAttritionResult(result);
               } catch (err: any) {
@@ -192,15 +229,15 @@ Sample Employee Data:
           </Button>
           {attritionResult && (
             <div className="mt-2 p-4 bg-muted rounded">
-              <div className="text-lg font-semibold mb-2">Attrition Risk Analysis:</div>
+              <div className="text-lg font-semibold mb-2">{t("aiTools.attritionCheck")}</div>
               <div className="space-y-2">
-                <div><strong>Risk Level:</strong> <span className={`font-bold ${attritionResult.risk === 'high' ? 'text-red-600' : attritionResult.risk === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>{attritionResult.risk?.toUpperCase()}</span></div>
+                <div><strong>{t("aiTools.riskLevel") || "Risk Level:"}</strong> <span className={`font-bold ${attritionResult.risk === 'high' ? 'text-red-600' : attritionResult.risk === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>{attritionResult.risk?.toUpperCase()}</span></div>
                 {attritionResult.riskScore !== undefined && (
-                  <div><strong>Risk Score:</strong> {Math.round(attritionResult.riskScore * 100)}%</div>
+                  <div><strong>{t("aiTools.riskScore") || "Risk Score:"}</strong> {Math.round(attritionResult.riskScore * 100)}%</div>
                 )}
                 {attritionResult.riskFactors && attritionResult.riskFactors.length > 0 && (
                   <div>
-                    <strong>Risk Factors:</strong>
+                    <strong>{t("aiTools.riskFactors") || "Risk Factors:"}</strong>
                     <ul className="list-disc list-inside ml-2">
                       {attritionResult.riskFactors.map((factor, idx) => (
                         <li key={idx} className="text-sm">{factor}</li>
@@ -208,10 +245,6 @@ Sample Employee Data:
                     </ul>
                   </div>
                 )}
-                <div className="mt-3 p-2 bg-background rounded">
-                  <div className="text-sm text-muted-foreground">Raw Data:</div>
-                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(attritionResult, null, 2)}</pre>
-                </div>
               </div>
             </div>
           )}
@@ -224,29 +257,30 @@ Sample Employee Data:
           <CardTitle>{t("aiTools.trainingRecommend")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Textarea
-            placeholder={`${t("aiTools.employeeDataJson")}
-
-Sample Employee Data:
-{
-  "position": "Software Engineer",
-  "department": "Engineering",
-  "yearsOfExperience": 3,
-  "skills": ["JavaScript", "React", "Node.js"],
-  "performance": "good",
-  "education": "Bachelor's Degree",
-  "goals": ["Technical Leadership", "Full Stack Development"]
-}`}
-            value={trainingInput}
-            onChange={e => setTrainingInput(e.target.value)}
-            rows={8}
-          />
+          {/* New Form Fields for Training Recommendation */}
+          <div className="grid grid-cols-2 gap-2">
+            <Input placeholder={fieldLabels.position} value={trainingForm.position} onChange={e => setTrainingForm(f => ({ ...f, position: e.target.value }))} />
+            <Input placeholder={fieldLabels.department} value={trainingForm.department} onChange={e => setTrainingForm(f => ({ ...f, department: e.target.value }))} />
+            <Input type="number" placeholder={fieldLabels.yearsOfExperience} value={trainingForm.yearsOfExperience} onChange={e => setTrainingForm(f => ({ ...f, yearsOfExperience: e.target.value }))} />
+            <Input placeholder={fieldLabels.performance} value={trainingForm.performance} onChange={e => setTrainingForm(f => ({ ...f, performance: e.target.value }))} />
+            <Input placeholder={fieldLabels.education} value={trainingForm.education} onChange={e => setTrainingForm(f => ({ ...f, education: e.target.value }))} />
+            <Input placeholder={fieldLabels.skills} value={trainingForm.skills} onChange={e => setTrainingForm(f => ({ ...f, skills: e.target.value }))} />
+            <Input placeholder={fieldLabels.goals} value={trainingForm.goals} onChange={e => setTrainingForm(f => ({ ...f, goals: e.target.value }))} />
+          </div>
           <Button
             onClick={async () => {
               setTrainingLoading(true);
               setTrainingResult(null);
               try {
-                const employeeData = JSON.parse(trainingInput);
+                const employeeData = {
+                  position: trainingForm.position,
+                  department: trainingForm.department,
+                  yearsOfExperience: Number(trainingForm.yearsOfExperience),
+                  skills: trainingForm.skills.split(',').map(s => s.trim()).filter(Boolean),
+                  performance: trainingForm.performance,
+                  education: trainingForm.education,
+                  goals: trainingForm.goals.split(',').map(g => g.trim()).filter(Boolean),
+                };
                 const result = await getTrainingRecommendations(employeeData);
                 setTrainingResult(result);
               } catch (err: any) {
@@ -261,24 +295,25 @@ Sample Employee Data:
           </Button>
           {trainingResult && (
             <div className="mt-2 p-4 bg-muted rounded">
-              <div className="text-lg font-semibold mb-2">Training Recommendations:</div>
+              <div className="text-lg font-semibold mb-2">{t("aiTools.trainingRecommend")}</div>
               <div className="space-y-2">
-                {trainingResult.recommended && trainingResult.recommended.length > 0 ? (
-                  <div>
-                    <strong>Recommended Courses:</strong>
-                    <ul className="list-decimal list-inside ml-2">
-                      {trainingResult.recommended.map((course, idx) => (
-                        <li key={idx} className="text-sm">{course}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground">No specific recommendations available.</div>
-                )}
-                <div className="mt-3 p-2 bg-background rounded">
-                  <div className="text-sm text-muted-foreground">Raw Data:</div>
-                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(trainingResult, null, 2)}</pre>
-                </div>
+                {(() => {
+                  const recommended = trainingResult.recommended || (trainingResult.data && trainingResult.data.recommended);
+                  if (recommended && recommended.length > 0) {
+                    return (
+                      <div>
+                        <strong>{t("aiTools.recommendations") || "Recommended Courses:"}</strong>
+                        <ul className="list-decimal list-inside ml-2">
+                          {recommended.map((course, idx) => (
+                            <li key={idx} className="text-sm">{course}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  } else {
+                    return <div className="text-muted-foreground">{t("aiTools.noResults") || "No specific recommendations available."}</div>;
+                  }
+                })()}
               </div>
             </div>
           )}
@@ -319,22 +354,18 @@ I absolutely love working here! The team is amazing and the work environment is 
           </Button>
           {sentimentResult && (
             <div className="mt-2 p-4 bg-muted rounded">
-              <div className="text-lg font-semibold mb-2">Sentiment Analysis Results:</div>
+              <div className="text-lg font-semibold mb-2">{t("aiTools.sentimentAnalysis")}</div>
               <div className="space-y-2">
-                <div><strong>Sentiment:</strong> <span className={`font-bold ${sentimentResult.sentiment === 'positive' ? 'text-green-600' : sentimentResult.sentiment === 'negative' ? 'text-red-600' : 'text-yellow-600'}`}>{sentimentResult.sentiment?.toUpperCase()}</span></div>
-                {sentimentResult.score !== undefined && (
-                  <div><strong>Confidence Score:</strong> {Math.round(sentimentResult.score * 100)}%</div>
-                )}
-                {sentimentResult.positiveWords !== undefined && (
-                  <div><strong>Positive Words Found:</strong> {sentimentResult.positiveWords}</div>
-                )}
-                {sentimentResult.negativeWords !== undefined && (
-                  <div><strong>Negative Words Found:</strong> {sentimentResult.negativeWords}</div>
-                )}
-                <div className="mt-3 p-2 bg-background rounded">
-                  <div className="text-sm text-muted-foreground">Raw Data:</div>
-                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(sentimentResult, null, 2)}</pre>
-                </div>
+                {(() => {
+                  const sentiment = sentimentResult.sentiment || (sentimentResult.data && sentimentResult.data.sentiment);
+                  if (sentiment) {
+                    return (
+                      <div><strong>{t("aiTools.sentimentScore") || "Sentiment:"}</strong> <span className={`font-bold ${sentiment === 'positive' ? 'text-green-600' : sentiment === 'negative' ? 'text-red-600' : 'text-yellow-600'}`}>{sentiment.toUpperCase()}</span></div>
+                    );
+                  } else {
+                    return <div className="text-muted-foreground">{t("aiTools.noResults") || "No sentiment result available."}</div>;
+                  }
+                })()}
               </div>
             </div>
           )}
@@ -344,7 +375,7 @@ I absolutely love working here! The team is amazing and the work environment is 
       {/* AI Chat Assistant */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("aiTools.chatAssistant")}</CardTitle>
+          <CardTitle>{t("aiTools.chatAssistant") || "AI Chat Assistant"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="h-48 overflow-y-auto bg-muted rounded p-2 mb-2">
