@@ -516,16 +516,17 @@
     "chatError": "Kuvugana na Ubwenge karemano byanze"
   },
   "messages": {
-    "title": "Ubutumwa",
-    "compose": "Andika Ubutumwa",
-    "inbox": "Inyandiko",
-    "sent": "Byoherejwe",
-    "draft": "Ibintu",
-    "subject": "Icyo Bivuze",
-    "message": "Ubutumwa",
-    "send": "Ohereza",
-    "reply": "Subiza",
-    "forward": "Kohereza"
+    "threads": "Imirongo y'ubutumwa",
+    "newThread": "Ongeraho umurongo mushya",
+    "cancel": "Hagarika",
+    "create": "Hanga",
+    "subject": "Insanganyamatsiko",
+    "typeParticipant": "Andika izina, imeyili cyangwa uruhare",
+    "loadingThreads": "Irimo gutangira imirongo...",
+    "loadingMessages": "Irimo gutangira ubutumwa...",
+    "participants": "Abitabiriye",
+    "typeMessage": "Andika ubutumwa bwawe...",
+    "selectThread": "Hitamo umurongo kugira ngo ubone ubutumwa."
   },
   "errors": {
     "required": "Iki gice kiba ngombwa",

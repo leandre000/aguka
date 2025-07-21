@@ -14,6 +14,7 @@ import { RecruiterPortalLayout } from "@/components/layouts/RecruiterPortalLayou
 import { TrainerPortalLayout } from "@/components/layouts/TrainerPortalLayout";
 import { AuditorPortalLayout } from "@/components/layouts/AuditorPortalLayout";
 import { Combobox } from "@headlessui/react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const getLayout = (pathname: string) => {
   if (pathname.startsWith("/admin-portal")) return AdminPortalLayout;
@@ -28,6 +29,7 @@ const getLayout = (pathname: string) => {
 export default function Messages() {
   const { user } = useAuth();
   const location = useLocation();
+  const { t } = useLanguage();
   const Layout = getLayout(location.pathname);
   const [threads, setThreads] = useState<any[]>([]);
   const [selectedThread, setSelectedThread] = useState<any>(null);
@@ -160,13 +162,13 @@ export default function Messages() {
           {/* Threads List */}
           <div className="w-full md:w-1/3 space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold flex items-center gap-2"><MessageSquare className="h-5 w-5" /> Threads</h2>
-              <Button size="sm" onClick={() => setCreatingThread((v) => !v)}>{creatingThread ? "Cancel" : "New Thread"}</Button>
+              <h2 className="text-xl font-bold flex items-center gap-2"><MessageSquare className="h-5 w-5" />{t('messages.threads') || 'Threads'}</h2>
+              <Button size="sm" onClick={() => setCreatingThread((v) => !v)}>{creatingThread ? (t('messages.cancel') || 'Cancel') : (t('messages.newThread') || 'New Thread')}</Button>
             </div>
             {creatingThread && (
               <form onSubmit={handleCreateThread} className="space-y-2">
                 <Input
-                  placeholder="Subject"
+                  placeholder={t('messages.subject') || 'Subject'}
                   value={newThreadSubject}
                   onChange={e => setNewThreadSubject(e.target.value)}
                 />
@@ -186,7 +188,7 @@ export default function Messages() {
                   data-headlessui-state={creatingThread ? "open" : "closed"}
                 >
                   <Combobox.Input
-                    placeholder="Type name, email or role"
+                    placeholder={t('messages.typeParticipant') || 'Type name, email or role'}
                     className="w-full border rounded px-2 py-1"
                     displayValue={(users: any[]) => users.map(u => u.Names || u.name || u.email).join(", ")}
                     onChange={e => setParticipantQuery(e.target.value)}
@@ -199,11 +201,11 @@ export default function Messages() {
                     ))}
                   </Combobox.Options>
                 </Combobox>
-                <Button type="submit" size="sm">Create</Button>
+                <Button type="submit" size="sm">{t('messages.create') || 'Create'}</Button>
               </form>
             )}
             {loadingThreads ? (
-              <div>Loading threads...</div>
+              <div>{t('messages.loadingThreads') || 'Loading threads...'}</div>
             ) : (
               <div className="space-y-2">
                 {threads.map((thread) => (
@@ -213,7 +215,7 @@ export default function Messages() {
                         <Users className="h-4 w-4" />
                         <span className="font-semibold">{thread.subject}</span>
                       </div>
-                      <div className="text-xs text-muted-foreground">Participants: {thread.participants.map((p: any) => p.Names || p.name || p.email || p._id).join(", ")}</div>
+                      <div className="text-xs text-muted-foreground">{t('messages.participants') || 'Participants'}: {thread.participants.map((p: any) => p.Names || p.name || p.email || p._id).join(", ")}</div>
                     </CardContent>
                   </Card>
                 ))}
@@ -227,11 +229,11 @@ export default function Messages() {
               <Card>
                 <CardHeader>
                   <CardTitle>{selectedThread.subject}</CardTitle>
-                  <div className="text-xs text-muted-foreground">Participants: {selectedThread.participants.map((p: any) => p.Names || p.name || p.email || p._id).join(", ")}</div>
+                  <div className="text-xs text-muted-foreground">{t('messages.participants') || 'Participants'}: {selectedThread.participants.map((p: any) => p.Names || p.name || p.email || p._id).join(", ")}</div>
                 </CardHeader>
                 <CardContent>
                   {loadingMessages ? (
-                    <div>Loading messages...</div>
+                    <div>{t('messages.loadingMessages') || 'Loading messages...'}</div>
                   ) : (
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {messages.map((msg: any) => (
@@ -245,13 +247,13 @@ export default function Messages() {
                     </div>
                   )}
                   <form onSubmit={handleSendMessage} className="flex gap-2 mt-4">
-                    <Input placeholder="Type your message..." value={newMessage} onChange={e => setNewMessage(e.target.value)} />
+                    <Input placeholder={t('messages.typeMessage') || 'Type your message...'} value={newMessage} onChange={e => setNewMessage(e.target.value)} />
                     <Button type="submit" size="icon"><Send className="h-4 w-4" /></Button>
                   </form>
                 </CardContent>
               </Card>
             ) : (
-              <div className="text-muted-foreground text-center mt-16">Select a thread to view messages.</div>
+              <div className="text-muted-foreground text-center mt-16">{t('messages.selectThread') || 'Select a thread to view messages.'}</div>
             )}
           </div>
         </div>

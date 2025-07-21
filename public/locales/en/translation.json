@@ -510,6 +510,19 @@
     "recommendError": "Failed to recommend training",
     "chatError": "Failed to chat with AI"
   },
+  "messages": {
+    "threads": "Threads",
+    "newThread": "New Thread",
+    "cancel": "Cancel",
+    "create": "Create",
+    "subject": "Subject",
+    "typeParticipant": "Type name, email or role",
+    "loadingThreads": "Loading threads...",
+    "loadingMessages": "Loading messages...",
+    "participants": "Participants",
+    "typeMessage": "Type your message...",
+    "selectThread": "Select a thread to view messages."
+  },
   "errors": {
     "required": "This field is required",
     "invalidEmail": "Invalid email format",

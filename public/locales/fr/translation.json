@@ -440,16 +440,17 @@
     "incidents": "Rapports d'incidents"
   },
   "messages": {
-    "title": "Messages",
-    "compose": "Composer un message",
-    "inbox": "Boîte de réception",
-    "sent": "Envoyés",
-    "draft": "Brouillons",
+    "threads": "Discussions",
+    "newThread": "Nouvelle discussion",
+    "cancel": "Annuler",
+    "create": "Créer",
     "subject": "Objet",
-    "message": "Message",
-    "send": "Envoyer",
-    "reply": "Répondre",
-    "forward": "Transférer"
+    "typeParticipant": "Tapez le nom, l'email ou le rôle",
+    "loadingThreads": "Chargement des discussions...",
+    "loadingMessages": "Chargement des messages...",
+    "participants": "Participants",
+    "typeMessage": "Tapez votre message...",
+    "selectThread": "Sélectionnez une discussion pour voir les messages."
   },
   "errors": {
     "required": "Ce champ est requis",

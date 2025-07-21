@@ -45,14 +45,14 @@ export default function AIAssistant() {
       <div className="space-y-4 md:space-y-6 p-4 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <Bot className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-          <h1 className="text-2xl md:text-3xl font-bold">AI Assistant</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('aiTools.chatAssistant') || 'AI Chat Assistant'}</h1>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
           <div className="xl:col-span-3">
             <Card className="h-80 md:h-96">
               <CardHeader className="pb-4">
-                <CardTitle className="text-lg md:text-xl">Chat with Assistant</CardTitle>
+                <CardTitle className="text-lg md:text-xl">{t('aiTools.chatAssistant') || 'Chat with Assistant'}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 h-full flex flex-col">
                 <div className="flex-1 space-y-3 overflow-y-auto">
@@ -97,10 +97,7 @@ export default function AIAssistant() {
                 </div>
 
                 <div className="flex space-x-2">
-                  <Input
-                    placeholder="Type your message..."
-                    className="flex-1 min-w-0"
-                  />
+                  <Input placeholder={t('aiTools.typeMessage') || 'Type your message...'} className="flex-1 min-w-0" />
                   <Button size="icon" className="flex-shrink-0">
                     <Send className="h-4 w-4" />
                   </Button>
@@ -112,7 +109,7 @@ export default function AIAssistant() {
           <div className="space-y-4">
             <Card>
               <CardHeader className="pb-4">
-                <CardTitle className="text-lg md:text-xl">Quick Questions</CardTitle>
+                <CardTitle className="text-lg md:text-xl">{t('aiTools.quickQuestions') || 'Quick Questions'}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {quickQuestions.map((question, index) => (
