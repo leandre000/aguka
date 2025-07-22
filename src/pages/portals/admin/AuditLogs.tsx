@@ -12,7 +12,8 @@ import { AdminPortalLayout } from "@/components/layouts/AdminPortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FileText, Download, Filter, Search, Calendar } from "lucide-react";
 import { getAllAuditLogs } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { getUser } from "@/lib/api";
 
 const translations = {
   en: {
@@ -120,19 +121,66 @@ const AuditLogs = () => {
     translations[language][key];
 
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [userMap, setUserMap] = useState<Record<string, any>>({});
+  const userFetchQueue = useRef<Set<string>>(new Set());
+
   const [pagination, setPagination] = useState<any>({
     page: 1,
-    limit: 50,
+    limit: 5,
     total: 0,
     pages: 0,
   });
+  const [loading, setLoading] = useState(false);
+
+  const fetchLogs = (page = 1) => {
+    setLoading(true);
+    getAllAuditLogs({ page, limit: pagination.limit }).then((res: any) => {
+      setAuditLogs(res.logs || []);
+      setPagination(res.pagination || { page, limit: pagination.limit, total: 0, pages: 0 });
+      // Find all user ids that need fetching
+      const idsToFetch = new Set<string>();
+      (res.logs || []).forEach((log: any) => {
+        if (log.user && typeof log.user === 'object' && log.user._id && !log.user.name && !log.user.email && !userMap[log.user._id]) {
+          idsToFetch.add(log.user._id);
+        }
+      });
+      idsToFetch.forEach((id) => {
+        getUser(id).then((user) => {
+          setUserMap((prev) => ({ ...prev, [id]: user }));
+        });
+      });
+      setLoading(false);
+    });
+  };
 
   useEffect(() => {
-    getAllAuditLogs().then((res: any) => {
-      setAuditLogs(res.logs || []);
-      setPagination(res.pagination || { page: 1, limit: 50, total: 0, pages: 0 });
-    });
+    fetchLogs(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > pagination.pages) return;
+    fetchLogs(newPage);
+  };
+
+  // Helper to get display name for a user
+  const getUserDisplay = (user: any) => {
+    if (!user) return 'System';
+    // Support both 'name'/'email' and 'Names'/'Email' fields
+    const name = user.name || user.Names;
+    const email = user.email || user.Email;
+    if (name) return email ? `${name} (${email})` : name;
+    if (email) return email;
+    if (user._id && userMap[user._id]) {
+      const u = userMap[user._id];
+      const uname = u.name || u.Names;
+      const uemail = u.email || u.Email;
+      if (uname) return uemail ? `${uname} (${uemail})` : uname;
+      if (uemail) return uemail;
+    }
+    if (user._id && userMap[user._id] === undefined) return 'Loading...';
+    return 'System';
+  };
 
   return (
     <AdminPortalLayout>
@@ -206,26 +254,25 @@ const AuditLogs = () => {
                           key={log._id || log.id}
                           className="border-b hover:bg-muted/50"
                         >
-                          <td className="p-4 text-sm">{log.timestamp}</td>
-                          <td className="p-4 text-sm">{log.user}</td>
-                          <td className="p-4 text-sm font-medium">
-                            {log.action}
-                          </td>
-                          <td className="p-4 text-sm text-muted-foreground">
-                            {log.details}
-                          </td>
-                          <td className="p-4 text-sm">{log.ipAddress}</td>
+                          <td className="p-4 text-sm">{log.createdAt ? new Date(log.createdAt).toLocaleString() : ''}</td>
+                          <td className="p-4 text-sm">{getUserDisplay(log.user)}</td>
+                          <td className="p-4 text-sm font-medium">{log.action}</td>
+                          <td className="p-4 text-sm text-muted-foreground">{
+                            typeof log.details === 'object' && log.details !== null
+                              ? JSON.stringify(log.details)
+                              : log.details || ''
+                          }</td>
+                          <td className="p-4 text-sm">{log.ip || log.ipAddress || ''}</td>
                           <td className="p-4">
-                            <Badge
-                              variant={
-                                log.status === "Success"
-                                  ? "default"
-                                  : "destructive"
-                              }
-                              className="text-xs"
-                            >
-                              {log.status}
-                            </Badge>
+                            {/* Optionally show status if present */}
+                            {log.status ? (
+                              <Badge
+                                variant={log.status === "Success" ? "default" : "destructive"}
+                                className="text-xs"
+                              >
+                                {log.status}
+                              </Badge>
+                            ) : null}
                           </td>
                         </tr>
                       ))}
@@ -246,38 +293,48 @@ const AuditLogs = () => {
                       className="border rounded-lg p-4 space-y-2"
                     >
                       <div className="flex items-center justify-between">
-                        <Badge
-                          variant={
-                            log.status === "Success" ? "default" : "destructive"
-                          }
-                          className="text-xs"
-                        >
-                          {log.status}
-                        </Badge>
+                        {log.status ? (
+                          <Badge
+                            variant={log.status === "Success" ? "default" : "destructive"}
+                            className="text-xs"
+                          >
+                            {log.status}
+                          </Badge>
+                        ) : null}
                         <span className="text-xs text-muted-foreground">
-                          {log.timestamp}
+                          {log.createdAt ? new Date(log.createdAt).toLocaleString() : ''}
                         </span>
                       </div>
                       <div>
                         <p className="font-medium text-sm">{log.action}</p>
                         <p className="text-xs text-muted-foreground">
-                          {log.user}
+                          {getUserDisplay(log.user)}
                         </p>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {log.details}
+                        {typeof log.details === 'object' && log.details !== null
+                          ? JSON.stringify(log.details)
+                          : log.details || ''}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {t("ip")}: {log.ipAddress}
+                        {t("ip")}: {log.ip || log.ipAddress || ''}
                       </p>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-            {/* Pagination Info */}
-            <div className="mt-4 text-xs text-muted-foreground">
-              {`Page ${pagination.page} of ${pagination.pages} | Total: ${pagination.total}`}
+            {/* Pagination Controls */}
+            <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+              <span>{`Page ${pagination.page} of ${pagination.pages} | Total: ${pagination.total}`}</span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled={pagination.page === 1 || loading} onClick={() => handlePageChange(pagination.page - 1)}>
+                  Prev
+                </Button>
+                <Button variant="outline" size="sm" disabled={pagination.page === pagination.pages || loading} onClick={() => handlePageChange(pagination.page + 1)}>
+                  Next
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
