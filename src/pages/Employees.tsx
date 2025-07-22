@@ -10,6 +10,8 @@ import { Search, Plus, Filter, MoreHorizontal, Mail, Phone, Trash2, Edit2 } from
 import { getEmployees, addEmployee, updateEmployee, deleteEmployee, getUsers, getEmployeeDocuments, uploadEmployeeDocuments } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const GENDERS = ["Male", "Female", "Other"];
 
@@ -41,6 +43,37 @@ const Employees = () => {
   const [docLoading, setDocLoading] = useState(false);
   const [docError, setDocError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Add/expand translation keys at the top
+  const translations = {
+    en: {
+      allFieldsRequired: "All fields are required.",
+      employeeAdded: "Employee added successfully.",
+      employeeUpdated: "Employee updated successfully.",
+      failedToSave: "Failed to save employee.",
+      deleteEmployeeTitle: "Delete Employee",
+      deleteEmployeeDesc: "Are you sure you want to delete this employee? This action cannot be undone.",
+      employeeDeleted: "Employee deleted successfully.",
+      cancel: "Cancel",
+      delete: "Delete",
+      error: "Error",
+    },
+    fr: {
+      allFieldsRequired: "Tous les champs sont requis.",
+      employeeAdded: "Employé ajouté avec succès.",
+      employeeUpdated: "Employé mis à jour avec succès.",
+      failedToSave: "Échec de l'enregistrement de l'employé.",
+      deleteEmployeeTitle: "Supprimer l'employé",
+      deleteEmployeeDesc: "Êtes-vous sûr de vouloir supprimer cet employé ? Cette action ne peut pas être annulée.",
+      employeeDeleted: "Employé supprimé avec succès.",
+      cancel: "Annuler",
+      delete: "Supprimer",
+      error: "Erreur",
+    },
+  };
+  const { language } = useLanguage();
+  const t = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
 
   // Fetch employees
   const fetchEmployees = () => {
@@ -120,43 +153,47 @@ const Employees = () => {
     setFormError(null);
     setSubmitting(true);
     try {
+      if (!form.user || !form.dob || !form.gender || !form.address || !form.position || !form.emergencyContact.name || !form.emergencyContact.relation || !form.emergencyContact.phone) {
+        setFormError(t("allFieldsRequired"));
+        setSubmitting(false);
+        return;
+      }
       if (formMode === "add") {
         await addEmployee(form);
-        toast({ title: "Employee added", description: "The employee was added successfully." });
+        toast({ title: t("employeeAdded") });
       } else if (formMode === "edit" && editId) {
         await updateEmployee(editId, form);
-        toast({ title: "Employee updated", description: "The employee was updated successfully." });
+        toast({ title: t("employeeUpdated") });
       }
       setShowModal(false);
       fetchEmployees();
     } catch (err: any) {
-      let errorMsg = "Operation failed";
+      let errorMsg = err.message || t("failedToSave");
       if (err?.response?.data?.message) {
         errorMsg = err.response.data.message;
-      } else if (err?.message) {
-        errorMsg = err.message;
       }
-      toast({ title: "Error", description: errorMsg, variant: "destructive" });
+      setFormError(errorMsg);
+      toast({ title: t("error"), description: errorMsg, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
   };
 
   // Delete employee
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this employee?")) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
     try {
-      await deleteEmployee(id);
+      await deleteEmployee(deleteId);
       fetchEmployees();
-      toast({ title: "Employee deleted", description: "The employee was deleted successfully." });
+      toast({ title: t("employeeDeleted") });
     } catch (err: any) {
-      let errorMsg = "Operation failed";
+      let errorMsg = err.message || t("failedToSave");
       if (err?.response?.data?.message) {
         errorMsg = err.response.data.message;
-      } else if (err?.message) {
-        errorMsg = err.message;
       }
-      toast({ title: "Error", description: errorMsg, variant: "destructive" });
+      toast({ title: t("error"), description: errorMsg, variant: "destructive" });
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -268,9 +305,7 @@ const Employees = () => {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(employee)}>
                       <Edit2 className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(employee._id)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
+                    <Button variant="destructive" onClick={() => setDeleteId(employee._id)}>{t("delete")}</Button>
                     {['admin','hr','manager'].includes(user?.role) && (
                       <Button variant="outline" size="icon" onClick={() => openDocModal(employee)}>
                         <MoreHorizontal className="h-4 w-4" />
@@ -463,6 +498,20 @@ const Employees = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Alert Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteEmployeeTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("deleteEmployeeDesc")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteId(null)}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t("delete")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

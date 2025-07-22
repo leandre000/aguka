@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "react-hot-toast";
 import { createPolicy, updatePolicy, deletePolicy, createAudit, updateAudit, deleteAudit, createIncident, updateIncident, deleteIncident } from "@/lib/api";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Compliance = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -50,6 +51,36 @@ const Compliance = () => {
   const [incidentModalOpen, setIncidentModalOpen] = useState(false);
   const [editingIncident, setEditingIncident] = useState<any | null>(null);
   const [incidentDeleteId, setIncidentDeleteId] = useState<string | null>(null);
+
+  // Add/expand translation keys at the top
+  const translations = {
+    en: {
+      allFieldsRequired: "All fields are required.",
+      policyCreated: "Policy created successfully.",
+      policyUpdated: "Policy updated successfully.",
+      failedToSave: "Failed to save policy.",
+      deletePolicyTitle: "Delete Policy",
+      deletePolicyDesc: "Are you sure you want to delete this policy? This action cannot be undone.",
+      policyDeleted: "Policy deleted successfully.",
+      cancel: "Cancel",
+      delete: "Delete",
+      error: "Error",
+    },
+    fr: {
+      allFieldsRequired: "Tous les champs sont requis.",
+      policyCreated: "Politique créée avec succès.",
+      policyUpdated: "Politique mise à jour avec succès.",
+      failedToSave: "Échec de l'enregistrement de la politique.",
+      deletePolicyTitle: "Supprimer la politique",
+      deletePolicyDesc: "Êtes-vous sûr de vouloir supprimer cette politique ? Cette action ne peut pas être annulée.",
+      policyDeleted: "Politique supprimée avec succès.",
+      cancel: "Annuler",
+      delete: "Supprimer",
+      error: "Erreur",
+    },
+  };
+  const { language } = useLanguage();
+  const t = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
 
   // Fetch policies
   useEffect(() => {
@@ -257,6 +288,7 @@ const Compliance = () => {
                         <Button variant="outline" size="sm">
                           Edit
                         </Button>
+                        <Button variant="outline" size="sm" variant="destructive" onClick={() => setPolicyDeleteId(policy._id)}>{t("delete")}</Button>
                       </div>
                     </div>
                   </div>
@@ -373,12 +405,16 @@ const Compliance = () => {
               effectiveDate: formData.get('effectiveDate'),
             };
             try {
+              if (!data.title || !data.description || !data.effectiveDate) {
+                toast.error(t("allFieldsRequired"));
+                return;
+              }
               if (editingPolicy) {
                 await updatePolicy(editingPolicy._id, data);
-                toast.success('Policy updated');
+                toast.success(t("policyUpdated"));
               } else {
                 await createPolicy(data);
-                toast.success('Policy created');
+                toast.success(t("policyCreated"));
               }
               setPolicyModalOpen(false);
               setEditingPolicy(null);
@@ -386,7 +422,7 @@ const Compliance = () => {
               setPoliciesLoading(true);
               getPolicies().then(setPolicies).finally(() => setPoliciesLoading(false));
             } catch (err) {
-              toast.error('Failed to save policy');
+              toast.error(t("failedToSave"));
             }
           }}>
             <input name="title" placeholder="Title" defaultValue={editingPolicy?.title || ''} required className="input mb-2 w-full" />
@@ -405,22 +441,22 @@ const Compliance = () => {
       <AlertDialog open={!!policyDeleteId} onOpenChange={open => !open && setPolicyDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Policy?</AlertDialogTitle>
-            <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+            <AlertDialogTitle>{t("deletePolicyTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("deletePolicyDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPolicyDeleteId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setPolicyDeleteId(null)}>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={async () => {
               try {
                 await deletePolicy(policyDeleteId);
-                toast.success('Policy deleted');
+                toast.success(t("policyDeleted"));
                 setPolicyDeleteId(null);
                 setPoliciesLoading(true);
                 getPolicies().then(setPolicies).finally(() => setPoliciesLoading(false));
               } catch {
-                toast.error('Failed to delete policy');
+                toast.error(t("failedToSave"));
               }
-            }}>Delete</AlertDialogAction>
+            }}>{t("delete")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -443,6 +479,10 @@ const Compliance = () => {
               status: formData.get('status'),
             };
             try {
+              if (!data.title || !data.description || !data.auditDate) {
+                toast.error(t("allFieldsRequired"));
+                return;
+              }
               if (editingAudit) {
                 await updateAudit(editingAudit._id, data);
                 toast.success('Audit updated');
@@ -517,6 +557,10 @@ const Compliance = () => {
               status: formData.get('status'),
             };
             try {
+              if (!data.title || !data.description || !data.incidentDate) {
+                toast.error(t("allFieldsRequired"));
+                return;
+              }
               if (editingIncident) {
                 await updateIncident(editingIncident._id, data);
                 toast.success('Incident updated');

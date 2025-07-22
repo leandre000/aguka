@@ -33,6 +33,17 @@ import { EmployeePortalLayout } from "@/components/layouts/EmployeePortalLayout"
 import React, { useEffect, useState } from "react";
 import { getMyLeaves, requestLeave } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { deleteLeave } from "@/lib/api";
 
 const LEAVE_TYPES = [
   { value: "vacation", label: "Vacation" },
@@ -55,6 +66,7 @@ export default function LeaveRequests() {
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // Fetch leave requests
   const fetchLeaves = () => {
@@ -81,14 +93,19 @@ export default function LeaveRequests() {
     setFormError(null);
     setSubmitting(true);
     try {
+      if (!form.type || !form.startDate || !form.endDate || !form.reason) {
+        setFormError(t("allFieldsRequired"));
+        setSubmitting(false);
+        return;
+      }
       await requestLeave(form);
       setShowModal(false);
       setForm({ type: "vacation", startDate: "", endDate: "", reason: "" });
       fetchLeaves();
-      toast({ title: "Leave request submitted", description: "Your leave request was submitted successfully." });
+      toast({ title: t("leaveRequested") });
     } catch (err: any) {
-      setFormError(err.message || "Failed to submit leave request");
-      toast({ title: "Error", description: err.message || "Failed to submit leave request", variant: "destructive" });
+      setFormError(err.message || t("failedToSave"));
+      toast({ title: t("error"), description: err.message || t("failedToSave"), variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -107,6 +124,19 @@ export default function LeaveRequests() {
     vacation: { used: 10, total: 25 },
     sick: { used: 3, total: 15 },
     personal: { used: 2, total: 5 },
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteLeave(deleteId);
+      fetchLeaves();
+      toast({ title: t("leaveDeleted") });
+    } catch (err: any) {
+      toast({ title: t("error"), description: err.message || t("failedToSave"), variant: "destructive" });
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   return (
@@ -270,6 +300,9 @@ export default function LeaveRequests() {
                         <TableCell className="max-w-xs truncate">
                           {request.reason}
                         </TableCell>
+                        <TableCell>
+                          <Button variant="destructive" onClick={() => setDeleteId(request._id)}>{t("delete")}</Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -279,6 +312,18 @@ export default function LeaveRequests() {
           </CardContent>
         </Card>
       </div>
+      <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteLeaveTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("deleteLeaveDesc")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteId(null)}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t("delete")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </EmployeePortalLayout>
   );
 }

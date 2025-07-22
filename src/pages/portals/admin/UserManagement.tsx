@@ -19,6 +19,7 @@ import { Select } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 
 const translations = {
   en: {
@@ -44,6 +45,19 @@ const translations = {
     active: "Active",
     inactive: "Inactive",
     pendingLeaveRequests: "Pending Leave Requests",
+    deleteUserTitle: "Delete User",
+    deleteUserDesc: "Are you sure you want to delete this user? This action cannot be undone.",
+    userDeleted: "User deleted successfully",
+    failedToDeleteUser: "Failed to delete user",
+    allFieldsRequired: "All fields are required.",
+    invalidEmail: "Please enter a valid email address.",
+    passwordMinLength: "Password must be at least 6 characters.",
+    deleting: "Deleting...",
+    delete: "Delete",
+    common: {
+      error: "Error",
+      cancel: "Cancel",
+    },
   },
   fr: {
     userManagement: "Gestion des utilisateurs",
@@ -69,6 +83,19 @@ const translations = {
     active: "Actif",
     inactive: "Inactif",
     pendingLeaveRequests: "Demandes de congé en attente",
+    deleteUserTitle: "Supprimer l'utilisateur",
+    deleteUserDesc: "Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action ne peut pas être annulée.",
+    userDeleted: "Utilisateur supprimé avec succès",
+    failedToDeleteUser: "Échec de la suppression de l'utilisateur",
+    allFieldsRequired: "Tous les champs sont requis.",
+    invalidEmail: "Veuillez entrer une adresse email valide.",
+    passwordMinLength: "Le mot de passe doit comporter au moins 6 caractères.",
+    deleting: "Suppression...",
+    delete: "Supprimer",
+    common: {
+      error: "Erreur",
+      cancel: "Annuler",
+    },
   },
 };
 
@@ -100,6 +127,7 @@ const UserManagement = () => {
     department: ""
   });
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -129,12 +157,12 @@ const UserManagement = () => {
   const handleEditUser = async () => {
     // Validation
     if (!editForm.Names.trim() || !editForm.Email.trim() || !editForm.role.trim() || !editForm.department.trim()) {
-      setEditFormError("All fields are required.");
+      setEditFormError(t("allFieldsRequired") || "All fields are required.");
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(editForm.Email)) {
-      setEditFormError("Please enter a valid email address.");
+      setEditFormError(t("invalidEmail") || "Please enter a valid email address.");
       return;
     }
     setEditFormError(null);
@@ -230,17 +258,17 @@ const UserManagement = () => {
   const handleAddUser = async () => {
     // Validation
     if (!form.Names.trim() || !form.Email.trim() || !form.password.trim() || !form.role.trim() || !form.department.trim()) {
-      setFormError("All fields are required.");
+      setFormError(t("allFieldsRequired") || "All fields are required.");
       return;
     }
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.Email)) {
-      setFormError("Please enter a valid email address.");
+      setFormError(t("invalidEmail") || "Please enter a valid email address.");
       return;
     }
     if (form.password.length < 6) {
-      setFormError("Password must be at least 6 characters.");
+      setFormError(t("passwordMinLength") || "Password must be at least 6 characters.");
       return;
     }
     setFormError(null);
@@ -282,14 +310,14 @@ const UserManagement = () => {
   };
 
   // Delete user handler
-  const handleDeleteUser = async (userId: string) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
-    setDeleteLoading(userId);
+  const handleDeleteUser = async () => {
+    if (!deleteUserId) return;
+    setDeleteLoading(deleteUserId);
     try {
-      await apiFetch(`/users/${userId}`, {
+      await apiFetch(`/users/${deleteUserId}`, {
         method: "DELETE"
       });
-      toast({ title: "User deleted successfully" });
+      toast({ title: t("userDeleted") || "User deleted successfully" });
       // Refresh users
       getUsers().then((res: any) => {
         const userList = res.data || [];
@@ -305,16 +333,16 @@ const UserManagement = () => {
         );
       });
     } catch (err: any) {
-      // Improved error message extraction
-      let errorMsg = "Failed to delete user";
+      let errorMsg = t("failedToDeleteUser") || "Failed to delete user";
       if (err?.response?.data?.message) {
         errorMsg = err.response.data.message;
       } else if (err?.message) {
         errorMsg = err.message;
       }
-      toast({ title: "Error", description: errorMsg, variant: "destructive" });
+      toast({ title: t("common.error"), description: errorMsg, variant: "destructive" });
     } finally {
       setDeleteLoading(null);
+      setDeleteUserId(null);
     }
   };
 
@@ -524,8 +552,8 @@ const UserManagement = () => {
                         View
                       </Button>
                       {isAdmin && (
-                        <Button variant="destructive" size="sm" className="text-xs" onClick={() => handleDeleteUser(user._id)} disabled={deleteLoading === user._id}>
-                          {deleteLoading === user._id ? "Deleting..." : "Delete"}
+                        <Button variant="destructive" size="sm" className="text-xs" onClick={() => setDeleteUserId(user._id)} disabled={deleteLoading === user._id}>
+                          {deleteLoading === user._id ? t("deleting") || "Deleting..." : t("delete") || "Delete"}
                         </Button>
                       )}
                     </div>
@@ -625,6 +653,9 @@ const UserManagement = () => {
               <option value="admin">admin</option>
               <option value="employee">employee</option>
               <option value="manager">manager</option>
+              <option value="recruiter">recruiter</option>
+              <option value="trainer">trainer</option>
+              <option value="auditor">auditor</option>
             </select>
             <Input
               placeholder="Department"
@@ -671,6 +702,9 @@ const UserManagement = () => {
               <option value="admin">admin</option>
               <option value="employee">employee</option>
               <option value="manager">manager</option>
+              <option value="recruiter">recruiter</option>
+              <option value="trainer">trainer</option>
+              <option value="auditor">auditor</option>
             </select>
             <Input
               placeholder="Department"
@@ -718,6 +752,19 @@ const UserManagement = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteUserId} onOpenChange={open => !open && setDeleteUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteUserTitle") || "Delete User"}</AlertDialogTitle>
+            <AlertDialogDescription>{t("deleteUserDesc") || "Are you sure you want to delete this user? This action cannot be undone."}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteUserId(null)}>{t("common.cancel") || "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteUser}>{t("delete") || "Delete"}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminPortalLayout>
   );
 };

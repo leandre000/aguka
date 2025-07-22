@@ -13,6 +13,8 @@ import { useLocation } from "react-router-dom";
 import { AdminPortalLayout } from "@/components/layouts/AdminPortalLayout";
 import { ManagerPortalLayout } from "@/components/layouts/ManagerPortalLayout";
 import { Combobox } from "@headlessui/react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const getLayout = (pathname: string) => {
   if (pathname.startsWith("/admin-portal")) return AdminPortalLayout;
@@ -42,12 +44,44 @@ export default function SuccessionPlanning() {
   const [candidateError, setCandidateError] = useState<string | null>(null);
   const [candidateSubmitting, setCandidateSubmitting] = useState(false);
   const [employeeQuery, setEmployeeQuery] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Add/expand translation keys at the top
+  const translations = {
+    en: {
+      allFieldsRequired: "All fields are required.",
+      planAdded: "Succession plan added successfully.",
+      planUpdated: "Succession plan updated successfully.",
+      failedToSave: "Failed to save plan.",
+      deletePlanTitle: "Delete Succession Plan",
+      deletePlanDesc: "Are you sure you want to delete this succession plan? This action cannot be undone.",
+      planDeleted: "Succession plan deleted successfully.",
+      cancel: "Cancel",
+      delete: "Delete",
+      error: "Error",
+    },
+    fr: {
+      allFieldsRequired: "Tous les champs sont requis.",
+      planAdded: "Plan de succession ajouté avec succès.",
+      planUpdated: "Plan de succession mis à jour avec succès.",
+      failedToSave: "Échec de l'enregistrement du plan.",
+      deletePlanTitle: "Supprimer le plan de succession",
+      deletePlanDesc: "Êtes-vous sûr de vouloir supprimer ce plan de succession ? Cette action ne peut pas être annulée.",
+      planDeleted: "Plan de succession supprimé avec succès.",
+      cancel: "Annuler",
+      delete: "Supprimer",
+      error: "Erreur",
+    },
+  };
+  const { language } = useLanguage();
+  const t = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
 
   // Filter employees for combobox/autocomplete
   const filteredEmployees =
     employeeQuery === ""
-      ? employees
+      ? employees.filter(e => e._id && (e.user?.Names || e.user?.Email))
       : employees.filter((e) => {
+          if (!e._id || !(e.user?.Names || e.user?.Email)) return false;
           const name = (e.user?.Names || e.user?.name || "").toLowerCase();
           const email = (e.user?.Email || e.user?.email || "").toLowerCase();
           const role = (e.user?.role || "").toLowerCase();
@@ -102,33 +136,39 @@ export default function SuccessionPlanning() {
     setFormError(null);
     setSubmitting(true);
     try {
+      if (!form.keyRole.trim()) {
+        setFormError(t("allFieldsRequired"));
+        setSubmitting(false);
+        return;
+      }
       if (formMode === "add") {
         await createSuccessionPlan(form);
-        toast({ title: "Plan added", description: "The succession plan was added successfully." });
+        toast({ title: t("planAdded") });
       } else if (formMode === "edit" && editId) {
         await updateSuccessionPlan(editId, form);
-        toast({ title: "Plan updated", description: "The succession plan was updated successfully." });
+        toast({ title: t("planUpdated") });
       }
       setShowModal(false);
       fetchPlans();
     } catch (err: any) {
-      setFormError(err.message || "Failed to save plan");
-      toast({ title: "Error", description: err.message || "Failed to save plan", variant: "destructive" });
+      setFormError(err.message || t("failedToSave"));
+      toast({ title: t("error"), description: err.message || t("failedToSave"), variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
   };
 
   // Delete plan
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this succession plan?")) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
     try {
-      await deleteSuccessionPlan(id);
+      await deleteSuccessionPlan(deleteId);
       fetchPlans();
-      toast({ title: "Plan deleted", description: "The succession plan was deleted successfully." });
+      toast({ title: t("planDeleted") });
     } catch (err: any) {
-      alert("Failed to delete plan");
-      toast({ title: "Error", description: err.message || "Failed to delete plan", variant: "destructive" });
+      toast({ title: t("error"), description: err.message || t("failedToSave"), variant: "destructive" });
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -145,12 +185,15 @@ export default function SuccessionPlanning() {
   // Add candidate
   const handleAddCandidate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!candidatePlan || !candidateId) return;
+    if (!candidatePlan || !candidateId) {
+      setCandidateError("Please select a valid candidate.");
+      return;
+    }
     setCandidateError(null);
     setCandidateSubmitting(true);
     try {
       await addSuccessionCandidate(candidatePlan._id, {
-        employee: candidateId,
+        candidateId: candidateId, // should be a string id
         readiness: candidateReadiness,
         notes: candidateNotes,
       });
@@ -208,7 +251,7 @@ export default function SuccessionPlanning() {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(plan)}>
                       <Edit2 className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(plan._id)}>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(plan._id)}>
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </div>
@@ -285,7 +328,7 @@ export default function SuccessionPlanning() {
                       className="w-full border rounded-md px-3 py-2 mt-1"
                       displayValue={(id: string) => {
                         const emp = employees.find((e) => e._id === id);
-                        return emp ? `${emp.user?.Names} (${emp.user?.Email})` : "";
+                        return emp ? `${emp.user?.Names || emp.user?.Email || 'Unknown'}` : "";
                       }}
                       onChange={e => setEmployeeQuery(e.target.value)}
                       placeholder="Type to search employee..."
@@ -303,7 +346,12 @@ export default function SuccessionPlanning() {
                             `cursor-pointer px-3 py-2 ${active ? "bg-accent" : ""}`
                           }
                         >
-                          {emp.user?.Names} ({emp.user?.Email})
+                          {emp.user?.Names || emp.user?.Email || 'Unknown'}
+                          {emp.position || emp.user?.role ? (
+                            <span className="text-xs text-muted-foreground ml-2">
+                              ({emp.position || emp.user?.role})
+                            </span>
+                          ) : null}
                         </Combobox.Option>
                       ))}
                     </Combobox.Options>
@@ -340,6 +388,20 @@ export default function SuccessionPlanning() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Modal */}
+        <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("deletePlanTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>{t("deletePlanDesc")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeleteId(null)}>{t("cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>{t("delete")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Layout>
   );

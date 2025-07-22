@@ -65,7 +65,7 @@ export function RecruiterPortalSidebar() {
     },
     {
       title: "AI Tools",
-      url: "/ai-tools",
+      url: "/recruiter-portal/ai-tools",
       icon: BarChart,
     },
   ];

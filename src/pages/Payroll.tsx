@@ -9,6 +9,8 @@ import { DollarSign, Download, Calendar, Search, Plus, FileText, Trash2, Edit2, 
 import { getPayrolls, addPayroll, updatePayroll, deletePayroll, disbursePayroll, getPayslips } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const defaultForm = {
   employee: "",
@@ -37,6 +39,37 @@ const Payroll = () => {
   const [payslips, setPayslips] = useState<any[]>([]);
   const isAdminOrManager = user?.role === "admin" || user?.role === "manager";
   const isEmployee = user?.role === "employee";
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Add/expand translation keys at the top
+  const translations = {
+    en: {
+      allFieldsRequired: "All fields are required.",
+      payrollAdded: "Payroll record added successfully.",
+      payrollUpdated: "Payroll record updated successfully.",
+      failedToSave: "Failed to save payroll record.",
+      deletePayrollTitle: "Delete Payroll Record",
+      deletePayrollDesc: "Are you sure you want to delete this payroll record? This action cannot be undone.",
+      payrollDeleted: "Payroll record deleted successfully.",
+      cancel: "Cancel",
+      delete: "Delete",
+      error: "Error",
+    },
+    fr: {
+      allFieldsRequired: "Tous les champs sont requis.",
+      payrollAdded: "Fiche de paie ajoutée avec succès.",
+      payrollUpdated: "Fiche de paie mise à jour avec succès.",
+      failedToSave: "Échec de l'enregistrement de la fiche de paie.",
+      deletePayrollTitle: "Supprimer la fiche de paie",
+      deletePayrollDesc: "Êtes-vous sûr de vouloir supprimer cette fiche de paie ? Cette action ne peut pas être annulée.",
+      payrollDeleted: "Fiche de paie supprimée avec succès.",
+      cancel: "Annuler",
+      delete: "Supprimer",
+      error: "Erreur",
+    },
+  };
+  const { language } = useLanguage();
+  const t = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
 
   // Fetch payrolls
   const fetchPayrolls = () => {
@@ -119,43 +152,48 @@ const Payroll = () => {
     setFormError(null);
     setSubmitting(true);
     try {
+      if (!form.employee || !form.baseSalary || !form.bonus || !form.overtime || !form.deductions || !form.tax || !form.netPay || !form.period) {
+        setFormError(t("allFieldsRequired"));
+        setSubmitting(false);
+        return;
+      }
       if (formMode === "add") {
         await addPayroll(form);
-        toast({ title: "Payroll added", description: "The payroll record was added successfully." });
+        toast({ title: t("payrollAdded") });
       } else if (formMode === "edit" && editId) {
         await updatePayroll(editId, form);
-        toast({ title: "Payroll updated", description: "The payroll record was updated successfully." });
+        toast({ title: t("payrollUpdated") });
       }
       setShowModal(false);
       fetchPayrolls();
     } catch (err: any) {
-      let errorMsg = "Operation failed";
+      let errorMsg = err.message || t("failedToSave");
       if (err?.response?.data?.message) {
         errorMsg = err.response.data.message;
-      } else if (err?.message) {
-        errorMsg = err.message;
       }
-      toast({ title: "Error", description: errorMsg, variant: "destructive" });
+      setFormError(errorMsg);
+      toast({ title: t("error"), description: errorMsg, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
   };
 
   // Delete payroll
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this payroll record?")) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    if (!window.confirm(t("deletePayrollDesc"))) return;
     try {
-      await deletePayroll(id);
+      await deletePayroll(deleteId);
       fetchPayrolls();
-      toast({ title: "Payroll deleted", description: "The payroll record was deleted successfully." });
+      toast({ title: t("payrollDeleted") });
     } catch (err: any) {
-      let errorMsg = "Operation failed";
+      let errorMsg = err.message || t("failedToSave");
       if (err?.response?.data?.message) {
         errorMsg = err.response.data.message;
-      } else if (err?.message) {
-        errorMsg = err.message;
       }
-      toast({ title: "Error", description: errorMsg, variant: "destructive" });
+      toast({ title: t("error"), description: errorMsg, variant: "destructive" });
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -266,7 +304,7 @@ const Payroll = () => {
                               <Edit2 className="h-4 w-4 mr-1" />
                               Edit
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => handleDelete(record._id)}>
+                            <Button variant="outline" size="sm" onClick={() => setDeleteId(record._id)}>
                               <Trash2 className="h-4 w-4 mr-1 text-red-500" />
                               Delete
                             </Button>
@@ -351,6 +389,18 @@ const Payroll = () => {
         )}
       </Tabs>
       {/* Add/Edit Modal (for admin/manager) can be implemented here if needed */}
+      <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deletePayrollTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("deletePayrollDesc")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteId(null)}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t("delete")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

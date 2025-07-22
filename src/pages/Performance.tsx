@@ -9,6 +9,18 @@ import { TrendingUp, Target, Award, Calendar, Plus, FileText, Edit2, Trash2 } fr
 import { getReviews, addReview, updateReview, deleteReview } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const defaultForm = {
   employee: "",
@@ -33,6 +45,37 @@ const Performance = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Add/expand translation keys at the top
+  const translations = {
+    en: {
+      allFieldsRequired: "All fields are required.",
+      reviewAdded: "Performance review added successfully.",
+      reviewUpdated: "Performance review updated successfully.",
+      failedToSave: "Failed to save review.",
+      deleteReviewTitle: "Delete Review",
+      deleteReviewDesc: "Are you sure you want to delete this review? This action cannot be undone.",
+      reviewDeleted: "Performance review deleted successfully.",
+      cancel: "Cancel",
+      delete: "Delete",
+      error: "Error",
+    },
+    fr: {
+      allFieldsRequired: "Tous les champs sont requis.",
+      reviewAdded: "Évaluation de performance ajoutée avec succès.",
+      reviewUpdated: "Évaluation de performance mise à jour avec succès.",
+      failedToSave: "Échec de l'enregistrement de l'évaluation.",
+      deleteReviewTitle: "Supprimer l'évaluation",
+      deleteReviewDesc: "Êtes-vous sûr de vouloir supprimer cette évaluation ? Cette action ne peut pas être annulée.",
+      reviewDeleted: "Évaluation de performance supprimée avec succès.",
+      cancel: "Annuler",
+      delete: "Supprimer",
+      error: "Erreur",
+    },
+  };
+  const { language } = useLanguage();
+  const t = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
 
   // Fetch reviews
   const fetchReviews = () => {
@@ -79,43 +122,41 @@ const Performance = () => {
     setFormError(null);
     setSubmitting(true);
     try {
+      if (!form.employee || !form.period || !form.rating || !form.feedback || !form.objectives) {
+        setFormError(t("allFieldsRequired"));
+        setSubmitting(false);
+        return;
+      }
       if (formMode === "add") {
         await addReview(form);
-        toast({ title: "Review added", description: "The performance review was added successfully." });
+        toast({ title: t("reviewAdded") });
       } else if (formMode === "edit" && editId) {
         await updateReview(editId, form);
-        toast({ title: "Review updated", description: "The performance review was updated successfully." });
+        toast({ title: t("reviewUpdated") });
       }
       setShowForm(false);
       fetchReviews();
     } catch (err: any) {
-      let errorMsg = "Operation failed";
-      if (err?.response?.data?.message) {
-        errorMsg = err.response.data.message;
-      } else if (err?.message) {
-        errorMsg = err.message;
-      }
-      toast({ title: "Error", description: errorMsg, variant: "destructive" });
+      let errorMsg = err.message || t("failedToSave");
+      setFormError(errorMsg);
+      toast({ title: t("error"), description: errorMsg, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
   };
 
   // Delete review
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this review?")) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
     try {
-      await deleteReview(id);
+      await deleteReview(deleteId);
       fetchReviews();
-      toast({ title: "Review deleted", description: "The performance review was deleted successfully." });
+      toast({ title: t("reviewDeleted") });
     } catch (err: any) {
-      let errorMsg = "Operation failed";
-      if (err?.response?.data?.message) {
-        errorMsg = err.response.data.message;
-      } else if (err?.message) {
-        errorMsg = err.message;
-      }
-      toast({ title: "Error", description: errorMsg, variant: "destructive" });
+      let errorMsg = err.message || t("failedToSave");
+      toast({ title: t("error"), description: errorMsg, variant: "destructive" });
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -210,10 +251,21 @@ const Performance = () => {
                               <Edit2 className="h-4 w-4 mr-1" />
                               Edit
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => handleDelete(review._id)}>
-                              <Trash2 className="h-4 w-4 mr-1 text-red-500" />
-                              Delete
-                            </Button>
+                            <AlertDialog open={deleteId === review._id} onOpenChange={open => !open && setDeleteId(null)}>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm" onClick={() => setDeleteId(review._id)}>{t("delete")}</Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>{t("deleteReviewTitle")}</AlertDialogTitle>
+                                  <AlertDialogDescription>{t("deleteReviewDesc")}</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel onClick={() => setDeleteId(null)}>{t("cancel")}</AlertDialogCancel>
+                                  <AlertDialogAction onClick={handleDelete}>{t("delete")}</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                       )}

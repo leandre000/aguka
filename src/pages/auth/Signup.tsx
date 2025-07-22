@@ -6,6 +6,27 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Building2, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useLanguage } from "@/hooks/useLanguage";
+import { toast } from "@/components/ui/use-toast";
+
+const translations = {
+  en: {
+    allFieldsRequired: "All fields are required.",
+    passwordsDontMatch: "Passwords don't match!",
+    accountCreated: "Account created successfully! Please sign in.",
+    failedToSignup: "Failed to create account.",
+    error: "Error",
+  },
+  fr: {
+    allFieldsRequired: "Tous les champs sont requis.",
+    passwordsDontMatch: "Les mots de passe ne correspondent pas !",
+    accountCreated: "Compte créé avec succès ! Veuillez vous connecter.",
+    failedToSignup: "Échec de la création du compte.",
+    error: "Erreur",
+  },
+};
+const { language } = useLanguage();
+const t = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -41,12 +62,12 @@ const Signup = () => {
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
+      toast({ title: t("error"), description: t("passwordsDontMatch"), variant: "destructive" });
       return;
     }
     
     // Simulate signup success
-    alert("Account created successfully! Please sign in.");
+    toast({ title: t("error"), description: t("accountCreated"), variant: "success" });
     navigate("/login");
   };
 

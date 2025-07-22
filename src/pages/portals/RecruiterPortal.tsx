@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +8,11 @@ import { UserPlus, Briefcase, Calendar, Users, Eye, MapPin, Clock } from "lucide
 import { RecruiterPortalLayout } from "@/components/layouts/RecruiterPortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const RecruiterPortal = () => {
   const { t } = useLanguage();
+  const { user, logout } = useAuth();
   const [recruitmentStats, setRecruitmentStats] = useState({
     activePositions: 0,
     totalApplicants: 0,
@@ -19,6 +22,13 @@ const RecruiterPortal = () => {
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Dynamic lists
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [interviews, setInterviews] = useState<any[]>([]);
+  const [loadingLists, setLoadingLists] = useState(true);
+  const [errorLists, setErrorLists] = useState("");
 
   useEffect(() => {
     setLoading(true);
@@ -56,92 +66,22 @@ const RecruiterPortal = () => {
       .finally(() => setLoading(false));
   }, [t]);
 
-  const activeJobs = [
-    {
-      id: 1,
-      title: "Senior Software Engineer",
-      department: "Engineering",
-      location: "Remote",
-      type: "Full-time",
-      applicants: 15,
-      posted: "2024-01-10",
-      status: "Active"
-    },
-    {
-      id: 2,
-      title: "UX Designer",
-      department: "Design",
-      location: "New York",
-      type: "Full-time",
-      applicants: 8,
-      posted: "2024-01-15",
-      status: "Active"
-    },
-    {
-      id: 3,
-      title: "Marketing Manager",
-      department: "Marketing",
-      location: "San Francisco",
-      type: "Full-time",
-      applicants: 12,
-      posted: "2024-01-05",
-      status: "Review"
-    }
-  ];
-
-  const candidates = [
-    {
-      id: 1,
-      name: "Alice Johnson",
-      position: "Senior Software Engineer",
-      email: "alice.johnson@email.com",
-      stage: "Technical Interview",
-      score: 85,
-      appliedDate: "2024-01-20",
-      status: "In Progress"
-    },
-    {
-      id: 2,
-      name: "Bob Martinez",
-      position: "UX Designer",
-      email: "bob.martinez@email.com",
-      stage: "Portfolio Review",
-      score: 78,
-      appliedDate: "2024-01-22",
-      status: "Under Review"
-    },
-    {
-      id: 3,
-      name: "Carol Lee",
-      position: "Marketing Manager",
-      stage: "Final Interview",
-      email: "carol.lee@email.com",
-      score: 92,
-      appliedDate: "2024-01-18",
-      status: "Offer Extended"
-    }
-  ];
-
-  const upcomingInterviews = [
-    {
-      id: 1,
-      candidate: "Alice Johnson",
-      position: "Senior Software Engineer",
-      date: "2024-01-30",
-      time: "10:00 AM",
-      interviewer: "John Smith",
-      type: "Technical"
-    },
-    {
-      id: 2,
-      candidate: "David Wilson",
-      position: "UX Designer",
-      date: "2024-01-31",
-      time: "2:00 PM",
-      interviewer: "Sarah Brown",
-      type: "Design Review"
-    }
-  ];
+  useEffect(() => {
+    setLoadingLists(true);
+    setErrorLists("");
+    Promise.all([
+      apiFetch("/jobs"),
+      apiFetch("/applications"),
+      apiFetch("/interviews")
+    ])
+      .then(([jobsRes, applicationsRes, interviewsRes]) => {
+        setJobs(Array.isArray(jobsRes) ? jobsRes : Array.isArray(jobsRes.data) ? jobsRes.data : []);
+        setCandidates(Array.isArray(applicationsRes) ? applicationsRes : Array.isArray(applicationsRes.data) ? applicationsRes.data : []);
+        setInterviews(Array.isArray(interviewsRes) ? interviewsRes : Array.isArray(interviewsRes.data) ? interviewsRes.data : []);
+      })
+      .catch(() => setErrorLists("Failed to load lists"))
+      .finally(() => setLoadingLists(false));
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -156,9 +96,17 @@ const RecruiterPortal = () => {
   return (
     <RecruiterPortalLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{t("recruiter.title")}</h1>
-          <p className="text-muted-foreground">{t("recruiter.subtitle")}</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">{t("recruiter.title")}</h1>
+            <p className="text-muted-foreground">{t("recruiter.subtitle")}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {user && <span className="text-sm text-muted-foreground">{user.Names || user.name || user.email}</span>}
+            <Button variant="outline" size="sm" onClick={logout}>
+              {t("common.logout") || "Logout"}
+            </Button>
+          </div>
         </div>
 
       {/* Recruitment Overview */}
@@ -225,137 +173,156 @@ const RecruiterPortal = () => {
           </div>
 
           <div className="space-y-4">
-            {activeJobs.map((job) => (
-              <Card key={job.id}>
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Briefcase className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold">{job.title}</h3>
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <span>{job.department}</span>
-                        <span>•</span>
-                        <div className="flex items-center space-x-1">
-                          <MapPin className="h-3 w-3" />
-                          <span>{job.location}</span>
+            {loadingLists ? (
+              <div className="p-4 text-center text-muted-foreground">Loading jobs...</div>
+            ) : errorLists ? (
+              <div className="p-4 text-center text-red-500">{errorLists}</div>
+            ) : jobs.length === 0 ? (
+              <div className="p-4 text-center text-muted-foreground">No jobs found.</div>
+            ) : (
+              jobs.map((job) => (
+                <Card key={job._id}>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Briefcase className="h-5 w-5 text-primary" />
+                          <h3 className="text-lg font-semibold">{job.title}</h3>
                         </div>
-                        <span>•</span>
-                        <span>{job.type}</span>
+                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                          <span>{job.department}</span>
+                          <span>•</span>
+                          <div className="flex items-center space-x-1">
+                            <MapPin className="h-3 w-3" />
+                            <span>{job.location}</span>
+                          </div>
+                          <span>•</span>
+                          <span>{job.employmentType}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4" />
+                          <span className="text-sm">{job.applicants ? job.applicants.length : 0} {t("recruiter.applicants")}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {t("recruiter.posted")}: {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : "-"}
+                        </p>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4" />
-                        <span className="text-sm">{job.applicants} {t("recruiter.applicants")}</span>
+                      <div className="text-right space-y-2">
+                        <Badge className={getStatusColor(job.status)}>
+                          {job.status}
+                        </Badge>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Eye className="h-4 w-4 mr-1" />
+                            {t("common.view")}
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            {t("common.edit")}
+                          </Button>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {t("recruiter.posted")}: {new Date(job.posted).toLocaleDateString()}
-                      </p>
                     </div>
-                    
-                    <div className="text-right space-y-2">
-                      <Badge className={getStatusColor(job.status)}>
-                        {job.status}
-                      </Badge>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-1" />
-                          {t("common.view")}
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          {t("common.edit")}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="candidates" className="space-y-4">
           <h2 className="text-xl font-semibold">{t("recruiter.candidatePipeline")}</h2>
-          
           <div className="space-y-4">
-            {candidates.map((candidate) => (
-              <Card key={candidate.id}>
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold">{candidate.name}</h3>
-                      <p className="text-sm text-muted-foreground">{t("recruiter.appliedFor")}: {candidate.position}</p>
-                      <p className="text-sm">{candidate.email}</p>
-                      <div className="flex items-center space-x-4 text-sm">
-                        <span className="font-medium">{t("recruiter.stage")}:</span>
-                        <span>{candidate.stage}</span>
-                        <span className="font-medium">{t("recruiter.score")}:</span>
-                        <span className="text-primary font-bold">{candidate.score}%</span>
+            {loadingLists ? (
+              <div className="p-4 text-center text-muted-foreground">Loading candidates...</div>
+            ) : errorLists ? (
+              <div className="p-4 text-center text-red-500">{errorLists}</div>
+            ) : candidates.length === 0 ? (
+              <div className="p-4 text-center text-muted-foreground">No candidates found.</div>
+            ) : (
+              candidates.map((candidate) => (
+                <Card key={candidate._id}>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-semibold">{candidate.applicant?.Names || candidate.applicant?.name || candidate.applicant?.email || "-"}</h3>
+                        <p className="text-sm text-muted-foreground">{t("recruiter.appliedFor")}: {candidate.job?.title || "-"}</p>
+                        <p className="text-sm">{candidate.applicant?.email || "-"}</p>
+                        <div className="flex items-center space-x-4 text-sm">
+                          <span className="font-medium">{t("recruiter.stage")}:</span>
+                          <span>{candidate.stage || "-"}</span>
+                          <span className="font-medium">{t("recruiter.status")}:</span>
+                          <span className="text-primary font-bold">{candidate.status || "-"}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {t("recruiter.applied")}: {candidate.createdAt ? new Date(candidate.createdAt).toLocaleDateString() : "-"}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {t("recruiter.applied")}: {new Date(candidate.appliedDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                    
-                    <div className="text-right space-y-2">
-                      <Badge className={getStatusColor(candidate.status)}>
-                        {candidate.status}
-                      </Badge>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          {t("recruiter.viewProfile")}
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          {t("recruiter.scheduleInterview")}
-                        </Button>
+                      <div className="text-right space-y-2">
+                        <Badge className={getStatusColor(candidate.status)}>
+                          {candidate.status}
+                        </Badge>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            {t("recruiter.viewProfile")}
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            {t("recruiter.scheduleInterview")}
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="interviews" className="space-y-4">
           <h2 className="text-xl font-semibold">{t("recruiter.upcomingInterviews")}</h2>
-          
           <div className="space-y-4">
-            {upcomingInterviews.map((interview) => (
-              <Card key={interview.id}>
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold">{interview.candidate}</h3>
-                      <p className="text-sm text-muted-foreground">{interview.position}</p>
-                      <div className="flex items-center space-x-4 text-sm">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{new Date(interview.date).toLocaleDateString()}</span>
+            {loadingLists ? (
+              <div className="p-4 text-center text-muted-foreground">Loading interviews...</div>
+            ) : errorLists ? (
+              <div className="p-4 text-center text-red-500">{errorLists}</div>
+            ) : interviews.length === 0 ? (
+              <div className="p-4 text-center text-muted-foreground">No interviews found.</div>
+            ) : (
+              interviews.map((interview) => (
+                <Card key={interview._id}>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-semibold">{interview.candidate?.Names || interview.candidate?.name || interview.candidate?.email || "-"}</h3>
+                        <p className="text-sm text-muted-foreground">{interview.job?.title || "-"}</p>
+                        <div className="flex items-center space-x-4 text-sm">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>{interview.date ? new Date(interview.date).toLocaleDateString() : "-"}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{interview.time || "-"}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-4 w-4" />
-                          <span>{interview.time}</span>
-                        </div>
+                        <p className="text-sm">
+                          <span className="font-medium">{t("recruiter.interviewer")}:</span> {interview.interviewer?.Names || interview.interviewer?.name || interview.interviewer?.email || "-"}
+                        </p>
+                        <Badge variant="outline">{interview.type || "-"}</Badge>
                       </div>
-                      <p className="text-sm">
-                        <span className="font-medium">{t("recruiter.interviewer")}:</span> {interview.interviewer}
-                      </p>
-                      <Badge variant="outline">{interview.type}</Badge>
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm">
+                          {t("recruiter.reschedule")}
+                        </Button>
+                        <Button size="sm">
+                          {t("recruiter.joinInterview")}
+                        </Button>
+                      </div>
                     </div>
-                    
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        {t("recruiter.reschedule")}
-                      </Button>
-                      <Button size="sm">
-                        {t("recruiter.joinInterview")}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
       </Tabs>

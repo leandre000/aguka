@@ -34,8 +34,38 @@ import { useState, useRef } from "react";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
 
+// Add/expand translation keys at the top
+const translations = {
+  en: {
+    allFieldsRequired: "All fields are required, including receipt.",
+    amountPositive: "Amount must be a positive number.",
+    claimSubmitted: "Expense claim submitted successfully.",
+    failedToSave: "Failed to submit expense claim.",
+    error: "Error",
+    common: {
+      cancel: "Cancel",
+      actions: "Actions",
+    },
+  },
+  fr: {
+    allFieldsRequired: "Tous les champs sont requis, y compris le reçu.",
+    amountPositive: "Le montant doit être un nombre positif.",
+    claimSubmitted: "Note de frais soumise avec succès.",
+    failedToSave: "Échec de la soumission de la note de frais.",
+    error: "Erreur",
+    common: {
+      cancel: "Annuler",
+      actions: "Actions",
+    },
+  },
+};
+
 export default function ExpenseClaims() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const t = (key: string) =>
+    translations[language][key as keyof typeof translations.en] ||
+    translations.en[key as keyof typeof translations.en] ||
+    key;
 
   const expenses = [
     {
@@ -111,11 +141,11 @@ export default function ExpenseClaims() {
                   e.preventDefault();
                   // Validation
                   if (!form.category || !form.amount || !form.date || !form.description || !form.receipt) {
-                    setFormError("All fields are required, including receipt.");
+                    setFormError(t("allFieldsRequired"));
                     return;
                   }
                   if (isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
-                    setFormError("Amount must be a positive number.");
+                    setFormError(t("amountPositive"));
                     return;
                   }
                   setFormError(null);
@@ -130,12 +160,12 @@ export default function ExpenseClaims() {
                     await axios.post("/expenses/create", data, {
                       headers: { "Content-Type": "multipart/form-data" },
                     });
-                    toast({ title: "Expense claim submitted" });
+                    toast({ title: t("claimSubmitted") });
                     setModalOpen(false);
                     setForm({ category: "", amount: "", date: "", description: "", receipt: null });
                     if (fileInputRef.current) fileInputRef.current.value = "";
                   } catch (err: any) {
-                    toast({ title: "Error", description: err.response?.data?.message || err.message || "Failed to submit expense claim", variant: "destructive" });
+                    toast({ title: t("error"), description: err.response?.data?.message || err.message || t("failedToSave"), variant: "destructive" });
                   } finally {
                     setSubmitting(false);
                   }

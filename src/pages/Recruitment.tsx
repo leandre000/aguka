@@ -1,48 +1,28 @@
-import { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Briefcase, Users, Calendar, Eye } from "lucide-react";
+import { getJobPostings } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Recruitment = () => {
   const [activeTab, setActiveTab] = useState("positions");
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user, logout } = useAuth();
 
-  const openPositions = [
-    {
-      id: 1,
-      title: "Senior Software Engineer",
-      department: "Engineering",
-      location: "Remote",
-      type: "Full-time",
-      applicants: 12,
-      status: "Active",
-      postedDate: "2024-01-10",
-      deadline: "2024-02-10"
-    },
-    {
-      id: 2,
-      title: "UX Designer",
-      department: "Design",
-      location: "New York",
-      type: "Full-time",
-      applicants: 8,
-      status: "Active",
-      postedDate: "2024-01-15",
-      deadline: "2024-02-15"
-    },
-    {
-      id: 3,
-      title: "Marketing Manager",
-      department: "Marketing",
-      location: "San Francisco",
-      type: "Full-time",
-      applicants: 15,
-      status: "Review",
-      postedDate: "2024-01-05",
-      deadline: "2024-02-05"
-    }
-  ];
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    getJobPostings()
+      .then((data) => setJobs(data))
+      .catch((err) => setError(err.message || "Failed to load jobs"))
+      .finally(() => setLoading(false));
+  }, []);
 
   const candidates = [
     {
@@ -131,10 +111,12 @@ const Recruitment = () => {
           <h1 className="text-3xl font-bold text-foreground">Recruitment</h1>
           <p className="text-muted-foreground">Manage job postings, candidates, and interviews</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Job Posting
-        </Button>
+        <div className="flex items-center gap-2">
+          {user && <span className="text-sm text-muted-foreground">{user.Names || user.name || user.email}</span>}
+          <Button variant="outline" size="sm" onClick={logout}>
+            Logout
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -145,45 +127,35 @@ const Recruitment = () => {
         </TabsList>
 
         <TabsContent value="positions" className="space-y-4">
-          <div className="grid gap-4">
-            {openPositions.map((position) => (
-              <Card key={position.id}>
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Briefcase className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold">{position.title}</h3>
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <span>{position.department}</span>
-                        <span>•</span>
-                        <span>{position.location}</span>
-                        <span>•</span>
-                        <span>{position.type}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4" />
-                        <span className="text-sm">{position.applicants} applicants</span>
-                      </div>
+          <div className="max-w-4xl mx-auto p-4 space-y-6">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4">Job Postings</h1>
+            {loading ? (
+              <div className="p-8 text-center text-muted-foreground">Loading jobs...</div>
+            ) : error ? (
+              <div className="p-8 text-center text-red-500">{error}</div>
+            ) : jobs.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">No jobs found.</div>
+            ) : (
+              jobs.map((job) => (
+                <div key={job._id} className="border rounded-lg p-4 mb-4 bg-card">
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 mb-2">
+                    <div>
+                      <h2 className="text-lg font-semibold">{job.title}</h2>
+                      <div className="text-sm text-muted-foreground mb-1">{job.department} • {job.location} • {job.employmentType}</div>
+                      <div className="text-xs text-muted-foreground">Posted by: {job.postedBy?.Names || job.postedBy?.name || job.postedBy?.Email || "-"} on {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : "-"}</div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={getStatusColor(position.status)}>
-                        {position.status}
-                      </Badge>
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${job.status === "Open" ? "bg-green-100 text-green-700" : job.status === "Closed" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>{job.status}</span>
                   </div>
-                  <div className="mt-4 pt-4 border-t text-xs text-muted-foreground">
-                    Posted: {new Date(position.postedDate).toLocaleDateString()} • 
-                    Deadline: {new Date(position.deadline).toLocaleDateString()}
+                  <div className="mb-2 text-sm">{job.description}</div>
+                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-2">
+                    <span>Salary: {job.salaryRange ? `$${job.salaryRange.min} - $${job.salaryRange.max}` : "-"}</span>
+                    <span>Requirements: {job.requirements?.join(", ") || "-"}</span>
+                    <span>Responsibilities: {job.responsibilities?.join(", ") || "-"}</span>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <div className="text-xs text-muted-foreground">Applicants: {job.applicants?.length || 0}</div>
+                </div>
+              ))
+            )}
           </div>
         </TabsContent>
 

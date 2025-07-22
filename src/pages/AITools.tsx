@@ -36,7 +36,6 @@ const fieldLabels: Record<string, string> = {
 };
 
 export default function AITools() {
-  const { t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -98,6 +97,103 @@ export default function AITools() {
   const [chatInput, setChatInput] = useState("");
   const [chatHistory, setChatHistory] = useState<{ role: string; message: string }[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
+
+  // Add/expand translation keys at the top
+  const translations = {
+    en: {
+      allFieldsRequired: "All fields are required.",
+      analyzeError: "Failed to analyze data.",
+      analyzing: "Analyzing...",
+      analyze: "Analyze",
+      checking: "Checking...",
+      checkAttrition: "Check Attrition",
+      noResults: "No results available.",
+      error: "Error",
+      // Added keys
+      'common.backToPortal': "Back to Portal",
+      'common.home': "Home",
+      'common.error': "Error",
+      'aiTools.title': "AI Tools",
+      'aiTools.resumeMatch': "Resume Matcher",
+      'aiTools.uploadResume': "Upload Resume",
+      'aiTools.jobDescription': "Job Description",
+      'aiTools.analyzeError': "Failed to analyze data.",
+      'aiTools.analyzing': "Analyzing...",
+      'aiTools.analyze': "Analyze",
+      'aiTools.attritionCheck': "Attrition Risk Checker",
+      'aiTools.checkError': "Failed to check attrition risk.",
+      'aiTools.checking': "Checking...",
+      'aiTools.checkAttrition': "Check Attrition",
+      'aiTools.riskLevel': "Risk Level:",
+      'aiTools.riskScore': "Risk Score:",
+      'aiTools.riskFactors': "Risk Factors:",
+      'aiTools.trainingRecommend': "Training Recommender",
+      'aiTools.recommendError': "Failed to get recommendations.",
+      'aiTools.recommending': "Recommending...",
+      'aiTools.recommendTraining': "Recommend Training",
+      'aiTools.recommendations': "Recommended Courses:",
+      'aiTools.sentimentAnalysis': "Sentiment Analyzer",
+      'aiTools.textToAnalyze': "Text to Analyze",
+      'aiTools.analyzeSentiment': "Analyze Sentiment",
+      'aiTools.sentimentScore': "Sentiment:",
+      'aiTools.chatAssistant': "AI Chat Assistant",
+      'aiTools.noMessages': "No messages yet.",
+      'aiTools.you': "You",
+      'aiTools.ai': "AI",
+      'aiTools.chatError': "Failed to get chat response.",
+      'aiTools.typeMessage': "Type your message",
+      'aiTools.sending': "Sending...",
+      'aiTools.send': "Send",
+    },
+    fr: {
+      allFieldsRequired: "Tous les champs sont requis.",
+      analyzeError: "Échec de l'analyse des données.",
+      analyzing: "Analyse en cours...",
+      analyze: "Analyser",
+      checking: "Vérification...",
+      checkAttrition: "Vérifier l'attrition",
+      noResults: "Aucun résultat disponible.",
+      error: "Erreur",
+      // Added keys
+      'common.backToPortal': "Retour au portail",
+      'common.home': "Accueil",
+      'common.error': "Erreur",
+      'aiTools.title': "Outils IA",
+      'aiTools.resumeMatch': "Comparateur de CV",
+      'aiTools.uploadResume': "Télécharger le CV",
+      'aiTools.jobDescription': "Description du poste",
+      'aiTools.analyzeError': "Échec de l'analyse des données.",
+      'aiTools.analyzing': "Analyse en cours...",
+      'aiTools.analyze': "Analyser",
+      'aiTools.attritionCheck': "Vérificateur de risque d'attrition",
+      'aiTools.checkError': "Échec de la vérification du risque d'attrition.",
+      'aiTools.checking': "Vérification...",
+      'aiTools.checkAttrition': "Vérifier l'attrition",
+      'aiTools.riskLevel': "Niveau de risque :",
+      'aiTools.riskScore': "Score de risque :",
+      'aiTools.riskFactors': "Facteurs de risque :",
+      'aiTools.trainingRecommend': "Recommandation de formation",
+      'aiTools.recommendError': "Échec de la recommandation.",
+      'aiTools.recommending': "Recommandation...",
+      'aiTools.recommendTraining': "Recommander une formation",
+      'aiTools.recommendations': "Cours recommandés :",
+      'aiTools.sentimentAnalysis': "Analyse de sentiment",
+      'aiTools.textToAnalyze': "Texte à analyser",
+      'aiTools.analyzeSentiment': "Analyser le sentiment",
+      'aiTools.sentimentScore': "Sentiment :",
+      'aiTools.chatAssistant': "Assistant IA",
+      'aiTools.noMessages': "Aucun message pour le moment.",
+      'aiTools.you': "Vous",
+      'aiTools.ai': "IA",
+      'aiTools.chatError': "Échec de la réponse du chat.",
+      'aiTools.typeMessage': "Tapez votre message",
+      'aiTools.sending': "Envoi...",
+      'aiTools.send': "Envoyer",
+    },
+  };
+  const { language } = useLanguage();
+  // Update the translation function to accept all keys
+  const t = (key: keyof typeof translations["en"]) => translations[language][key] || translations.en[key] || key;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 p-4">
@@ -311,7 +407,7 @@ We are looking for a senior software engineer with experience in JavaScript, Rea
                       </div>
                     );
                   } else {
-                    return <div className="text-muted-foreground">{t("aiTools.noResults") || "No specific recommendations available."}</div>;
+                    return <div className="text-muted-foreground">{t("noResults") || "No specific recommendations available."}</div>;
                   }
                 })()}
               </div>
@@ -363,7 +459,7 @@ I absolutely love working here! The team is amazing and the work environment is 
                       <div><strong>{t("aiTools.sentimentScore") || "Sentiment:"}</strong> <span className={`font-bold ${sentiment === 'positive' ? 'text-green-600' : sentiment === 'negative' ? 'text-red-600' : 'text-yellow-600'}`}>{sentiment.toUpperCase()}</span></div>
                     );
                   } else {
-                    return <div className="text-muted-foreground">{t("aiTools.noResults") || "No sentiment result available."}</div>;
+                    return <div className="text-muted-foreground">{t("noResults") || "No sentiment result available."}</div>;
                   }
                 })()}
               </div>

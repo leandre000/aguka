@@ -18,52 +18,50 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Plus as PlusIcon, Calendar as CalendarIcon } from "lucide-react";
-import { getJobPostings, getUsers, createOffer, updateOffer, withdrawOffer } from "@/lib/api";
+import { getJobPostings, getUsers, createOffer, updateOffer, withdrawOffer, getApplications } from "@/lib/api";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export default function OfferManagement() {
-  const { language } = useLanguage();
-
-  const content = {
+  const translations = {
     en: {
-      title: "Offer Management",
-      description: "Track and manage job offers",
-      pending: "Pending",
-      accepted: "Accepted",
-      declined: "Declined",
-      expired: "Expired",
-      salary: "Salary",
-      startDate: "Start Date",
-      viewOffer: "View Offer",
-      sendReminder: "Send Reminder",
+      allFieldsRequired: "All fields are required.",
+      offerCreated: "Offer created successfully.",
+      offerUpdated: "Offer updated successfully.",
+      failedToSave: "Failed to save offer.",
+      withdrawOfferTitle: "Withdraw Offer",
+      withdrawOfferDesc: "Are you sure you want to withdraw this offer? This action cannot be undone.",
+      offerWithdrawn: "Offer withdrawn successfully.",
+      cancel: "Cancel",
       withdraw: "Withdraw",
-      negotiate: "Negotiate",
+      error: "Error",
+      title: "Offer Management",
+      description: "Manage and track job offers to candidates.",
       loading: "Loading offers...",
-      error: "Failed to load offers.",
       empty: "No offers found.",
     },
     fr: {
-      title: "Gestion des offres",
-      description: "Suivre et gérer les offres d'emploi",
-      pending: "En attente",
-      accepted: "Acceptée",
-      declined: "Refusée",
-      expired: "Expirée",
-      salary: "Salaire",
-      startDate: "Date de début",
-      viewOffer: "Voir l'offre",
-      sendReminder: "Envoyer un rappel",
+      allFieldsRequired: "Tous les champs sont requis.",
+      offerCreated: "Offre créée avec succès.",
+      offerUpdated: "Offre mise à jour avec succès.",
+      failedToSave: "Échec de l'enregistrement de l'offre.",
+      withdrawOfferTitle: "Retirer l'offre",
+      withdrawOfferDesc: "Êtes-vous sûr de vouloir retirer cette offre ? Cette action ne peut pas être annulée.",
+      offerWithdrawn: "Offre retirée avec succès.",
+      cancel: "Annuler",
       withdraw: "Retirer",
-      negotiate: "Négocier",
+      error: "Erreur",
+      title: "Gestion des offres",
+      description: "Gérez et suivez les offres d'emploi aux candidats.",
       loading: "Chargement des offres...",
-      error: "Échec du chargement des offres.",
       empty: "Aucune offre trouvée.",
     },
   };
-
-  const t = content[language];
+  const { language } = useLanguage();
+  const t = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
+  const errorText = t("error");
 
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,6 +80,8 @@ export default function OfferManagement() {
     expiryDate: '',
   });
   const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [withdrawId, setWithdrawId] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -92,14 +92,29 @@ export default function OfferManagement() {
         setLoading(false);
       })
       .catch((err) => {
-        setError(t.error);
+        setError(errorText);
         setLoading(false);
       });
     getJobPostings().then(setJobs).catch(() => {});
-  }, [language, t.error]);
+  }, [language, errorText]);
 
   useEffect(() => {
     getJobPostings().then(setJobs).catch(() => {});
+  }, []);
+
+  // Fetch candidates from applications
+  useEffect(() => {
+    getApplications()
+      .then((apps) => {
+        const unique: Record<string, any> = {};
+        apps.forEach(app => {
+          if (app.applicant && app.applicant._id) {
+            unique[app.applicant._id] = app.applicant;
+          }
+        });
+        setCandidates(Object.values(unique));
+      })
+      .catch(() => setCandidates([]));
   }, []);
 
   const openCreateModal = () => {
@@ -136,31 +151,39 @@ export default function OfferManagement() {
     e.preventDefault();
     setFormLoading(true);
     try {
+      if (!form.candidate || !form.job || !form.salary || !form.startDate) {
+        setFormError(t("allFieldsRequired"));
+        setFormLoading(false);
+        return;
+      }
       if (modalMode === 'create') {
         await createOffer(form);
-        toast.success('Offer created');
+        toast(t("offerCreated"));
       } else if (modalMode === 'edit' && selectedOffer) {
         await updateOffer(selectedOffer._id, form);
-        toast.success('Offer updated');
+        toast(t("offerUpdated"));
       }
       closeModal();
       setLoading(true);
       getOffers().then(setOffers).finally(() => setLoading(false));
     } catch (err: any) {
-      toast.error(err.message || 'Failed to save offer');
+      setFormError(err.message || t("failedToSave"));
+      toast.error(`${t("error")}: ${err.message || t("failedToSave")}`);
     } finally {
       setFormLoading(false);
     }
   };
-  const handleWithdraw = async (offer: any) => {
-    if (!window.confirm('Withdraw this offer?')) return;
+  const handleWithdraw = async () => {
+    if (!withdrawId) return;
     try {
-      await withdrawOffer(offer._id);
-      toast.success('Offer withdrawn');
+      await withdrawOffer(withdrawId);
       setLoading(true);
       getOffers().then(setOffers).finally(() => setLoading(false));
+      toast(t("offerWithdrawn"));
     } catch (err: any) {
-      toast.error(err.message || 'Failed to withdraw offer');
+      toast.error(`${t("error")}: ${err.message || t("failedToSave")}`);
+    } finally {
+      setWithdrawId(null);
     }
   };
 
@@ -180,7 +203,7 @@ export default function OfferManagement() {
   };
 
   const getStatusLabel = (status: string) => {
-    return t[status as keyof typeof t] || status;
+    return t(status as keyof typeof translations.en) || status;
   };
 
   return (
@@ -189,10 +212,10 @@ export default function OfferManagement() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-              {t.title}
+              {t("title")}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              {t.description}
+              {t("description")}
             </p>
           </div>
           <Button onClick={openCreateModal} className="w-full sm:w-auto">
@@ -203,11 +226,11 @@ export default function OfferManagement() {
         </div>
 
         {loading ? (
-          <div className="text-center text-muted-foreground py-12">{t.loading}</div>
+          <div className="text-center text-muted-foreground py-12">{t("loading")}</div>
         ) : error ? (
           <div className="text-center text-destructive py-12">{error}</div>
         ) : offers.length === 0 ? (
-          <div className="text-center text-muted-foreground py-12">{t.empty}</div>
+          <div className="text-center text-muted-foreground py-12">{t("empty")}</div>
         ) : (
           <div className="grid gap-4">
             {offers.map((offer) => (
@@ -269,9 +292,9 @@ export default function OfferManagement() {
                         variant="destructive"
                         size="sm"
                         className="w-full sm:w-auto"
-                        onClick={() => handleWithdraw(offer)}
+                        onClick={() => setWithdrawId(offer._id)}
                       >
-                        <span className="hidden sm:inline">{t.withdraw}</span>
+                        <span className="hidden sm:inline">{t("withdraw")}</span>
                         <span className="sm:hidden">Withdraw</span>
                       </Button>
                     </div>
@@ -282,8 +305,8 @@ export default function OfferManagement() {
           </div>
         )}
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <DialogContent className="max-h-[80vh] overflow-y-auto">
+            <form onSubmit={handleSubmit} className="space-y-4 p-1 sm:p-0">
               <DialogHeader>
                 <DialogTitle>{modalMode === 'create' ? 'Create Offer' : 'Edit Offer'}</DialogTitle>
                 <DialogDescription>
@@ -293,7 +316,7 @@ export default function OfferManagement() {
               <div className="space-y-2">
                 <label className="block text-sm font-medium">Candidate</label>
                 <Select value={form.candidate} onValueChange={v => handleFormChange('candidate', v)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select candidate" />
                   </SelectTrigger>
                   <SelectContent>
@@ -306,7 +329,7 @@ export default function OfferManagement() {
               <div className="space-y-2">
                 <label className="block text-sm font-medium">Job</label>
                 <Select value={form.job} onValueChange={v => handleFormChange('job', v)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select job" />
                   </SelectTrigger>
                   <SelectContent>
@@ -318,7 +341,7 @@ export default function OfferManagement() {
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-medium">Salary</label>
-                <Input value={form.salary} onChange={e => handleFormChange('salary', e.target.value)} required />
+                <Input className="w-full" value={form.salary} onChange={e => handleFormChange('salary', e.target.value)} required />
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-medium">Start Date</label>
@@ -326,7 +349,7 @@ export default function OfferManagement() {
                   mode="single"
                   selected={form.startDate ? new Date(form.startDate) : undefined}
                   onSelect={(date: Date | undefined) => handleDateChange('startDate', date)}
-                  className="rounded-md border"
+                  className="rounded-md border w-full"
                 />
               </div>
               <div className="space-y-2">
@@ -335,7 +358,7 @@ export default function OfferManagement() {
                   mode="single"
                   selected={form.sentDate ? new Date(form.sentDate) : undefined}
                   onSelect={(date: Date | undefined) => handleDateChange('sentDate', date)}
-                  className="rounded-md border"
+                  className="rounded-md border w-full"
                 />
               </div>
               <div className="space-y-2">
@@ -344,20 +367,32 @@ export default function OfferManagement() {
                   mode="single"
                   selected={form.expiryDate ? new Date(form.expiryDate) : undefined}
                   onSelect={(date: Date | undefined) => handleDateChange('expiryDate', date)}
-                  className="rounded-md border"
+                  className="rounded-md border w-full"
                 />
               </div>
-              <DialogFooter>
-                <Button type="submit" disabled={formLoading}>
+              <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-2 w-full">
+                <Button type="submit" disabled={formLoading} className="w-full sm:w-auto">
                   {modalMode === 'create' ? 'Create' : 'Update'}
                 </Button>
                 <DialogClose asChild>
-                  <Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
+                  <Button type="button" variant="outline" onClick={closeModal} className="w-full sm:w-auto">Cancel</Button>
                 </DialogClose>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
+        <AlertDialog open={!!withdrawId} onOpenChange={open => !open && setWithdrawId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("withdrawOfferTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>{t("withdrawOfferDesc")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setWithdrawId(null)}>{t("cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleWithdraw}>{t("withdraw")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </RecruiterPortalLayout>
   );

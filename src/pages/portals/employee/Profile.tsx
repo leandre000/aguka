@@ -12,8 +12,25 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
 
+// Add/expand translation keys at the top
+const translations = {
+  en: {
+    allFieldsRequired: "All fields are required.",
+    profileUpdated: "Profile updated successfully.",
+    failedToSave: "Failed to update profile.",
+    error: "Error",
+  },
+  fr: {
+    allFieldsRequired: "Tous les champs sont requis.",
+    profileUpdated: "Profil mis à jour avec succès.",
+    failedToSave: "Échec de la mise à jour du profil.",
+    error: "Erreur",
+  },
+};
+
 export default function EmployeeProfile() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const t = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
   const { user } = useAuth();
   
   const [profile, setProfile] = useState<any>(null);
@@ -52,8 +69,8 @@ export default function EmployeeProfile() {
       } catch (error) {
         console.error('Error fetching profile:', error);
         toast({
-          title: "Error",
-          description: "Failed to load profile data",
+          title: t("error"),
+          description: t("failedToSave"),
           variant: "destructive"
         });
       } finally {
@@ -96,14 +113,13 @@ export default function EmployeeProfile() {
       setIsEditing(false);
       
       toast({
-        title: "Success",
-        description: "Profile updated successfully"
+        title: t("profileUpdated")
       });
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
-        title: "Error",
-        description: "Failed to update profile",
+        title: t("error"),
+        description: t("failedToSave"),
         variant: "destructive"
       });
     } finally {

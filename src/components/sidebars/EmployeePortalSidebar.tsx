@@ -108,7 +108,7 @@ export function EmployeePortalSidebar() {
     },
     {
       title: "AI Tools",
-      url: "/ai-tools",
+      url: "/employee-portal/ai-tools",
       icon: BarChart,
     },
   ];

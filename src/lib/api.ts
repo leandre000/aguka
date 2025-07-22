@@ -93,6 +93,7 @@ export const rejectLeave = (id: string) =>
   apiFetch(`/leave/${id}/reject`, { method: "PUT" });
 export const getMyLeaves = () => apiFetch("/leave/my-requests");
 export const getMyLeaveRequests = () => apiFetch('/leave/my-requests');
+export const deleteLeave = (id: string) => apiFetch(`/leave/${id}`, { method: "DELETE" });
 
 // --- Payroll API ---
 export const getPayrolls = () => apiFetch("/payroll");
@@ -345,7 +346,8 @@ export const getAnalyticsSummary = (params?: any) => {
 // --- Audit Logs API ---
 // Get all audit logs (with optional filters)
 export const getAllAuditLogs = (params?: any) => {
-  const query = params ? '?' + new URLSearchParams(params).toString() : '';
+  const mergedParams = { includeUserActivities: 'true', ...(params || {}) };
+  const query = '?' + new URLSearchParams(mergedParams).toString();
   return apiFetch(`/activity-log${query}`);
 };
 
@@ -415,3 +417,8 @@ export function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
 }
+
+export const getComplianceReports = () => apiFetch('/compliance/reports');
+export const createComplianceReport = (data: any) => apiFetch('/compliance/reports', { method: 'POST', body: JSON.stringify(data) });
+export const updateComplianceReport = (id: string, data: any) => apiFetch(`/compliance/reports/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteComplianceReport = (id: string) => apiFetch(`/compliance/reports/${id}`, { method: 'DELETE' });

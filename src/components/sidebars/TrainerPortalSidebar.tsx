@@ -60,7 +60,7 @@ export function TrainerPortalSidebar() {
     },
     {
       title: "AI Tools",
-      url: "/ai-tools",
+      url: "/trainer-portal/ai-tools",
       icon: BarChart,
     },
   ];
