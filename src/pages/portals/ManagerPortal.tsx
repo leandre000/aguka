@@ -53,60 +53,6 @@ const ManagerPortal = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const teamMembers = [
-    {
-      id: 1,
-      name: "John Doe",
-      position: "Senior Developer",
-      status: "Active",
-      performance: 4.2,
-      lastActive: "Online"
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      position: "Frontend Developer",
-      status: "Active",
-      performance: 4.5,
-      lastActive: "2 hours ago"
-    },
-    {
-      id: 3,
-      name: "Mike Johnson",
-      position: "QA Engineer",
-      status: "On Leave",
-      performance: 4.0,
-      lastActive: "Yesterday"
-    }
-  ];
-
-  const pendingRequests = [
-    {
-      id: 1,
-      employee: "John Doe",
-      type: "Vacation Leave",
-      dates: "Mar 15-20, 2024",
-      reason: "Family vacation",
-      status: "Pending"
-    },
-    {
-      id: 2,
-      employee: "Jane Smith",
-      type: "Sick Leave",
-      dates: "Mar 10, 2024",
-      reason: "Medical appointment",
-      status: "Pending"
-    },
-    {
-      id: 3,
-      employee: "Mike Johnson",
-      type: "Performance Review",
-      dates: "Due: Mar 25, 2024",
-      reason: "Quarterly review",
-      status: "Overdue"
-    }
-  ];
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active": return "bg-green-100 text-green-800";
@@ -150,7 +96,6 @@ const ManagerPortal = () => {
         </Card>
       </div>
 
-      {/* Remove Team Members and Pending Requests mock data and UI */}
       {/* Only keep dynamic, authorized manager content here */}
       </div>
     </ManagerPortalLayout>

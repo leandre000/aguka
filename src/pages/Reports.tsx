@@ -66,117 +66,6 @@ const Reports = () => {
     fetchData();
   }, [user]);
 
-  const reportMetrics = {
-    totalEmployees: 247,
-    newHires: 23,
-    turnoverRate: 8.2,
-    averageTenure: 3.2,
-    satisfactionScore: 4.1
-  };
-
-  const predefinedReports = [
-    {
-      id: 1,
-      name: "Employee Demographics Report",
-      description: "Breakdown of employee demographics by age, gender, department",
-      category: "HR Analytics",
-      lastGenerated: "2024-01-25",
-      format: "PDF",
-      size: "2.3 MB"
-    },
-    {
-      id: 2,
-      name: "Payroll Summary Report",
-      description: "Monthly payroll summary with department-wise breakdown",
-      category: "Finance",
-      lastGenerated: "2024-01-31",
-      format: "Excel",
-      size: "1.8 MB"
-    },
-    {
-      id: 3,
-      name: "Recruitment Performance",
-      description: "Hiring metrics, time-to-fill, and source effectiveness",
-      category: "Recruitment",
-      lastGenerated: "2024-01-28",
-      format: "PDF",
-      size: "1.5 MB"
-    },
-    {
-      id: 4,
-      name: "Training Completion Report",
-      description: "Employee training progress and completion rates",
-      category: "Learning & Development",
-      lastGenerated: "2024-01-30",
-      format: "Excel",
-      size: "950 KB"
-    },
-    {
-      id: 5,
-      name: "Performance Review Summary",
-      description: "Performance ratings and goal achievement analysis",
-      category: "Performance",
-      lastGenerated: "2024-01-26",
-      format: "PDF",
-      size: "3.1 MB"
-    },
-    {
-      id: 6,
-      name: "Compliance Status Report",
-      description: "Policy compliance and audit findings summary",
-      category: "Compliance",
-      lastGenerated: "2024-01-29",
-      format: "PDF",
-      size: "2.7 MB"
-    }
-  ];
-
-  const customReports = [
-    {
-      id: 1,
-      name: "Q4 Executive Dashboard",
-      description: "Custom executive summary for Q4 performance",
-      createdBy: "Sarah Wilson",
-      createdDate: "2024-01-20",
-      filters: ["Department: All", "Date Range: Q4 2023", "Employee Type: Full-time"],
-      status: "Ready"
-    },
-    {
-      id: 2,
-      name: "Engineering Team Analysis",
-      description: "Detailed analysis of engineering department metrics",
-      createdBy: "John Doe",
-      createdDate: "2024-01-22",
-      filters: ["Department: Engineering", "Date Range: Last 6 months", "Include: Performance, Training"],
-      status: "Generating"
-    }
-  ];
-
-  const analytics = {
-    departmentBreakdown: [
-      { department: "Engineering", count: 85, percentage: 34.4 },
-      { department: "Sales", count: 62, percentage: 25.1 },
-      { department: "Marketing", count: 38, percentage: 15.4 },
-      { department: "HR", count: 24, percentage: 9.7 },
-      { department: "Finance", count: 20, percentage: 8.1 },
-      { department: "Operations", count: 18, percentage: 7.3 }
-    ],
-    hiringTrends: [
-      { month: "Sep", hires: 8 },
-      { month: "Oct", hires: 12 },
-      { month: "Nov", hires: 6 },
-      { month: "Dec", hires: 4 },
-      { month: "Jan", hires: 11 }
-    ],
-    turnoverData: [
-      { month: "Sep", turnover: 2.1 },
-      { month: "Oct", turnover: 1.8 },
-      { month: "Nov", turnover: 2.5 },
-      { month: "Dec", turnover: 1.2 },
-      { month: "Jan", turnover: 2.8 }
-    ]
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Ready": return "bg-green-100 text-green-800";
@@ -326,56 +215,8 @@ const Reports = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {customReports.map((report) => (
-                    <Card key={report.id}>
-                      <CardContent className="pt-6">
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <PieChart className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-semibold">{report.name}</h3>
-                            </div>
-                            <p className="text-sm text-muted-foreground">{report.description}</p>
-                            <div className="space-y-1">
-                              <p className="text-xs">
-                                <span className="font-medium">Created by:</span> {report.createdBy}
-                              </p>
-                              <p className="text-xs">
-                                <span className="font-medium">Created:</span> {new Date(report.createdDate).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                              {report.filters.map((filter, index) => (
-                                <Badge key={index} variant="outline" className="text-xs">
-                                  {filter}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div className="text-right space-y-2">
-                            <Badge className={getStatusColor(report.status)}>
-                              {report.status}
-                            </Badge>
-                            <div className="flex space-x-2">
-                              <Button variant="outline" size="sm">
-                                View
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                Edit
-                              </Button>
-                              {report.status === "Ready" && (
-                                <Button variant="outline" size="sm">
-                                  <Download className="h-4 w-4 mr-1" />
-                                  Download
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  {/* Custom reports will be displayed here if implemented */}
+                  <div className="text-muted-foreground">Custom reports functionality coming soon.</div>
                 </div>
               </TabsContent>
               <TabsContent value="analytics" className="space-y-6">
@@ -601,7 +442,7 @@ const Reports = () => {
                       <div className="text-center py-12 text-muted-foreground">
                         <BarChart className="h-12 w-12 mx-auto mb-4" />
                         <p>Interactive chart would be displayed here</p>
-                        <p className="text-sm">Average turnover: {reportMetrics.turnoverRate}%</p>
+                        <p className="text-sm">Average turnover: {reportData.turnover?.rate ?? '-'}%</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -615,7 +456,7 @@ const Reports = () => {
                       <div className="text-center py-12 text-muted-foreground">
                         <PieChart className="h-12 w-12 mx-auto mb-4" />
                         <p>Interactive chart would be displayed here</p>
-                        <p className="text-sm">Average rating: {reportMetrics.satisfactionScore}/5.0</p>
+                        <p className="text-sm">Average rating: {reportData.performanceReviews?.averageRating ?? '-'}/5.0</p>
                       </div>
                     </CardContent>
                   </Card>

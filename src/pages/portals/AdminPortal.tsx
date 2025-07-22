@@ -76,27 +76,6 @@ export default function AdminPortal() {
     },
   ];
 
-  const recentActivity = [
-    {
-      id: 1,
-      action: t('admin.userRegistered'),
-      user: 'John Doe',
-      time: '2 hours ago',
-    },
-    {
-      id: 2,
-      action: t('admin.leaveApproved'),
-      user: 'Jane Smith',
-      time: '4 hours ago',
-    },
-    {
-      id: 3,
-      action: t('admin.systemUpdate'),
-      user: 'System',
-      time: '6 hours ago',
-    },
-  ];
-
   if (loading) {
     return (
       <AdminPortalLayout>
@@ -163,7 +142,7 @@ export default function AdminPortal() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{recentActivity.length}</div>
+              <div className="text-2xl font-bold">{stats.recentActivity}</div>
               <p className="text-xs text-muted-foreground">
                 {t('admin.last24Hours')}
               </p>
@@ -208,15 +187,15 @@ export default function AdminPortal() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{activity.action}</p>
-                    <p className="text-sm text-muted-foreground">{activity.user}</p>
-                  </div>
-                  <span className="text-sm text-muted-foreground">{activity.time}</span>
+              {/* The recentActivity array was removed, so this section will be empty or need to be re-added */}
+              {/* For now, keeping the structure but noting the missing data */}
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">No recent activity data available.</p>
+                  <p className="text-sm text-muted-foreground">Please check system logs.</p>
                 </div>
-              ))}
+                <span className="text-sm text-muted-foreground">N/A</span>
+              </div>
             </div>
           </CardContent>
         </Card>
