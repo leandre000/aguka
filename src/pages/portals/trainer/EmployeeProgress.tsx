@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Card,
   CardContent,
@@ -14,6 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { TrainerPortalLayout } from "@/components/layouts/TrainerPortalLayout";
 import { getEnrollments } from "@/lib/api";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function EmployeeProgress() {
   const { language } = useLanguage();
@@ -102,9 +104,9 @@ export default function EmployeeProgress() {
 
   // Remove static employees array
   const employees = enrollments.map(enrollment => ({
-    id: enrollment._id,
-    name: enrollment.employee?.name || "Unknown Employee",
-    avatar: "/placeholder.svg", // Assuming a placeholder for now
+    id: enrollment.employee?._id || enrollment.employee,
+    name: enrollment.employee?.name || enrollment.employee?.Names || "Unknown Employee",
+    avatar: "/placeholder.svg",
     currentCourse: enrollment.course?.title || "No Course Assigned",
     progress: enrollment.progress || 0,
     coursesCompleted: enrollment.coursesCompleted || 0,
@@ -137,6 +139,8 @@ export default function EmployeeProgress() {
         return status;
     }
   };
+
+  const navigate = useNavigate();
 
   return (
     <TrainerPortalLayout>
@@ -241,11 +245,11 @@ export default function EmployeeProgress() {
                           variant="outline"
                           size="sm"
                           className="w-full sm:w-auto"
+                          onClick={() => employee.id && navigate(`/portals/trainer/employees/${employee.id}`)}
+                          disabled={!employee.id}
                         >
                           <Eye className="mr-2 h-4 w-4" />
-                          <span className="hidden sm:inline">
-                            {t.viewProfile}
-                          </span>
+                          <span className="hidden sm:inline">{t.viewProfile}</span>
                           <span className="sm:hidden">View</span>
                         </Button>
                       </div>

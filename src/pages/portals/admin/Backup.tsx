@@ -21,6 +21,7 @@ import {
 import { useEffect, useState } from "react";
 import { getBackups, createBackup, restoreBackup, deleteBackup } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const translations = {
   en: {
@@ -138,6 +139,7 @@ const Backup = () => {
   const { language } = useLanguage();
   const t = (key: keyof (typeof translations)["en"]) =>
     translations[language][key];
+  const navigate = useNavigate();
 
   const [backups, setBackups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -260,6 +262,9 @@ const Backup = () => {
             <p className="text-muted-foreground text-sm md:text-base">
               {t("backupDesc")}
             </p>
+            <Button className="mt-2" onClick={() => navigate('/admin-portal/succession-planning')}>
+              Manage Succession Plans
+            </Button>
           </div>
           <Button className="flex items-center gap-2 w-full sm:w-auto" onClick={handleCreateBackup}>
             <Database className="h-4 w-4" />

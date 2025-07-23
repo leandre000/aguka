@@ -7,10 +7,23 @@ import { Shield, FileText, BarChart, AlertTriangle, Download, Eye, Calendar } fr
 import { AuditorPortalLayout } from "@/components/layouts/AuditorPortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
-import { apiFetch, getReports, getAudits, getRiskAssessments, getPolicies } from "@/lib/api";
+import { apiFetch, getReports, getAudits, getRiskAssessments, getPolicies, getAllEmployeeDocuments } from "@/lib/api";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const AuditorPortal = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const tabFromRoute = location.pathname.endsWith("/documents")
+    ? "documents"
+    : location.pathname.endsWith("/compliance")
+    ? "reports"
+    : location.pathname.endsWith("/risk")
+    ? "risks"
+    : location.pathname.endsWith("/audits")
+    ? "findings"
+    : "reports";
+  const [tab, setTab] = useState(tabFromRoute);
   // Dashboard stats
   const [auditStats, setAuditStats] = useState({
     totalReports: 0,
@@ -38,6 +51,10 @@ const AuditorPortal = () => {
   const [documents, setDocuments] = useState<any[]>([]);
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [documentsError, setDocumentsError] = useState<string | null>(null);
+
+  const [employeeDocuments, setEmployeeDocuments] = useState<any[]>([]);
+  const [employeeDocumentsLoading, setEmployeeDocumentsLoading] = useState(false);
+  const [employeeDocumentsError, setEmployeeDocumentsError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -109,6 +126,13 @@ const AuditorPortal = () => {
       .then((data) => { setDocuments(Array.isArray(data) ? data : data.data || []); setDocumentsError(null); })
       .catch(() => setDocumentsError(t("errors.loadDocumentsFailed")))
       .finally(() => setDocumentsLoading(false));
+  }, [t]);
+  useEffect(() => {
+    setEmployeeDocumentsLoading(true);
+    getAllEmployeeDocuments()
+      .then((data) => setEmployeeDocuments(Array.isArray(data.documents) ? data.documents : []))
+      .catch(() => setEmployeeDocumentsError(t("errors.loadDocumentsFailed")))
+      .finally(() => setEmployeeDocumentsLoading(false));
   }, [t]);
 
   const getStatusColor = (status: string) => {
@@ -193,7 +217,7 @@ const AuditorPortal = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="reports" className="space-y-4">
+      <Tabs value={tab} onValueChange={setTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="reports">{t("auditor.complianceReports")}</TabsTrigger>
           <TabsTrigger value="findings">{t("auditor.auditFindings")}</TabsTrigger>
@@ -329,8 +353,7 @@ const AuditorPortal = () => {
                           <p>{t("auditor.nextAssessment")}: {new Date(risk.nextAssessment).toLocaleDateString()}</p>
                         </div>
                       </div>
-                      
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => navigate("/portals/auditor/risk-assessment")}> {/* Route to interactive page */}
                         <Eye className="h-4 w-4 mr-1" />
                         {t("auditor.viewDetails")}
                       </Button>
@@ -344,43 +367,32 @@ const AuditorPortal = () => {
 
         <TabsContent value="documents" className="space-y-4">
           <div className="space-y-4">
-            {documentsLoading ? (
+            {employeeDocumentsLoading ? (
               <p>{t("auditor.loadingDocuments")}</p>
-            ) : documentsError ? (
-              <p className="text-red-500">{documentsError}</p>
-            ) : documents.length === 0 ? (
+            ) : employeeDocumentsError ? (
+              <p className="text-red-500">{employeeDocumentsError}</p>
+            ) : employeeDocuments.length === 0 ? (
               <p>{t("auditor.noDocuments")}</p>
             ) : (
-              documents.map((doc) => (
-                <Card key={doc.id}>
+              employeeDocuments.map((doc, idx) => (
+                <Card key={doc._id || idx}>
                   <CardContent className="pt-6">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-8 w-8 text-primary" />
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-semibold">{doc.name}</h3>
-                            {doc.confidential && (
-                              <Badge variant="outline" className="text-red-600">
-                                {t("auditor.confidential")}
-                              </Badge>
-                            )}
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                      <div>
+                        <div className="font-semibold">{doc.type}</div>
+                        <div className="text-sm text-muted-foreground">{doc.employeeName} ({doc.employeeEmail})</div>
+                        {doc.expiryDate && (
+                          <div className={
+                            new Date(doc.expiryDate) < new Date()
+                              ? "text-red-600 font-bold"
+                              : "text-yellow-600"
+                          }>
+                            Expiry: {doc.expiryDate.slice(0, 10)}
+                            {new Date(doc.expiryDate) < new Date() ? " (Expired)" : ""}
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {doc.type} • {doc.size} • {new Date(doc.date).toLocaleDateString()}
-                          </p>
-                        </div>
+                        )}
                       </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-1" />
-                          {t("common.view")}
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Download className="h-4 w-4 mr-1" />
-                          {t("common.download")}
-                        </Button>
-                      </div>
+                      <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-auto">Download</a>
                     </div>
                   </CardContent>
                 </Card>

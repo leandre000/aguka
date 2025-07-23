@@ -20,6 +20,7 @@ import {
 import { useEffect, useState } from "react";
 import { getSecurityEvents, getSecurityOverview, getRolePermissions } from '@/lib/api';
 import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const translations = {
   en: {
@@ -88,6 +89,7 @@ const Security = () => {
   const { language } = useLanguage();
   const t = (key: keyof (typeof translations)["en"]) =>
     translations[language][key];
+  const navigate = useNavigate();
 
   // Dynamic state for security events and permissions
   const [securityEvents, setSecurityEvents] = useState<any[]>([]);
@@ -131,6 +133,9 @@ const Security = () => {
           <p className="text-muted-foreground text-sm md:text-base">
             {t("securityDesc")}
           </p>
+          <Button className="mt-2" onClick={() => navigate('/admin-portal/succession-planning')}>
+            Manage Succession Plans
+          </Button>
         </div>
 
         {/* Security Overview */}

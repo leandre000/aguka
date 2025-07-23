@@ -14,6 +14,7 @@ import { FileText, Download, Filter, Search, Calendar } from "lucide-react";
 import { getAllAuditLogs } from "@/lib/api";
 import { useEffect, useState, useRef } from "react";
 import { getUser } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
 
 const translations = {
   en: {
@@ -119,6 +120,7 @@ const AuditLogs = () => {
   const { language } = useLanguage();
   const t = (key: keyof (typeof translations)["en"]) =>
     translations[language][key];
+  const navigate = useNavigate();
 
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [userMap, setUserMap] = useState<Record<string, any>>({});
@@ -193,6 +195,9 @@ const AuditLogs = () => {
             <p className="text-muted-foreground text-sm md:text-base">
               {t("auditLogsDesc")}
             </p>
+            <Button className="mt-2" onClick={() => navigate('/admin-portal/succession-planning')}>
+              Manage Succession Plans
+            </Button>
           </div>
           <Button className="flex items-center gap-2 w-full sm:w-auto">
             <Download className="h-4 w-4" />

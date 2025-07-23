@@ -16,10 +16,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { TrainerPortalLayout } from "@/components/layouts/TrainerPortalLayout";
 import { getTrainingSessions, startTrainingSession, completeTrainingSession, cancelTrainingSession } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function TrainingSessions() {
   const { language } = useLanguage();
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const navigate = useNavigate();
 
   const content = {
     en: {
@@ -301,6 +303,7 @@ export default function TrainingSessions() {
                           variant="outline"
                           size="sm"
                           className="w-full sm:w-auto"
+                          onClick={() => navigate(`/portals/trainer/training-sessions/${session._id}`)}
                         >
                           <span className="hidden sm:inline">
                             {t.viewDetails}

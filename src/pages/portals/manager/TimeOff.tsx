@@ -169,7 +169,12 @@ const TimeOff = () => {
   }, [managerId]);
 
   useEffect(() => {
-    getEmployees().then(setEmployees).catch(() => setEmployees([]));
+    getEmployees()
+      .then(res => {
+        const employeesArr = Array.isArray(res) ? res : res.data || [];
+        setEmployees(employeesArr);
+      })
+      .catch(() => setEmployees([]));
   }, []);
 
   // Approve/Reject handlers (mocked)
@@ -511,7 +516,7 @@ const TimeOff = () => {
                 <Select value={form.employee} onValueChange={v => setForm(f => ({ ...f, employee: v }))}>
                   <SelectTrigger><SelectValue placeholder="Select employee" /></SelectTrigger>
                   <SelectContent>
-                    {employees.map(emp => (
+                    {Array.isArray(employees) && employees.map(emp => (
                       <SelectItem key={emp._id} value={emp._id}>{emp.Names}</SelectItem>
                     ))}
                   </SelectContent>

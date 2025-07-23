@@ -8,9 +8,12 @@ import { BookOpen, Users, Award, TrendingUp, Plus, Play, FileText } from "lucide
 import { TrainerPortalLayout } from "@/components/layouts/TrainerPortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { apiFetch, getCourses, getEnrollments } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
+import { Modal } from "@/components/ui/modal";
 
 const TrainerPortal = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [trainingStats, setTrainingStats] = useState({
     totalCourses: 0,
     activeEnrollments: 0,
@@ -25,6 +28,7 @@ const TrainerPortal = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
   const [coursesError, setCoursesError] = useState<string | null>(null);
+  const [previewCourse, setPreviewCourse] = useState<any | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -178,7 +182,7 @@ const TrainerPortal = () => {
                         {course.status}
                       </Badge>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => setPreviewCourse(course)}>
                           <Play className="h-4 w-4 mr-1" />
                           {t("trainer.preview")}
                         </Button>
@@ -251,6 +255,32 @@ const TrainerPortal = () => {
         </CardContent>
       </Card>
       </div>
+      {previewCourse && (
+        <Modal open={!!previewCourse} onClose={() => setPreviewCourse(null)}>
+          <div className="p-6 space-y-4">
+            <h2 className="text-xl font-bold mb-2">{previewCourse.title}</h2>
+            <p className="text-muted-foreground mb-2">{previewCourse.description}</p>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <Badge variant="outline">{previewCourse.category}</Badge>
+              <Badge variant="outline">{previewCourse.level}</Badge>
+              <Badge variant={previewCourse.status === "published" ? "default" : "secondary"}>
+                {previewCourse.status === "published" ? t("trainer.published") : t("trainer.draft")}
+              </Badge>
+            </div>
+            <div>
+              <strong>{t("trainer.modules")}:</strong>
+              <ul className="list-disc ml-6">
+                {previewCourse.modules?.map((m: any, i: number) => (
+                  <li key={i}>{m.title || m}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={() => setPreviewCourse(null)}>{t("common.close") || "Close"}</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </TrainerPortalLayout>
   );
 };

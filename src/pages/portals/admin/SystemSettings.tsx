@@ -11,6 +11,7 @@ import { AdminPortalLayout } from "@/components/layouts/AdminPortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Settings, Database, Mail, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const translations = {
   en: {
@@ -89,6 +90,7 @@ const SystemSettings = () => {
   const { language } = useLanguage();
   const t = (key: keyof (typeof translations)["en"]) =>
     translations[language][key];
+  const navigate = useNavigate();
 
   // Dynamic state for system settings
   // const [settings, setSettings] = useState<any>(null);
@@ -112,6 +114,9 @@ const SystemSettings = () => {
             {t("systemSettings")}
           </h1>
           <p className="text-muted-foreground">{t("systemSettingsDesc")}</p>
+          <Button className="mt-2" onClick={() => navigate('/admin-portal/succession-planning')}>
+            Manage Succession Plans
+          </Button>
         </div>
 
         {/* General Settings */}

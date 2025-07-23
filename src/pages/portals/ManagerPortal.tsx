@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +8,39 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 
+const translations = {
+  en: {
+    manager: {
+      title: "Manager Dashboard",
+      subtitle: "Overview of your team and requests",
+      onLeave: "On Leave",
+      currentlyAway: "Currently away",
+      pendingRequests: "Pending Requests",
+      needApproval: "Need Approval",
+    }
+  },
+  fr: {
+    manager: {
+      title: "Tableau de bord du manager",
+      subtitle: "Aperçu de votre équipe et des demandes",
+      onLeave: "En congé",
+      currentlyAway: "Actuellement absent",
+      pendingRequests: "Demandes en attente",
+      needApproval: "Besoin d'approbation",
+    }
+  }
+};
+
 const ManagerPortal = () => {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const t = (key: string) => {
+    const keys = key.split(".");
+    let value: any = translations[language];
+    for (const k of keys) {
+      value = value?.[k];
+    }
+    return value ?? key;
+  };
   const [teamStats, setTeamStats] = useState({
     totalTeamMembers: 0,
     activeMembers: 0,

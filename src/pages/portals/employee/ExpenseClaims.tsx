@@ -30,9 +30,10 @@ import {
 } from "@/components/ui/dialog";
 import { DollarSign, Plus, Upload, Eye, Calendar } from "lucide-react";
 import { EmployeePortalLayout } from "@/components/layouts/EmployeePortalLayout";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
+import { getExpenseClaims } from "@/lib/api";
 
 // Add/expand translation keys at the top
 const translations = {
@@ -46,6 +47,9 @@ const translations = {
       cancel: "Cancel",
       actions: "Actions",
     },
+    trainer: {
+      modules: "Modules",
+    },
   },
   fr: {
     allFieldsRequired: "Tous les champs sont requis, y compris le reçu.",
@@ -57,6 +61,9 @@ const translations = {
       cancel: "Annuler",
       actions: "Actions",
     },
+    trainer: {
+      modules: "Modules",
+    },
   },
 };
 
@@ -67,46 +74,10 @@ export default function ExpenseClaims() {
     translations.en[key as keyof typeof translations.en] ||
     key;
 
-  const expenses = [
-    {
-      id: 1,
-      category: "travel",
-      amount: 250.5,
-      description: "Client meeting travel",
-      date: "2024-01-15",
-      status: "approved",
-      receipt: true,
-    },
-    {
-      id: 2,
-      category: "meals",
-      amount: 75.0,
-      description: "Business lunch",
-      date: "2024-01-10",
-      status: "pending",
-      receipt: true,
-    },
-    {
-      id: 3,
-      category: "office",
-      amount: 45.99,
-      description: "Office supplies",
-      date: "2024-01-08",
-      status: "rejected",
-      receipt: false,
-    },
-  ];
-
-  const totalExpenses = expenses.reduce(
-    (sum, expense) => sum + expense.amount,
-    0
-  );
-  const approvedExpenses = expenses
-    .filter((e) => e.status === "approved")
-    .reduce((sum, expense) => sum + expense.amount, 0);
-  const pendingExpenses = expenses
-    .filter((e) => e.status === "pending")
-    .reduce((sum, expense) => sum + expense.amount, 0);
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [viewExpense, setViewExpense] = useState<any | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({
@@ -119,6 +90,18 @@ export default function ExpenseClaims() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch expenses from backend
+  const fetchExpenses = () => {
+    setLoading(true);
+    setError(null);
+    getExpenseClaims()
+      .then((data) => setExpenses(Array.isArray(data) ? data : data.data || []))
+      .catch((err) => setError(err.message || "Failed to load expenses"))
+      .finally(() => setLoading(false));
+  };
+  // Fetch on mount
+  useEffect(() => { fetchExpenses(); }, []);
 
   return (
     <EmployeePortalLayout>
@@ -164,6 +147,7 @@ export default function ExpenseClaims() {
                     setModalOpen(false);
                     setForm({ category: "", amount: "", date: "", description: "", receipt: null });
                     if (fileInputRef.current) fileInputRef.current.value = "";
+                    fetchExpenses(); // Refetch expenses
                   } catch (err: any) {
                     toast({ title: t("error"), description: err.response?.data?.message || err.message || t("failedToSave"), variant: "destructive" });
                   } finally {
@@ -265,7 +249,7 @@ export default function ExpenseClaims() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${totalExpenses.toFixed(2)}
+                ${expenses.reduce((sum, expense) => sum + Number(expense.amount), 0).toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">This Month</p>
             </CardContent>
@@ -280,7 +264,7 @@ export default function ExpenseClaims() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                ${approvedExpenses.toFixed(2)}
+                ${expenses.filter(e => e.status === "approved").reduce((sum, expense) => sum + Number(expense.amount), 0).toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
                 Ready for Reimbursement
@@ -297,7 +281,7 @@ export default function ExpenseClaims() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-yellow-600">
-                ${pendingExpenses.toFixed(2)}
+                ${expenses.filter(e => e.status === "pending").reduce((sum, expense) => sum + Number(expense.amount), 0).toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">Under Review</p>
             </CardContent>
@@ -309,79 +293,94 @@ export default function ExpenseClaims() {
             <CardTitle>Expense History</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Receipt</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">
-                    {t("common.actions")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {expenses.map((expense) => (
-                  <TableRow key={expense.id}>
-                    <TableCell>{expense.date}</TableCell>
-                    <TableCell className="capitalize">
-                      {expense.category === "travel"
-                        ? "Travel"
-                        : expense.category === "meals"
-                        ? "Meals"
-                        : expense.category === "office"
-                        ? "Office Supplies"
-                        : expense.category === "training"
-                        ? "Training"
-                        : "Other"}
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {expense.description}
-                    </TableCell>
-                    <TableCell>${expense.amount.toFixed(2)}</TableCell>
-                    <TableCell>
-                      {expense.receipt ? (
-                        <Badge variant="outline" className="text-green-600">
-                          Uploaded
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-red-600">
-                          Missing
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          expense.status === "approved"
-                            ? "default"
-                            : expense.status === "pending"
-                            ? "secondary"
-                            : "destructive"
-                        }
-                      >
-                        {expense.status === "approved"
-                          ? "Approved"
-                          : expense.status === "pending"
-                          ? "Pending"
-                          : "Rejected"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" variant="outline">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+            {loading ? (
+              <div className="text-center py-8">Loading expenses...</div>
+            ) : error ? (
+              <div className="text-center text-red-600 py-8">{error}</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Receipt</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">
+                      {t("common.actions")}
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {expenses.map((expense) => (
+                    <TableRow key={expense.id || expense._id}>
+                      <TableCell>{expense.date}</TableCell>
+                      <TableCell className="capitalize">{expense.category}</TableCell>
+                      <TableCell className="max-w-xs truncate">{expense.description}</TableCell>
+                      <TableCell>${Number(expense.amount).toFixed(2)}</TableCell>
+                      <TableCell>
+                        {expense.receipt ? (
+                          <Badge variant="outline" className="text-green-600">Uploaded</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-red-600">Missing</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            expense.status === "approved"
+                              ? "default"
+                              : expense.status === "pending"
+                              ? "secondary"
+                              : "destructive"
+                          }
+                        >
+                          {expense.status === "approved"
+                            ? "Approved"
+                            : expense.status === "pending"
+                            ? "Pending"
+                            : "Rejected"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" variant="outline" onClick={() => setViewExpense(expense)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Expense Details Modal */}
+      <Dialog open={!!viewExpense} onOpenChange={open => !open && setViewExpense(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Expense Details</DialogTitle>
+          </DialogHeader>
+          {viewExpense && (
+            <div className="space-y-2">
+              <div><strong>Date:</strong> {viewExpense.date}</div>
+              <div><strong>Category:</strong> {viewExpense.category}</div>
+              <div><strong>Amount:</strong> ${Number(viewExpense.amount).toFixed(2)}</div>
+              <div><strong>Description:</strong> {viewExpense.description}</div>
+              <div><strong>Status:</strong> {viewExpense.status}</div>
+              <div><strong>Receipt:</strong> {viewExpense.receipt ? (
+                <a href={typeof viewExpense.receipt === 'string' ? viewExpense.receipt : '#'} target="_blank" rel="noopener noreferrer">View Receipt</a>
+              ) : 'None'}
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setViewExpense(null)}>{t("common.cancel")}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </EmployeePortalLayout>
   );
 }

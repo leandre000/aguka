@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,25 @@ import { toast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
 
 // Add/expand translation keys at the top
+const content = {
+  en: {
+    edit: "Edit",
+    cancel: "Cancel",
+    save: "Save",
+    profile: "Profile",
+    personalInfo: "Personal Information",
+    // ...add more as needed
+  },
+  fr: {
+    edit: "Modifier",
+    cancel: "Annuler",
+    save: "Enregistrer",
+    profile: "Profil",
+    personalInfo: "Informations personnelles",
+    // ...add more as needed
+  },
+};
+
 const translations = {
   en: {
     allFieldsRequired: "All fields are required.",
@@ -30,14 +50,16 @@ const translations = {
 
 export default function EmployeeProfile() {
   const { language } = useLanguage();
-  const t = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
+  const t = content[language];
+  const tError = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
   const { user } = useAuth();
   
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+  // Replace 'any' with explicit types
+  const [profile, setProfile] = useState<Record<string, any> | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [formData, setFormData] = useState<{ firstName: string; lastName: string; email: string; phone: string; address: string }>({
     firstName: '',
     lastName: '',
     email: '',
@@ -69,8 +91,8 @@ export default function EmployeeProfile() {
       } catch (error) {
         console.error('Error fetching profile:', error);
         toast({
-          title: t("error"),
-          description: t("failedToSave"),
+          title: tError("error"),
+          description: tError("failedToSave"),
           variant: "destructive"
         });
       } finally {
@@ -113,13 +135,13 @@ export default function EmployeeProfile() {
       setIsEditing(false);
       
       toast({
-        title: t("profileUpdated")
+        title: tError("profileUpdated")
       });
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
-        title: t("error"),
-        description: t("failedToSave"),
+        title: tError("error"),
+        description: tError("failedToSave"),
         variant: "destructive"
       });
     } finally {
@@ -170,38 +192,23 @@ export default function EmployeeProfile() {
           {!isEditing ? (
             <Button onClick={() => setIsEditing(true)}>
               <Edit className="h-4 w-4 mr-2" />
-              {t("common.edit")}
+              {t.edit}
             </Button>
           ) : (
             <div className="flex gap-2">
               <Button variant="outline" onClick={handleCancel}>
-                {t("common.cancel")}
+                {t.cancel}
               </Button>
               <Button onClick={handleSave} disabled={saving}>
-                {saving ? "Saving..." : t("common.save")}
+                {saving ? "Saving..." : t.save}
               </Button>
             </div>
           )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle>Profile Picture</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center space-y-4">
-              <Avatar className="w-32 h-32">
-                <AvatarImage src={profile?.user?.profilePicture || "/placeholder.svg"} />
-                <AvatarFallback>
-                  {profile?.user?.Names?.split(' ').map((n: string) => n[0]).join('') || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <Button variant="outline" size="sm" disabled={!isEditing}>
-                Change Photo
-              </Button>
-            </CardContent>
-          </Card>
-
+          {/* Remove the Card for Profile Picture (Avatar, AvatarImage, AvatarFallback, Change Photo button) */}
+          {/* Only keep the Card for Personal Information and the rest of the profile UI */}
           <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>

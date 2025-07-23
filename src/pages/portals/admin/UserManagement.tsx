@@ -20,6 +20,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
+import { useNavigate } from "react-router-dom";
 
 const translations = {
   en: {
@@ -109,6 +110,7 @@ const UserManagement = () => {
     }
     return value ?? key;
   };
+  const navigate = useNavigate();
 
   const [users, setUsers] = useState<any[]>([]);
   const [activeUsers, setActiveUsers] = useState<number>(0);
@@ -363,6 +365,9 @@ const UserManagement = () => {
             <p className="text-muted-foreground text-sm md:text-base">
               {t("userManagementDesc")}
             </p>
+            <Button className="mt-2" onClick={() => navigate('/admin-portal/succession-planning')}>
+              Manage Succession Plans
+            </Button>
           </div>
           {isAdmin && (
             <Button className="flex items-center gap-2 w-full sm:w-auto" onClick={() => setAddModalOpen(true)}>

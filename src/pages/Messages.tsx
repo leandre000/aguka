@@ -61,7 +61,14 @@ export default function Messages() {
     setLoadingThreads(true);
     getThreads()
       .then(setThreads)
-      .catch((err) => setError(err.message || "Failed to load threads"))
+      .catch((err) => {
+        if (err?.status === 403) {
+          setError("You are not authorized to view any threads.");
+          setThreads([]);
+        } else {
+          setError(err.message || "Failed to load threads");
+        }
+      })
       .finally(() => setLoadingThreads(false));
   };
   useEffect(() => { fetchThreads(); }, []);
@@ -71,7 +78,16 @@ export default function Messages() {
     setLoadingMessages(true);
     getMessages({ thread: threadId })
       .then(setMessages)
-      .catch((err) => setError(err.message || "Failed to load messages"))
+      .catch((err) => {
+        if (err?.status === 403) {
+          setError("You are not a participant in this thread.");
+          setSelectedThread(null);
+          // Optionally remove the thread from the list
+          setThreads((prev) => prev.filter((t) => t._id !== threadId));
+        } else {
+          setError(err.message || "Failed to load messages");
+        }
+      })
       .finally(() => setLoadingMessages(false));
   };
   useEffect(() => {
@@ -128,10 +144,14 @@ export default function Messages() {
 
     if (!newMessage.trim() || !selectedThread) return;
 
-    // Recipients: all except current user
-    const recipients = selectedThread.participants
-      .filter((p: any) => p._id !== user._id)
-      .map((p: any) => p._id);
+    const allParticipants = [
+      ...(selectedThread.participants || []),
+      user._id
+    ].map(p => (typeof p === "object" ? p._id : p));
+
+    const recipients = allParticipants
+      .filter(id => id && id !== user._id)
+      .filter((v, i, a) => a.indexOf(v) === i); // deduplicate
 
     if (recipients.length === 0) {
       setError("At least one recipient is required to send a message.");

@@ -79,6 +79,11 @@ export function AuditorPortalSidebar() {
       url: "/auditor-portal/ai-tools",
       icon: BarChart,
     },
+    {
+      title: t("auditor.employeeDocuments") || "Employee Documents",
+      url: "/auditor-portal/documents",
+      icon: FileText,
+    },
   ];
 
   const isActive = (path: string) => currentPath === path;

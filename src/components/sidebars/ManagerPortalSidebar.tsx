@@ -91,7 +91,7 @@ export function ManagerPortalSidebar() {
     },
     {
       title: "AI Tools",
-      url: "/ai-tools",
+      url: "/manager-portal/ai-tools",
       icon: BarChart,
     },
   ];

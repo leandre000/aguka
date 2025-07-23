@@ -4,7 +4,7 @@ import { Users, TrendingUp, AlertTriangle, Settings, Shield, BarChart, FileText 
 import { AdminPortalLayout } from "@/components/layouts/AdminPortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
-import { getSystemStats, getUsers, getLeaves, getActivityLogs } from "@/lib/api";
+import { getSystemStats, getUsers, getLeaves, getActivityLogs, getUser } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminPortal() {
@@ -19,6 +19,8 @@ export default function AdminPortal() {
   const [loading, setLoading] = useState(true);
   // Add state for pending leaves if you want to display them
   const [pendingLeavesList, setPendingLeavesList] = useState<any[]>([]);
+  // Add state for employee details cache
+  const [employeeCache, setEmployeeCache] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,6 +48,17 @@ export default function AdminPortal() {
           systemHealth: systemStats?.health || 0,
         });
         setPendingLeavesList(pendingLeavesArr);
+
+        // Fetch missing employee details for unknown employees
+        const missing = pendingLeavesArr.filter(l => !l.employee && l.employeeId);
+        for (const leave of missing) {
+          if (!employeeCache[leave.employeeId]) {
+            setEmployeeCache(prev => ({ ...prev, [leave.employeeId]: { loading: true } }));
+            getUser(leave.employeeId)
+              .then(user => setEmployeeCache(prev => ({ ...prev, [leave.employeeId]: user })))
+              .catch(() => setEmployeeCache(prev => ({ ...prev, [leave.employeeId]: null })));
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch admin data:', error);
       } finally {
@@ -54,6 +67,7 @@ export default function AdminPortal() {
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const quickActions = [
@@ -84,6 +98,13 @@ export default function AdminPortal() {
       icon: BarChart,
       color: 'bg-secondary',
       onClick: () => navigate('/admin-portal/analytics'),
+    },
+    {
+      title: t('admin.successionPlanning') || 'Succession Planning',
+      description: t('admin.successionPlanningDesc') || 'Manage succession plans and candidates',
+      icon: FileText,
+      color: 'bg-secondary',
+      onClick: () => navigate('/admin-portal/succession-planning'),
     },
   ];
 
@@ -146,19 +167,6 @@ export default function AdminPortal() {
               </p>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('admin.recentActivity')}</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.recentActivity}</div>
-              <p className="text-xs text-muted-foreground">
-                {t('admin.last24Hours')}
-              </p>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Quick Actions */}
@@ -190,24 +198,36 @@ export default function AdminPortal() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
+        {/* Pending Leave Requests */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('admin.recentActivity')}</CardTitle>
-            <CardDescription>{t('admin.recentActivityDesc')}</CardDescription>
+            <CardTitle>Pending Leave Requests</CardTitle>
+            <CardDescription>All leave requests that require admin attention.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {/* The recentActivity array was removed, so this section will be empty or need to be re-added */}
-              {/* For now, keeping the structure but noting the missing data */}
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">No recent activity data available.</p>
-                  <p className="text-sm text-muted-foreground">Please check system logs.</p>
-                </div>
-                <span className="text-sm text-muted-foreground">N/A</span>
-              </div>
-            </div>
+            {pendingLeavesList.length === 0 ? (
+              <div className="text-muted-foreground">No pending leave requests.</div>
+            ) : (
+              <ul className="divide-y">
+                {pendingLeavesList.map(leave => (
+                  <li key={leave._id} className="py-2 flex flex-col md:flex-row md:items-center md:gap-4">
+                    <span className="font-medium">
+                      {leave.employee ? leave.employee.Names :
+                        leave.employeeId && employeeCache[leave.employeeId]?.loading ? (
+                          <span className="text-muted-foreground italic">Loading...</span>
+                        ) : leave.employeeId && employeeCache[leave.employeeId] ? (
+                          employeeCache[leave.employeeId].Names || employeeCache[leave.employeeId].name || <span className="text-muted-foreground italic">Unknown employee</span>
+                        ) : (
+                          <span className="text-muted-foreground italic">Unknown employee</span>
+                        )}
+                    </span>
+                    <span className="ml-2">{leave.type}</span>
+                    <span className="ml-2 text-muted-foreground">{leave.reason}</span>
+                    <span className="ml-2 text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800">{leave.status}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       </div>

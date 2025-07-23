@@ -172,7 +172,7 @@ export const deleteReview = (id: string) =>
 // --- Survey API ---
 export const getSurveys = () => apiFetch("/surveys");
 export const submitSurvey = (data: any) =>
-  apiFetch("/survey", { method: "POST", body: JSON.stringify(data) });
+  apiFetch("/surveys/submit", { method: "POST", body: JSON.stringify(data) });
 
 // --- Messages API ---
 export const getMessages = (params?: any) => {
@@ -452,3 +452,5 @@ export const issueWarning = (employeeId: string, data: any) =>
 
 export const updateAttendance = (attendanceId: string, data: any) =>
   apiFetch(`/attendance/${attendanceId}`, { method: "PUT", body: JSON.stringify(data) });
+
+export const getAllEmployeeDocuments = () => apiFetch('/employees/documents');

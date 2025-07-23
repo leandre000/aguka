@@ -6,6 +6,8 @@ import { BarChart } from "lucide-react";
 import { getSurveys } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { EmployeePortalLayout } from "@/components/layouts/EmployeePortalLayout";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 export default function SurveyResults() {
   const { user } = useAuth();
@@ -13,6 +15,7 @@ export default function SurveyResults() {
   const [surveys, setSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isHR) return;
@@ -30,6 +33,9 @@ export default function SurveyResults() {
   return (
     <EmployeePortalLayout>
       <div className="space-y-6 p-4 md:p-6">
+        <Button className="mb-4" onClick={() => navigate('/admin-portal/succession-planning')}>
+          Manage Succession Plans
+        </Button>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">

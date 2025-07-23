@@ -10,6 +10,9 @@ import { BookOpen, Play, Clock, Award, Star, TrendingUp } from "lucide-react";
 import { EmployeePortalLayout } from "@/components/layouts/EmployeePortalLayout";
 import { getCourses, enrollInCourse, getEnrollments, updateProgress } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { Slider } from "@/components/ui/slider";
+import { useNavigate } from "react-router-dom";
+import { Modal } from "@/components/ui/modal";
 
 export default function Training() {
   const { t } = useLanguage();
@@ -20,6 +23,9 @@ export default function Training() {
   const [error, setError] = useState<string | null>(null);
   const [enrolling, setEnrolling] = useState<string | null>(null);
   const [progressing, setProgressing] = useState<string | null>(null);
+  const [progressInputs, setProgressInputs] = useState<Record<string, number>>({});
+  const [previewCourse, setPreviewCourse] = useState<any | null>(null);
+  const navigate = useNavigate();
 
   // Fetch courses and enrollments
   const fetchData = () => {
@@ -50,11 +56,12 @@ export default function Training() {
     }
   };
 
-  // Update progress (simulate complete)
-  const handleComplete = async (enrollmentId: string) => {
+  // Add handler for updating progress
+  const handleUpdateProgress = async (enrollmentId: string, progress: number) => {
     setProgressing(enrollmentId);
     try {
-      await updateProgress(enrollmentId, { progress: 100, status: "completed" });
+      await updateProgress(enrollmentId, { progress, status: progress === 100 ? "completed" : "in-progress" });
+      setProgressInputs(prev => ({ ...prev, [enrollmentId]: progress }));
       fetchData();
     } catch (err) {
       alert("Failed to update progress");
@@ -150,11 +157,12 @@ export default function Training() {
                 {currentEnrollments.map((enrollment: any) => {
                   const course = courses.find((c: any) => c._id === (enrollment.course?._id || enrollment.course));
                   if (!course) return null;
+                  const progressValue = progressInputs[enrollment._id] ?? enrollment.progress;
                   return (
                     <Card key={enrollment._id}>
                       <CardHeader className="pb-4">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <CardTitle className="text-base md:text-lg">{course.title}</CardTitle>
+                          <CardTitle className="text-base md:text-lg cursor-pointer text-primary hover:underline" onClick={() => setPreviewCourse(course)}>{course.title}</CardTitle>
                           <Badge variant="outline">{course.level}</Badge>
                         </div>
                       </CardHeader>
@@ -162,9 +170,17 @@ export default function Training() {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
                             <span>Progress</span>
-                            <span>{enrollment.progress}%</span>
+                            <span>{progressValue}%</span>
                           </div>
-                          <Progress value={enrollment.progress} className="w-full" />
+                          <Slider
+                            min={0}
+                            max={100}
+                            step={1}
+                            value={[progressValue]}
+                            onValueChange={([val]) => setProgressInputs(prev => ({ ...prev, [enrollment._id]: val }))}
+                            className="w-full"
+                            disabled={progressing === enrollment._id}
+                          />
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-muted-foreground">
                           <span>
@@ -175,10 +191,22 @@ export default function Training() {
                             {course.duration}
                           </span>
                         </div>
-                        <Button className="w-full" onClick={() => handleComplete(enrollment._id)} disabled={progressing === enrollment._id}>
-                          <Play className="h-4 w-4 mr-2" />
-                          {progressing === enrollment._id ? "Completing..." : "Mark as Complete"}
+                        <Button
+                          className="w-full"
+                          onClick={() => handleUpdateProgress(enrollment._id, progressValue)}
+                          disabled={progressing === enrollment._id || progressValue === enrollment.progress}
+                        >
+                          {progressing === enrollment._id ? "Updating..." : progressValue === 100 ? "Mark as Complete" : "Update Progress"}
                         </Button>
+                        {progressValue !== enrollment.progress && progressing !== enrollment._id && (
+                          <Button
+                            variant="outline"
+                            className="w-full mt-2"
+                            onClick={() => setProgressInputs(prev => ({ ...prev, [enrollment._id]: enrollment.progress }))}
+                          >
+                            Undo
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   );
@@ -261,6 +289,32 @@ export default function Training() {
           </TabsContent>
         </Tabs>
       </div>
+      {previewCourse && (
+        <Modal open={!!previewCourse} onClose={() => setPreviewCourse(null)}>
+          <div className="p-6 space-y-4">
+            <h2 className="text-xl font-bold mb-2">{previewCourse.title}</h2>
+            <p className="text-muted-foreground mb-2">{previewCourse.description}</p>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <Badge variant="outline">{previewCourse.category}</Badge>
+              <Badge variant="outline">{previewCourse.level}</Badge>
+              <Badge variant={previewCourse.status === "published" ? "default" : "secondary"}>
+                {previewCourse.status === "published" ? "Published" : "Draft"}
+              </Badge>
+            </div>
+            <div>
+              <strong>Modules:</strong>
+              <ul className="list-disc ml-6">
+                {previewCourse.modules?.map((m: any, i: number) => (
+                  <li key={i}>{m.title || m}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={() => setPreviewCourse(null)}>Close</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </EmployeePortalLayout>
   );
 }

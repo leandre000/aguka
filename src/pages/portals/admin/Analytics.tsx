@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getUsers, getPayrolls, getLeaves } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const translations = {
   en: {
@@ -105,6 +107,7 @@ const Analytics = () => {
   const { language } = useLanguage();
   const t = (key: keyof (typeof translations)["en"]) =>
     translations[language][key];
+  const navigate = useNavigate();
 
   // Dynamic states
   const [users, setUsers] = useState<any[]>([]);
@@ -214,6 +217,18 @@ const Analytics = () => {
             </CardContent>
           </Card>
         </div>
+        {/* Succession Planning Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Succession Planning</CardTitle>
+            <CardDescription>Manage and analyze succession plans</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate('/admin-portal/succession-planning')}>
+              Manage Succession Plans
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Payroll Details Table */}
         <Card>
