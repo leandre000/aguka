@@ -101,8 +101,14 @@ const translations = {
 
 const UserManagement = () => {
   const { language } = useLanguage();
-  const t = (key: keyof (typeof translations)["en"]) =>
-    translations[language][key];
+  const t = (key: string) => {
+    const keys = key.split(".");
+    let value: any = translations[language];
+    for (const k of keys) {
+      value = value?.[k];
+    }
+    return value ?? key;
+  };
 
   const [users, setUsers] = useState<any[]>([]);
   const [activeUsers, setActiveUsers] = useState<number>(0);

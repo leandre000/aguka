@@ -21,6 +21,11 @@ import {
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from '@/contexts/AuthContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/components/ui/use-toast';
+import { createGoal, updateGoal } from '@/lib/api';
 
 const translations = {
   en: {
@@ -114,6 +119,44 @@ const Goals = () => {
 
   const { user } = useAuth();
   const managerId = user?._id;
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [goalType, setGoalType] = useState<'team' | 'individual'>('team');
+  const [goalForm, setGoalForm] = useState({ title: '', description: '', assignedTo: '', dueDate: '', priority: 'Normal', type: 'team' });
+  const [updateForm, setUpdateForm] = useState({ id: '', progress: '', status: '' });
+  const [formLoading, setFormLoading] = useState(false);
+
+  const handleCreateGoal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormLoading(true);
+    try {
+      await createGoal({ ...goalForm, type: goalType });
+      toast({ title: 'Goal created' });
+      setShowCreateModal(false);
+      setGoalForm({ title: '', description: '', assignedTo: '', dueDate: '', priority: 'Normal', type: 'team' });
+      // Optionally refetch goals
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to create goal', variant: 'destructive' });
+    } finally {
+      setFormLoading(false);
+    }
+  };
+  const handleUpdateGoal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormLoading(true);
+    try {
+      await updateGoal(updateForm.id, { progress: updateForm.progress, status: updateForm.status });
+      toast({ title: 'Goal updated' });
+      setShowUpdateModal(false);
+      setUpdateForm({ id: '', progress: '', status: '' });
+      // Optionally refetch goals
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to update goal', variant: 'destructive' });
+    } finally {
+      setFormLoading(false);
+    }
+  };
 
   useEffect(() => {
     setOverviewLoading(true);
@@ -263,7 +306,7 @@ const Goals = () => {
                           </div>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm" className="ml-0 mt-2 sm:ml-4 sm:mt-0 text-xs">{t("update")}</Button>
+                      <Button variant="outline" size="sm" onClick={() => { setUpdateForm({ id: goal.id, progress: goal.progress, status: goal.status }); setShowUpdateModal(true); }}>Update</Button>
                     </div>
                   </div>
                 ))}
@@ -350,13 +393,8 @@ const Goals = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-              <Button
-                variant="outline"
-                className="h-auto p-3 md:p-4 flex flex-col items-center gap-2"
-              >
-                <Target className="h-4 w-4 md:h-6 md:w-6" />
-                <span className="text-xs md:text-sm">{t("setTeamGoal")}</span>
-              </Button>
+              <Button onClick={() => { setGoalType('team'); setShowCreateModal(true); }} variant="outline">Set Team Goal</Button>
+              <Button onClick={() => { setGoalType('individual'); setShowCreateModal(true); }} variant="outline">Set Individual Goal</Button>
               <Button
                 variant="outline"
                 className="h-auto p-3 md:p-4 flex flex-col items-center gap-2"
@@ -386,6 +424,70 @@ const Goals = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Create Goal</DialogTitle></DialogHeader>
+          <form onSubmit={handleCreateGoal} className="space-y-3">
+            <div>
+              <label className="block font-medium mb-1">Title</label>
+              <Input value={goalForm.title} onChange={e => setGoalForm(f => ({ ...f, title: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Description</label>
+              <Input value={goalForm.description} onChange={e => setGoalForm(f => ({ ...f, description: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Assigned To</label>
+              <Input value={goalForm.assignedTo} onChange={e => setGoalForm(f => ({ ...f, assignedTo: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Due Date</label>
+              <Input type="date" value={goalForm.dueDate} onChange={e => setGoalForm(f => ({ ...f, dueDate: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Priority</label>
+              <Select value={goalForm.priority} onValueChange={v => setGoalForm(f => ({ ...f, priority: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select priority" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Normal">Normal</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={formLoading}>{formLoading ? 'Submitting...' : 'Submit'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showUpdateModal} onOpenChange={setShowUpdateModal}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Update Goal</DialogTitle></DialogHeader>
+          <form onSubmit={handleUpdateGoal} className="space-y-3">
+            <div>
+              <label className="block font-medium mb-1">Progress (%)</label>
+              <Input value={updateForm.progress} onChange={e => setUpdateForm(f => ({ ...f, progress: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Status</label>
+              <Select value={updateForm.status} onValueChange={v => setUpdateForm(f => ({ ...f, status: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="On Track">On Track</SelectItem>
+                  <SelectItem value="Ahead">Ahead</SelectItem>
+                  <SelectItem value="Behind">Behind</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={formLoading}>{formLoading ? 'Updating...' : 'Update'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </ManagerPortalLayout>
   );
 };

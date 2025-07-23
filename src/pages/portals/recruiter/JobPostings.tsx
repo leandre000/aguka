@@ -27,6 +27,13 @@ import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog as Modal, DialogContent as ModalContent, DialogHeader as ModalHeader, DialogTitle as ModalTitle, DialogFooter as ModalFooter } from '@/components/ui/dialog';
+
+const JOB_BOARDS = [
+  { value: 'LinkedIn', label: 'LinkedIn' },
+  { value: 'Indeed', label: 'Indeed' },
+  { value: 'Facebook', label: 'Facebook' },
+];
 
 export default function JobPostings() {
   const { language } = useLanguage();
@@ -51,6 +58,10 @@ export default function JobPostings() {
   const [formError, setFormError] = useState<string | null>(null);
   const { isAuthenticated, user } = useAuth();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [postJobId, setPostJobId] = useState<string | null>(null);
+  const [postPlatforms, setPostPlatforms] = useState<string[]>([]);
+  const [posting, setPosting] = useState(false);
+  const [postResults, setPostResults] = useState<any[]>([]);
 
   useEffect(() => {
     setLoading(true);
@@ -293,6 +304,17 @@ export default function JobPostings() {
                       <span className="hidden sm:inline">{t("view")}</span>
                       <span className="sm:hidden">{t("view").substring(0, 4)}</span>
                     </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setPostJobId(job._id);
+                        setPostPlatforms([]);
+                        setPostResults([]);
+                      }}
+                    >
+                      Post to Job Boards
+                    </Button>
                     <Button variant="destructive" onClick={() => setDeleteId(job._id)}>{t("delete")}</Button>
                   </div>
                 </div>
@@ -424,6 +446,83 @@ export default function JobPostings() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Post to Job Boards Modal */}
+      <Modal open={!!postJobId} onOpenChange={open => !open && setPostJobId(null)}>
+        <ModalContent>
+          <ModalHeader>
+            <ModalTitle>Post to Job Boards</ModalTitle>
+          </ModalHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="block font-medium mb-1">Select Platforms</label>
+              <div className="flex gap-3">
+                {JOB_BOARDS.map(board => (
+                  <label key={board.value} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={postPlatforms.includes(board.value)}
+                      onChange={e => {
+                        setPostPlatforms(prev =>
+                          e.target.checked
+                            ? [...prev, board.value]
+                            : prev.filter(p => p !== board.value)
+                        );
+                      }}
+                    />
+                    {board.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <Button
+              onClick={async () => {
+                if (!postJobId || postPlatforms.length === 0) return;
+                setPosting(true);
+                setPostResults([]);
+                try {
+                  const res = await axios.post(`/api/jobs/${postJobId}/post-to-boards`, { platforms: postPlatforms }, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                  });
+                  setPostResults(res.data.results || []);
+                  toast({ title: 'Job posted to selected boards.' });
+                  // Optionally refresh jobs to show externalPosts
+                  getJobPostings().then(setJobs);
+                } catch (err: any) {
+                  toast({ title: 'Error', description: err.response?.data?.message || err.message, variant: 'destructive' });
+                } finally {
+                  setPosting(false);
+                }
+              }}
+              disabled={posting || postPlatforms.length === 0}
+            >
+              {posting ? 'Posting...' : 'Post Job'}
+            </Button>
+            {postResults.length > 0 && (
+              <div className="mt-2">
+                <div className="font-semibold mb-1">Results:</div>
+                <ul className="space-y-1">
+                  {postResults.map((r, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <span>{r.platform}:</span>
+                      {r.success ? (
+                        <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">View Post</a>
+                      ) : (
+                        <span className="text-red-600">Failed</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          <ModalFooter>
+            <Button variant="outline" onClick={() => setPostJobId(null)}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
         <AlertDialogContent>

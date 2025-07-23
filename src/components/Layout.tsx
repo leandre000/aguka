@@ -44,7 +44,7 @@ export function Layout({ children }: LayoutProps) {
           <header className="flex justify-between items-center px-4 py-2 bg-background border-b">
             <div className="font-bold text-lg">{t("common.hrms")}</div>
             {isAuthenticated && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-4">
                 <LanguageSwitcher />
                 <NotificationBell />
                 <span className="text-sm text-muted-foreground">{user?.Names || user?.name}</span>

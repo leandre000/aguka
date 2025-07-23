@@ -61,6 +61,7 @@ import GDPR from "./pages/GDPR";
 import { RoleRoute } from "@/components/RoleRoute";
 import NotAuthorized from "./pages/NotAuthorized";
 import { useTranslation } from 'react-i18next';
+import { Documents } from './pages/portals/employee';
 
 // --- PrivateRoute ---
 const PrivateRoute = () => {
@@ -146,6 +147,7 @@ const App = () => (
                       <Route path="/employee-portal/ai-assistant" element={<AIAssistant />} />
                       <Route path="/employee-portal/messages" element={<Messages />} />
                       <Route path="/employee-portal/ai-tools" element={<AITools />} />
+                      <Route path="/employee-portal/documents" element={<Documents />} />
                     </Route>
                     <Route element={<RoleRoute allowedRoles={["recruiter"]} />}>
                       <Route path="/recruiter-portal" element={<RecruiterPortal />} />

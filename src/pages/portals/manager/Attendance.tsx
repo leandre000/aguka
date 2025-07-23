@@ -20,6 +20,11 @@ import {
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from '@/contexts/AuthContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { toast } from '@/components/ui/use-toast';
+import { updateAttendance, issueWarning, approveOvertime, exportAttendanceReport } from '@/lib/api';
 
 const translations = {
   en: {
@@ -128,6 +133,12 @@ const Attendance = () => {
   const { user } = useAuth();
   const managerId = user?._id;
 
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [adjustForm, setAdjustForm] = useState({ employee: '', date: '', checkIn: '', checkOut: '', hours: '' });
+  const [warningForm, setWarningForm] = useState({ employee: '', reason: '' });
+  const [formLoading, setFormLoading] = useState(false);
+
   useEffect(() => {
     setOverviewLoading(true);
     setOverviewError(null);
@@ -150,6 +161,60 @@ const Attendance = () => {
       .catch(() => setWeeklyStatsError("Failed to load weekly trends."))
       .finally(() => setWeeklyStatsLoading(false));
   }, [managerId]);
+
+  const handleAdjustSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormLoading(true);
+    try {
+      await updateAttendance(adjustForm);
+      toast({ title: 'Attendance adjusted' });
+      setShowAdjustModal(false);
+      setAdjustForm({ employee: '', date: '', checkIn: '', checkOut: '', hours: '' });
+      // Optionally refetch attendance data
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to adjust attendance', variant: 'destructive' });
+    } finally {
+      setFormLoading(false);
+    }
+  };
+  const handleWarningSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormLoading(true);
+    try {
+      await issueWarning(warningForm);
+      toast({ title: 'Warning issued' });
+      setShowWarningModal(false);
+      setWarningForm({ employee: '', reason: '' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to issue warning', variant: 'destructive' });
+    } finally {
+      setFormLoading(false);
+    }
+  };
+  const handleApproveOvertime = async (employeeId: string, date: string) => {
+    try {
+      await approveOvertime({ employee: employeeId, date });
+      toast({ title: 'Overtime approved' });
+      // Optionally refetch attendance data
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to approve overtime', variant: 'destructive' });
+    }
+  };
+  const handleExportReport = async () => {
+    try {
+      const blob = await exportAttendanceReport();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'attendance-report.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      toast({ title: 'Report exported' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to export report', variant: 'destructive' });
+    }
+  };
 
   return (
     <ManagerPortalLayout>
@@ -256,6 +321,7 @@ const Attendance = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={attendance.status === "Present" ? "default" : attendance.status === "Late" ? "secondary" : "destructive"} className="text-xs">{attendance.status}</Badge>
+                      <Button onClick={() => handleApproveOvertime(attendance.employeeId, attendance.date)} variant="outline" size="sm">Approve Overtime</Button>
                       <Button variant="outline" size="sm" className="text-xs">{t("details")}</Button>
                     </div>
                   </div>
@@ -387,6 +453,55 @@ const Attendance = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={showAdjustModal} onOpenChange={setShowAdjustModal}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Time Adjustment</DialogTitle></DialogHeader>
+          <form onSubmit={handleAdjustSubmit} className="space-y-3">
+            <div>
+              <label className="block font-medium mb-1">Employee</label>
+              <Input value={adjustForm.employee} onChange={e => setAdjustForm(f => ({ ...f, employee: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Date</label>
+              <Input type="date" value={adjustForm.date} onChange={e => setAdjustForm(f => ({ ...f, date: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Check In</label>
+              <Input value={adjustForm.checkIn} onChange={e => setAdjustForm(f => ({ ...f, checkIn: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Check Out</label>
+              <Input value={adjustForm.checkOut} onChange={e => setAdjustForm(f => ({ ...f, checkOut: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Hours</label>
+              <Input value={adjustForm.hours} onChange={e => setAdjustForm(f => ({ ...f, hours: e.target.value }))} required />
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={formLoading}>{formLoading ? 'Submitting...' : 'Submit'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showWarningModal} onOpenChange={setShowWarningModal}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Issue Warning</DialogTitle></DialogHeader>
+          <form onSubmit={handleWarningSubmit} className="space-y-3">
+            <div>
+              <label className="block font-medium mb-1">Employee</label>
+              <Input value={warningForm.employee} onChange={e => setWarningForm(f => ({ ...f, employee: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Reason</label>
+              <Input value={warningForm.reason} onChange={e => setWarningForm(f => ({ ...f, reason: e.target.value }))} required />
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={formLoading}>{formLoading ? 'Submitting...' : 'Submit'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </ManagerPortalLayout>
   );
 };

@@ -20,9 +20,10 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
-import { getLeaves, approveLeave, rejectLeave } from '@/lib/api';
+import { getLeaves, approveLeave, rejectLeave, getExpenseClaims, approveExpense, rejectExpense, getOvertimeRequests, approveOvertime, rejectOvertime, getTrainingRequests, approveTraining, rejectTraining } from '@/lib/api';
 import { toast } from '@/components/ui/use-toast';
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const translations = {
   en: {
@@ -135,362 +136,252 @@ const translations = {
   },
 };
 
+const ApprovalCard = ({ approval, onApprove, onReject, selectedIds, setSelectedIds, loadingId, t, Icon }) => (
+  <div className="flex items-center gap-2" key={approval._id}>
+    <input
+      type="checkbox"
+      checked={selectedIds.includes(approval._id)}
+      onChange={(e) =>
+        setSelectedIds((prev) =>
+          e.target.checked ? [...prev, approval._id] : prev.filter((id) => id !== approval._id)
+        )
+      }
+    />
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border rounded-lg gap-4">
+      <div className="flex items-start gap-4">
+        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+            <h3 className="font-medium">{approval.type}</h3>
+            {approval.priority === "High" && (
+              <Badge variant="destructive" className="text-xs self-start">
+                {t("highPriority")}
+              </Badge>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground">{approval.employee}</p>
+          <p className="text-sm">{approval.description}</p>
+          {approval.amount && (
+            <p className="text-sm font-medium text-primary">{approval.amount}</p>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="text-left sm:text-right">
+          <p className="text-sm font-medium">{approval.period}</p>
+          <p className="text-xs text-muted-foreground">
+            {t("submitted")}: {approval.submitted}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700"
+            onClick={() => onApprove(approval._id)}
+            disabled={loadingId === approval._id}
+          >
+            <Check className="h-4 w-4" />
+            <span className="hidden sm:inline ml-1">{t("approve")}</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onReject(approval._id)}
+            disabled={loadingId === approval._id}
+          >
+            <X className="h-4 w-4" />
+            <span className="hidden sm:inline ml-1">{t("reject")}</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const Approvals = () => {
   const { language } = useLanguage();
-  const t = (key: keyof (typeof translations)["en"]) =>
-    translations[language][key];
+  // Update t to support dot notation
+  const t = (key: string) => {
+    const keys = key.split('.');
+    let value: any = translations[language];
+    for (const k of keys) {
+      value = value?.[k];
+    }
+    return value ?? key;
+  };
 
-  const { user } = useAuth();
-  const managerId = user?._id;
-  const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  
-  useEffect(() => {
-    setLoading(true);
-    getLeaves()
-      .then(data => setPendingApprovals(Array.isArray(data) ? data.filter((r: any) => r.status === 'Pending') : []))
-      .finally(() => setLoading(false));
-  }, [managerId]);
+  const [activeTab, setActiveTab] = useState('leave');
+  const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
+  const [expenseApprovals, setExpenseApprovals] = useState<any[]>([]);
+  const [overtimeApprovals, setOvertimeApprovals] = useState<any[]>([]);
+  const [trainingApprovals, setTrainingApprovals] = useState<any[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const handleApprove = async (id: string) => {
     setActionLoading(id);
     try {
-      await approveLeave(id);
-      setPendingApprovals(prev => prev.filter(r => r._id !== id));
+      if (activeTab === 'leave') {
+        await approveLeave(id);
+        setPendingApprovals(prev => prev.filter(r => r._id !== id));
+      } else if (activeTab === 'expense') {
+        await approveExpense(id);
+        setExpenseApprovals(prev => prev.filter(r => r._id !== id));
+      } else if (activeTab === 'overtime') {
+        await approveOvertime(id);
+        setOvertimeApprovals(prev => prev.filter(r => r._id !== id));
+      } else if (activeTab === 'training') {
+        await approveTraining(id);
+        setTrainingApprovals(prev => prev.filter(r => r._id !== id));
+      }
       toast({ title: 'Request approved' });
     } catch (err: any) {
-      let errorMsg = 'Failed to approve request';
-      if (err?.message) errorMsg = err.message;
-      toast({ title: 'Error', description: errorMsg, variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: err?.message ?? 'Failed to approve request',
+        variant: 'destructive',
+      });
     } finally {
       setActionLoading(null);
     }
   };
+
   const handleReject = async (id: string) => {
     setActionLoading(id);
     try {
-      await rejectLeave(id);
-      setPendingApprovals(prev => prev.filter(r => r._id !== id));
+      if (activeTab === 'leave') {
+        await rejectLeave(id);
+        setPendingApprovals(prev => prev.filter(r => r._id !== id));
+      } else if (activeTab === 'expense') {
+        await rejectExpense(id);
+        setExpenseApprovals(prev => prev.filter(r => r._id !== id));
+      } else if (activeTab === 'overtime') {
+        await rejectOvertime(id);
+        setOvertimeApprovals(prev => prev.filter(r => r._id !== id));
+      } else if (activeTab === 'training') {
+        await rejectTraining(id);
+        setTrainingApprovals(prev => prev.filter(r => r._id !== id));
+      }
       toast({ title: 'Request rejected' });
     } catch (err: any) {
-      let errorMsg = 'Failed to reject request';
-      if (err?.message) errorMsg = err.message;
-      toast({ title: 'Error', description: errorMsg, variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: err?.message ?? 'Failed to reject request',
+        variant: 'destructive',
+      });
     } finally {
       setActionLoading(null);
     }
   };
 
-  const approvalStats = [
-    { type: t("timeOff"), pending: 3, approved: 12, rejected: 1 },
-    { type: t("expenseClaims"), pending: 2, approved: 28, rejected: 2 },
-    { type: t("overtime"), pending: 1, approved: 8, rejected: 0 },
-    { type: t("training"), pending: 1, approved: 5, rejected: 1 },
-  ];
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [activeTab]);
 
   return (
     <ManagerPortalLayout>
-      <div className="space-y-4 md:space-y-6 p-2 sm:p-4 md:p-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-              {t("approvals")}
-            </h1>
-            <p className="text-muted-foreground text-sm md:text-base">
-              {t("reviewApprove")}
-            </p>
-          </div>
-          <Button className="flex items-center gap-2 w-full sm:w-auto">
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("approvalHistory")}</span>
-            <span className="sm:hidden">{t("history")}</span>
-          </Button>
-        </div>
-
-        {/* Approval Overview */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="leave">Leave</TabsTrigger>
+          <TabsTrigger value="expense">Expense</TabsTrigger>
+          <TabsTrigger value="overtime">Overtime</TabsTrigger>
+          <TabsTrigger value="training">Training</TabsTrigger>
+        </TabsList>
+        <TabsContent value="leave">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium">
-                {t("pending")}
-              </CardTitle>
-              <Clock className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
+            <CardHeader>
+              <CardTitle>Pending Leave Requests</CardTitle>
+              <CardDescription>Approve or reject leave requests.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">7</div>
-              <p className="text-xs text-muted-foreground">
-                {t("awaitingReview")}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium">
-                {t("approvedToday")}
-              </CardTitle>
-              <Check className="h-3 w-3 md:h-4 md:w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl md:text-2xl font-bold">5</div>
-              <p className="text-xs text-muted-foreground">{t("completed")}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium">
-                {t("highPriority")}
-              </CardTitle>
-              <AlertTriangle className="h-3 w-3 md:h-4 md:w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl md:text-2xl font-bold">1</div>
-              <p className="text-xs text-muted-foreground">
-                {t("urgentRequests")}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium">
-                {t("avgResponse")}
-              </CardTitle>
-              <Clock className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl md:text-2xl font-bold">2.3h</div>
-              <p className="text-xs text-muted-foreground">
-                {t("responseTime")}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Pending Approvals */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg md:text-xl">
-              {t("pendingApprovals")}
-            </CardTitle>
-            <CardDescription>{t("requestsAttention")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {pendingApprovals.map((approval) => {
-                const IconComponent = approval.icon;
-                return (
-                  <div
-                    key={approval.id}
-                    className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border rounded-lg gap-4"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
-                          <h3 className="font-medium">{approval.type}</h3>
-                          {approval.priority === "High" && (
-                            <Badge
-                              variant="destructive"
-                              className="text-xs self-start"
-                            >
-                              {t("highPriority")}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {approval.employee}
-                        </p>
-                        <p className="text-sm">{approval.description}</p>
-                        {approval.amount && (
-                          <p className="text-sm font-medium text-primary">
-                            {approval.amount}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="text-left sm:text-right">
-                        <p className="text-sm font-medium">{approval.period}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {t("submitted")}: {approval.submitted}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                          onClick={() => handleApprove(approval._id)}
-                          disabled={actionLoading === approval._id}
-                        >
-                          <Check className="h-4 w-4" />
-                          <span className="hidden sm:inline ml-1">
-                            {t("approve")}
-                          </span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleReject(approval._id)}
-                          disabled={actionLoading === approval._id}
-                        >
-                          <X className="h-4 w-4" />
-                          <span className="hidden sm:inline ml-1">
-                            {t("reject")}
-                          </span>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Approval Statistics */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg md:text-xl">
-              {t("approvalStatistics")}
-            </CardTitle>
-            <CardDescription>{t("monthlyMetrics")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {approvalStats.map((stat, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4"
-                >
-                  <div className="font-medium w-full sm:w-24">{stat.type}</div>
-                  <div className="flex flex-wrap items-center gap-4 sm:gap-8 flex-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-sm">
-                        {t("pendingStat")}: {stat.pending}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-sm">
-                        {t("approvedStat")}: {stat.approved}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-sm">
-                        {t("rejectedStat")}: {stat.rejected}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-sm text-muted-foreground sm:text-right">
-                    {Math.round(
-                      (stat.approved /
-                        (stat.approved + stat.rejected + stat.pending)) *
-                        100
-                    )}
-                    % {t("approvalRate")}
-                  </div>
-                </div>
+              {pendingApprovals.map((leave) => (
+                <ApprovalCard
+                  key={leave._id}
+                  approval={leave}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  selectedIds={selectedIds}
+                  setSelectedIds={setSelectedIds}
+                  loadingId={actionLoading}
+                  t={t}
+                  Icon={Clock}
+                />
               ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Approval Guidelines */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg md:text-xl">
-              {t("guidelines")}
-            </CardTitle>
-            <CardDescription>{t("guidelinesPolicies")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-medium mb-3">{t("timeOff")}</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>{t("timeOff1")}</li>
-                  <li>{t("timeOff2")}</li>
-                  <li>{t("timeOff3")}</li>
-                  <li>{t("timeOff4")}</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-medium mb-3">{t("expenseClaims")}</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>{t("expense1")}</li>
-                  <li>{t("expense2")}</li>
-                  <li>{t("expense3")}</li>
-                  <li>{t("expense4")}</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-medium mb-3">{t("overtime")}</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>{t("overtime1")}</li>
-                  <li>{t("overtime2")}</li>
-                  <li>{t("overtime3")}</li>
-                  <li>{t("overtime4")}</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-medium mb-3">{t("training")}</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>{t("training1")}</li>
-                  <li>{t("training2")}</li>
-                  <li>{t("training3")}</li>
-                  <li>{t("training4")}</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg md:text-xl">
-              {t("quickActions")}
-            </CardTitle>
-            <CardDescription>{t("commonTasks")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex flex-col items-center gap-2"
-              >
-                <Check className="h-6 w-6" />
-                <span className="text-xs text-center">{t("bulkApprove")}</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex flex-col items-center gap-2"
-              >
-                <FileText className="h-6 w-6" />
-                <span className="text-xs text-center">{t("viewHistory")}</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex flex-col items-center gap-2"
-              >
-                <AlertTriangle className="h-6 w-6" />
-                <span className="text-xs text-center">{t("setDelegates")}</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex flex-col items-center gap-2"
-              >
-                <Clock className="h-6 w-6" />
-                <span className="text-xs text-center">{t("autoRules")}</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="expense">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Expense Claims</CardTitle>
+              <CardDescription>Approve or reject expense claims.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {expenseApprovals.map((expense) => (
+                <ApprovalCard
+                  key={expense._id}
+                  approval={expense}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  selectedIds={selectedIds}
+                  setSelectedIds={setSelectedIds}
+                  loadingId={actionLoading}
+                  t={t}
+                  Icon={DollarSign}
+                />
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="overtime">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Overtime Requests</CardTitle>
+              <CardDescription>Approve or reject overtime requests.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {overtimeApprovals.map((overtime) => (
+                <ApprovalCard
+                  key={overtime._id}
+                  approval={overtime}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  selectedIds={selectedIds}
+                  setSelectedIds={setSelectedIds}
+                  loadingId={actionLoading}
+                  t={t}
+                  Icon={Clock}
+                />
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="training">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Training Requests</CardTitle>
+              <CardDescription>Approve or reject training requests.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {trainingApprovals.map((training) => (
+                <ApprovalCard
+                  key={training._id}
+                  approval={training}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  selectedIds={selectedIds}
+                  setSelectedIds={setSelectedIds}
+                  loadingId={actionLoading}
+                  t={t}
+                  Icon={FileText}
+                />
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </ManagerPortalLayout>
   );
 };

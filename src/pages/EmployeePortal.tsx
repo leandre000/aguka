@@ -12,6 +12,7 @@ import { getMyLeaveRequests, getTrainingEnrollments, getMyDocuments, getMyEmploy
 import { useAuth } from "@/contexts/AuthContext";
 import { uploadMyDocuments } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
+import { Documents } from './portals/employee';
 
 const EmployeePortal = () => {
   const { t } = useLanguage();

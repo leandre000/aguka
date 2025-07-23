@@ -12,8 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { ManagerPortalLayout } from "@/components/layouts/ManagerPortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Calendar, Check, X, Clock, Users } from "lucide-react";
-import { getLeaves, getTeamMembers } from '@/lib/api';
+import { getLeaves, getTeamMembers, approveLeave, rejectLeave, getEmployees, requestLeave } from '@/lib/api';
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from '@/components/ui/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 const timeOffTranslations = {
   en: {
@@ -133,6 +137,11 @@ const TimeOff = () => {
   const { user } = useAuth();
   const managerId = user?._id;
 
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [form, setForm] = useState({ employee: '', type: 'Annual', startDate: '', endDate: '', reason: '' });
+  const [formLoading, setFormLoading] = useState(false);
+
   // Fetch all data on mount
   useEffect(() => {
     setPendingLoading(true);
@@ -159,14 +168,44 @@ const TimeOff = () => {
     setStatsLoading(false);
   }, [managerId]);
 
+  useEffect(() => {
+    getEmployees().then(setEmployees).catch(() => setEmployees([]));
+  }, []);
+
   // Approve/Reject handlers (mocked)
-  const handleApprove = async (id: number) => {
-    // TODO: Replace with real API call
-    setPendingRequests((prev) => prev.filter((req) => req.id !== id));
+  const handleApprove = async (id: string) => {
+    try {
+      await approveLeave(id);
+      setPendingRequests(prev => prev.filter((req: any) => req._id !== id));
+      toast({ title: 'Request approved' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to approve', variant: 'destructive' });
+    }
   };
-  const handleReject = async (id: number) => {
-    // TODO: Replace with real API call
-    setPendingRequests((prev) => prev.filter((req) => req.id !== id));
+  const handleReject = async (id: string) => {
+    try {
+      await rejectLeave(id);
+      setPendingRequests(prev => prev.filter((req: any) => req._id !== id));
+      toast({ title: 'Request rejected' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to reject', variant: 'destructive' });
+    }
+  };
+
+  const handleRequestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormLoading(true);
+    try {
+      await requestLeave(form);
+      toast({ title: 'Time off requested' });
+      setShowRequestModal(false);
+      setForm({ employee: '', type: 'Annual', startDate: '', endDate: '', reason: '' });
+      // fetchDocuments(); // or refetch leaves if needed
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to request time off', variant: 'destructive' });
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   return (
@@ -329,7 +368,7 @@ const TimeOff = () => {
                       <Button
                         size="sm"
                         className="bg-green-600 hover:bg-green-700"
-                        onClick={() => handleApprove(request.id)}
+                        onClick={() => handleApprove(request._id)}
                       >
                         <Check className="h-4 w-4" />
                         <span className="hidden sm:inline ml-1">{t("manager.approve")}</span>
@@ -337,7 +376,7 @@ const TimeOff = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleReject(request.id)}
+                        onClick={() => handleReject(request._id)}
                       >
                         <X className="h-4 w-4" />
                         <span className="hidden sm:inline ml-1">{t("manager.reject")}</span>
@@ -460,6 +499,53 @@ const TimeOff = () => {
             </div>
           </CardContent>
         </Card>
+        <Button onClick={() => setShowRequestModal(true)} className="mb-4">Submit Time Off for Employee</Button>
+        <Dialog open={showRequestModal} onOpenChange={setShowRequestModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Submit Time Off for Employee</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleRequestSubmit} className="space-y-3">
+              <div>
+                <label className="block font-medium mb-1">Employee</label>
+                <Select value={form.employee} onValueChange={v => setForm(f => ({ ...f, employee: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select employee" /></SelectTrigger>
+                  <SelectContent>
+                    {employees.map(emp => (
+                      <SelectItem key={emp._id} value={emp._id}>{emp.Names}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block font-medium mb-1">Type</label>
+                <Select value={form.type} onValueChange={v => setForm(f => ({ ...f, type: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Annual">Annual</SelectItem>
+                    <SelectItem value="Sick">Sick</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block font-medium mb-1">Start Date</label>
+                <Input type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="block font-medium mb-1">End Date</label>
+                <Input type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="block font-medium mb-1">Reason</label>
+                <Input value={form.reason} onChange={e => setForm(f => ({ ...f, reason: e.target.value }))} required />
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={formLoading}>{formLoading ? 'Submitting...' : 'Submit'}</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </ManagerPortalLayout>
   );

@@ -17,24 +17,35 @@ export default function AdminPortal() {
     systemHealth: 0,
   });
   const [loading, setLoading] = useState(true);
+  // Add state for pending leaves if you want to display them
+  const [pendingLeavesList, setPendingLeavesList] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [systemStats, users, leaves, activityLogs] = await Promise.all([
+        const [systemStats, usersRes, leavesRes, activityLogs] = await Promise.all([
           getSystemStats(),
           getUsers(),
           getLeaves(),
           getActivityLogs(),
         ]);
 
+        // Extract arrays from .data if present, fallback to [] if not
+        const users = Array.isArray(usersRes) ? usersRes : usersRes?.data || [];
+        const leaves = Array.isArray(leavesRes) ? leavesRes : leavesRes?.data || [];
+        const pendingLeavesArr = leaves.filter((l: any) => {
+          const status = l.status || l.Status;
+          return status === 'Pending' || status === 'pending';
+        });
+
         setStats({
-          totalUsers: users?.length || 0,
-          activeUsers: users?.filter((u: any) => u.status === 'active')?.length || 0,
-          pendingLeaves: leaves?.filter((l: any) => l.status === 'pending')?.length || 0,
+          totalUsers: users.length,
+          activeUsers: users.filter((u: any) => u.status === 'active').length,
+          pendingLeaves: pendingLeavesArr.length,
           systemHealth: systemStats?.health || 0,
         });
+        setPendingLeavesList(pendingLeavesArr);
       } catch (error) {
         console.error('Failed to fetch admin data:', error);
       } finally {

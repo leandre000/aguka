@@ -7,8 +7,48 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, LineChart, TrendingUp, Download, Calendar, Filter, PieChart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getReports, getHiringReport, getTurnoverReport, getPayrollSummaryReport, getDiversityReport, getActivityLogs, getSystemStats, getRecentSystemActivities, getPerformanceReviews, getTrainingEnrollments, getLeaveRequests, getPayrollRecords } from "@/lib/api";
-import { useEffect } from "react";
+import { getReports, getHiringReport, getTurnoverReport, getPayrollSummaryReport, getDiversityReport, getActivityLogs, getSystemStats, getRecentSystemActivities, getPerformanceReviews, getTrainingEnrollments, getLeaveRequests, getPayrollRecords, getCustomReport, exportReportPDF, exportReportExcel } from "@/lib/api";
+import { useEffect, useRef } from "react";
+
+const DATA_SOURCES = [
+  { value: 'employees', label: 'Employees' },
+  { value: 'payroll', label: 'Payroll' },
+  { value: 'leave', label: 'Leave Requests' },
+  { value: 'performance', label: 'Performance Reviews' },
+  { value: 'training', label: 'Training Enrollments' },
+];
+
+const FIELDS: Record<string, { value: string; label: string }[]> = {
+  employees: [
+    { value: 'Names', label: 'Name' },
+    { value: 'Email', label: 'Email' },
+    { value: 'department', label: 'Department' },
+    { value: 'role', label: 'Role' },
+    { value: 'status', label: 'Status' },
+  ],
+  payroll: [
+    { value: 'baseSalary', label: 'Base Salary' },
+    { value: 'bonus', label: 'Bonus' },
+    { value: 'netPay', label: 'Net Pay' },
+    { value: 'period', label: 'Period' },
+  ],
+  leave: [
+    { value: 'type', label: 'Leave Type' },
+    { value: 'startDate', label: 'Start Date' },
+    { value: 'endDate', label: 'End Date' },
+    { value: 'status', label: 'Status' },
+  ],
+  performance: [
+    { value: 'employee', label: 'Employee' },
+    { value: 'reviewDate', label: 'Review Date' },
+    { value: 'rating', label: 'Rating' },
+  ],
+  training: [
+    { value: 'employee', label: 'Employee' },
+    { value: 'course', label: 'Course' },
+    { value: 'progress', label: 'Progress' },
+  ],
+};
 
 const Reports = () => {
   const { user } = useAuth();
@@ -17,6 +57,16 @@ const Reports = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<any>({});
+
+  const [customSource, setCustomSource] = useState('employees');
+  const [customFields, setCustomFields] = useState<string[]>(['Names', 'Email']);
+  const [customFilters, setCustomFilters] = useState<{ field: string; value: string }[]>([]);
+  const [customReport, setCustomReport] = useState<any[]>([]);
+  const [customLoading, setCustomLoading] = useState(false);
+  const [customError, setCustomError] = useState<string | null>(null);
+  const [customExporting, setCustomExporting] = useState(false);
+  const filterFieldRef = useRef<HTMLSelectElement>(null);
+  const filterValueRef = useRef<HTMLInputElement>(null);
 
   // Fetch dynamic report data based on role
   useEffect(() => {
@@ -65,6 +115,50 @@ const Reports = () => {
     };
     fetchData();
   }, [user]);
+
+  async function runCustomReport() {
+    setCustomLoading(true);
+    setCustomError(null);
+    try {
+      // Call backend custom report API
+      const params = {
+        source: customSource,
+        fields: customFields,
+        filters: customFilters,
+      };
+      const data = await getCustomReport(params);
+      setCustomReport(data.rows || []);
+    } catch (err: any) {
+      setCustomError(err.message || 'Failed to generate report');
+    } finally {
+      setCustomLoading(false);
+    }
+  }
+
+  async function exportCustomReport(format: 'pdf' | 'excel') {
+    setCustomExporting(true);
+    try {
+      const params = {
+        source: customSource,
+        fields: customFields,
+        filters: customFilters,
+      };
+      const api = format === 'pdf' ? exportReportPDF : exportReportExcel;
+      const blob = await api(params);
+      // Download file
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `custom-report.${format === 'pdf' ? 'pdf' : 'xlsx'}`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    } catch (err: any) {
+      setCustomError(err.message || 'Failed to export report');
+    } finally {
+      setCustomExporting(false);
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -214,9 +308,97 @@ const Reports = () => {
                   </Button>
                 </div>
 
-                <div className="space-y-4">
-                  {/* Custom reports will be displayed here if implemented */}
-                  <div className="text-muted-foreground">Custom reports functionality coming soon.</div>
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1 space-y-2">
+                    <label className="font-medium">Data Source</label>
+                    <select value={customSource} onChange={e => {
+                      setCustomSource(e.target.value);
+                      setCustomFields([]);
+                    }} className="w-full border rounded p-2">
+                      {DATA_SOURCES.map(ds => (
+                        <option key={ds.value} value={ds.value}>{ds.label}</option>
+                      ))}
+                    </select>
+                    <label className="font-medium mt-2">Fields</label>
+                    <div className="flex flex-wrap gap-2">
+                      {FIELDS[customSource].map(f => (
+                        <label key={f.value} className="flex items-center gap-1">
+                          <input
+                            type="checkbox"
+                            checked={customFields.includes(f.value)}
+                            onChange={e => {
+                              setCustomFields(prev =>
+                                e.target.checked
+                                  ? [...prev, f.value]
+                                  : prev.filter(v => v !== f.value)
+                              );
+                            }}
+                          />
+                          {f.label}
+                        </label>
+                      ))}
+                    </div>
+                    <label className="font-medium mt-2">Filters</label>
+                    <div className="flex gap-2 mb-2">
+                      <select ref={filterFieldRef} className="border rounded p-1">
+                        {FIELDS[customSource].map(f => (
+                          <option key={f.value} value={f.value}>{f.label}</option>
+                        ))}
+                      </select>
+                      <input ref={filterValueRef} className="border rounded p-1" placeholder="Value" />
+                      <Button size="sm" onClick={() => {
+                        if (filterFieldRef.current && filterValueRef.current) {
+                          setCustomFilters(prev => [...prev, { field: filterFieldRef.current!.value, value: filterValueRef.current!.value }]);
+                          filterValueRef.current.value = '';
+                        }
+                      }}>Add</Button>
+                    </div>
+                    <ul className="mb-2">
+                      {customFilters.map((f, i) => (
+                        <li key={i} className="text-xs flex items-center gap-2">
+                          <span>{FIELDS[customSource].find(ff => ff.value === f.field)?.label || f.field}: {f.value}</span>
+                          <Button size="xs" variant="ghost" onClick={() => setCustomFilters(prev => prev.filter((_, idx) => idx !== i))}>Remove</Button>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button onClick={runCustomReport} disabled={customLoading || customFields.length === 0}>
+                      {customLoading ? 'Generating...' : 'Generate Report'}
+                    </Button>
+                    <Button variant="outline" onClick={() => exportCustomReport('pdf')} disabled={customExporting || customReport.length === 0} className="ml-2">
+                      Export PDF
+                    </Button>
+                    <Button variant="outline" onClick={() => exportCustomReport('excel')} disabled={customExporting || customReport.length === 0} className="ml-2">
+                      Export Excel
+                    </Button>
+                    {customError && <div className="text-red-600 text-sm mt-2">{customError}</div>}
+                  </div>
+                  <div className="flex-1">
+                    <label className="font-medium">Results</label>
+                    <div className="border rounded p-2 min-h-[200px] bg-gray-50 overflow-x-auto">
+                      {customReport.length === 0 ? (
+                        <div className="text-muted-foreground">No data</div>
+                      ) : (
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr>
+                              {customFields.map(f => (
+                                <th key={f} className="font-semibold text-left p-1 border-b">{FIELDS[customSource].find(ff => ff.value === f)?.label || f}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {customReport.map((row, i) => (
+                              <tr key={i}>
+                                {customFields.map(f => (
+                                  <td key={f} className="p-1 border-b">{row[f]}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
               <TabsContent value="analytics" className="space-y-6">
@@ -531,3 +713,4 @@ const Reports = () => {
 };
 
 export default Reports;
+

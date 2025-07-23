@@ -312,7 +312,7 @@ We are looking for a senior software engineer with experience in JavaScript, Rea
                   trainingCompleted: Number(attritionForm.trainingCompleted),
                 };
                 const result = await predictAttrition(inputData);
-                setAttritionResult(result);
+                setAttritionResult(result.data);
               } catch (err: any) {
                 toast({ title: t("common.error"), description: err.message || t("aiTools.checkError"), variant: "destructive" });
               } finally {
@@ -327,9 +327,23 @@ We are looking for a senior software engineer with experience in JavaScript, Rea
             <div className="mt-2 p-4 bg-muted rounded">
               <div className="text-lg font-semibold mb-2">{t("aiTools.attritionCheck")}</div>
               <div className="space-y-2">
-                <div><strong>{t("aiTools.riskLevel") || "Risk Level:"}</strong> <span className={`font-bold ${attritionResult.risk === 'high' ? 'text-red-600' : attritionResult.risk === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>{attritionResult.risk?.toUpperCase()}</span></div>
-                {attritionResult.riskScore !== undefined && (
-                  <div><strong>{t("aiTools.riskScore") || "Risk Score:"}</strong> {Math.round(attritionResult.riskScore * 100)}%</div>
+                {attritionResult.risk ? (
+                  <div className="flex items-center gap-2">
+                    <strong>{t("aiTools.riskLevel") || "Risk Level:"}</strong>
+                    <span className={`font-bold ${attritionResult.risk === 'high' ? 'text-red-600' : attritionResult.risk === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>{attritionResult.risk?.toUpperCase()}</span>
+                    {attritionResult.risk === 'low' && (
+                      <svg className="inline h-5 w-5 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground">No risk level returned.</div>
+                )}
+                {attritionResult.riskScore !== undefined ? (
+                  <div>
+                    <strong>{t("aiTools.riskScore") || "Risk Score:"}</strong> {Math.abs(attritionResult.riskScore) <= 1 ? Math.round(attritionResult.riskScore * 100) : Math.round(attritionResult.riskScore)}%
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground">No risk score returned.</div>
                 )}
                 {attritionResult.riskFactors && attritionResult.riskFactors.length > 0 && (
                   <div>

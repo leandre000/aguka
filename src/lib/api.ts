@@ -422,3 +422,33 @@ export const getComplianceReports = () => apiFetch('/compliance/reports');
 export const createComplianceReport = (data: any) => apiFetch('/compliance/reports', { method: 'POST', body: JSON.stringify(data) });
 export const updateComplianceReport = (id: string, data: any) => apiFetch(`/compliance/reports/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteComplianceReport = (id: string) => apiFetch(`/compliance/reports/${id}`, { method: 'DELETE' });
+
+// Expense
+export const getExpenseClaims = () => apiFetch('/expenses');
+export const approveExpense = (id: string) => apiFetch(`/expenses/${id}/approve`, { method: 'PUT' });
+export const rejectExpense = (id: string) => apiFetch(`/expenses/${id}/reject`, { method: 'PUT' });
+
+// Overtime
+export const getOvertimeRequests = () => apiFetch('/overtime');
+export const approveOvertime = (id: string) => apiFetch(`/overtime/${id}/approve`, { method: 'PUT' });
+export const rejectOvertime = (id: string) => apiFetch(`/overtime/${id}/reject`, { method: 'PUT' });
+
+// Training
+export const getTrainingRequests = () => apiFetch('/training/requests');
+export const approveTraining = (id: string) => apiFetch(`/training/requests/${id}/approve`, { method: 'PUT' });
+export const rejectTraining = (id: string) => apiFetch(`/training/requests/${id}/reject`, { method: 'PUT' });
+
+// Goals
+export const createGoal = (data: any) => apiFetch('/goals', { method: 'POST', body: JSON.stringify(data) });
+export const updateGoal = (id: string, data: any) => apiFetch(`/goals/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+
+export const exportAttendanceReport = (params?: any) => {
+  const query = params ? '?' + new URLSearchParams(params).toString() : '';
+  return apiFetch(`/attendance/export${query}`);
+};
+
+export const issueWarning = (employeeId: string, data: any) =>
+  apiFetch(`/attendance/${employeeId}/warning`, { method: "POST", body: JSON.stringify(data) });
+
+export const updateAttendance = (attendanceId: string, data: any) =>
+  apiFetch(`/attendance/${attendanceId}`, { method: "PUT", body: JSON.stringify(data) });
