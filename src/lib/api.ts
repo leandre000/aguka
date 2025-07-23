@@ -425,6 +425,7 @@ export const deleteComplianceReport = (id: string) => apiFetch(`/compliance/repo
 
 // Expense
 export const getExpenseClaims = () => apiFetch('/expenses');
+export const createExpenseClaim = (data: any) => apiFetch('/expenses', { method: 'POST', body: data });
 export const approveExpense = (id: string) => apiFetch(`/expenses/${id}/approve`, { method: 'PUT' });
 export const rejectExpense = (id: string) => apiFetch(`/expenses/${id}/reject`, { method: 'PUT' });
 
