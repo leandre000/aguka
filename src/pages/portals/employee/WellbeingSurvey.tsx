@@ -15,6 +15,87 @@ import { EmployeePortalLayout } from "@/components/layouts/EmployeePortalLayout"
 import { submitSurvey } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 
+const translations = {
+  en: {
+    wellbeingSurvey: "Wellbeing Survey",
+    monthlyCheck: "Monthly Wellbeing Check",
+    anonymous: "Anonymous",
+    step: "Step",
+    complete: "Complete",
+    overallWellbeing: "Overall Wellbeing",
+    workLifeBalance: "Work-Life Balance",
+    stressLevel: "Stress Level",
+    supportNeeded: "Support Needed",
+    additionalComments: "Additional Comments",
+    submit: "Submit Survey",
+    submitting: "Submitting...",
+    previous: "Previous",
+    next: "Next",
+    surveySubmitted: "Survey submitted successfully!",
+    error: "Failed to submit survey",
+    excellent: "Excellent",
+    good: "Good",
+    fair: "Fair",
+    poor: "Poor",
+    low: "Low",
+    moderate: "Moderate",
+    high: "High",
+    veryHigh: "Very High",
+    managementSupport: "Management Support",
+    workloadAdjustment: "Workload Adjustment",
+    flexibleSchedule: "Flexible Schedule",
+    mentalHealth: "Mental Health Resources",
+    careerDevelopment: "Career Development",
+    teamBuilding: "Team Building",
+    anonymousSubmission: "Anonymous Submission",
+    confidential: "Your responses are anonymous and confidential.",
+    notifyHR: "Notify HR about my submission",
+    surveyResults: "Survey Results",
+    noResults: "No survey results yet.",
+    score: "Score",
+    loading: "Loading...",
+  },
+  fr: {
+    wellbeingSurvey: "Enquête sur le bien-être",
+    monthlyCheck: "Vérification mensuelle du bien-être",
+    anonymous: "Anonyme",
+    step: "Étape",
+    complete: "Terminé",
+    overallWellbeing: "Bien-être général",
+    workLifeBalance: "Équilibre travail-vie",
+    stressLevel: "Niveau de stress",
+    supportNeeded: "Soutien nécessaire",
+    additionalComments: "Commentaires supplémentaires",
+    submit: "Soumettre l'enquête",
+    submitting: "Soumission...",
+    previous: "Précédent",
+    next: "Suivant",
+    surveySubmitted: "Enquête soumise avec succès!",
+    error: "Échec de la soumission de l'enquête",
+    excellent: "Excellent",
+    good: "Bon",
+    fair: "Moyen",
+    poor: "Mauvais",
+    low: "Faible",
+    moderate: "Modéré",
+    high: "Élevé",
+    veryHigh: "Très élevé",
+    managementSupport: "Soutien de la direction",
+    workloadAdjustment: "Ajustement de la charge de travail",
+    flexibleSchedule: "Horaire flexible",
+    mentalHealth: "Ressources en santé mentale",
+    careerDevelopment: "Développement de carrière",
+    teamBuilding: "Renforcement d'équipe",
+    anonymousSubmission: "Soumission anonyme",
+    confidential: "Vos réponses sont anonymes et confidentielles.",
+    notifyHR: "Notifier les RH de ma soumission",
+    surveyResults: "Résultats de l'enquête",
+    noResults: "Aucun résultat d'enquête pour le moment.",
+    score: "Score",
+    loading: "Chargement...",
+  },
+};
+
 export default function WellbeingSurvey({ showResults = false, surveyResults = [] }: { showResults?: boolean, surveyResults?: any[] }) {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -71,7 +152,7 @@ export default function WellbeingSurvey({ showResults = false, surveyResults = [
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold mb-4">Overall Wellbeing</h3>
+              <h3 className="text-lg font-semibold mb-4">{t.overallWellbeing}</h3>
               <RadioGroup value={form.overall || ""} onValueChange={v => handleRadioChange("overall", v)}>
                 {[...Array(10)].map((_, i) => (
                   <div key={i + 1} className="flex items-center space-x-2">
@@ -92,44 +173,44 @@ export default function WellbeingSurvey({ showResults = false, surveyResults = [
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold mb-4">Work-Life Balance</h3>
+              <h3 className="text-lg font-semibold mb-4">{t.workLifeBalance}</h3>
               <RadioGroup value={form.workLife || ""} onValueChange={v => handleRadioChange("workLife", v)}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="excellent" id="wlb-excellent" />
-                  <Label htmlFor="wlb-excellent">Excellent</Label>
+                  <Label htmlFor="wlb-excellent">{t.excellent}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="good" id="wlb-good" />
-                  <Label htmlFor="wlb-good">Good</Label>
+                  <Label htmlFor="wlb-good">{t.good}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="fair" id="wlb-fair" />
-                  <Label htmlFor="wlb-fair">Fair</Label>
+                  <Label htmlFor="wlb-fair">{t.fair}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="poor" id="wlb-poor" />
-                  <Label htmlFor="wlb-poor">Poor</Label>
+                  <Label htmlFor="wlb-poor">{t.poor}</Label>
                 </div>
               </RadioGroup>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4">Stress Level</h3>
+              <h3 className="text-lg font-semibold mb-4">{t.stressLevel}</h3>
               <RadioGroup value={form.stress || ""} onValueChange={v => handleRadioChange("stress", v)}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="low" id="stress-low" />
-                  <Label htmlFor="stress-low">Low</Label>
+                  <Label htmlFor="stress-low">{t.low}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="moderate" id="stress-moderate" />
-                  <Label htmlFor="stress-moderate">Moderate</Label>
+                  <Label htmlFor="stress-moderate">{t.moderate}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="high" id="stress-high" />
-                  <Label htmlFor="stress-high">High</Label>
+                  <Label htmlFor="stress-high">{t.high}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="very-high" id="stress-very-high" />
-                  <Label htmlFor="stress-very-high">Very High</Label>
+                  <Label htmlFor="stress-very-high">{t.veryHigh}</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -139,7 +220,7 @@ export default function WellbeingSurvey({ showResults = false, surveyResults = [
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold mb-4">Support Needed</h3>
+              <h3 className="text-lg font-semibold mb-4">{t.supportNeeded}</h3>
               <div className="space-y-3">
                 {[
                   "Management Support",
@@ -162,7 +243,7 @@ export default function WellbeingSurvey({ showResults = false, surveyResults = [
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold mb-4">Additional Comments</h3>
+              <h3 className="text-lg font-semibold mb-4">{t.additionalComments}</h3>
               <Textarea
                 placeholder="Share your thoughts..."
                 className="min-h-32"
@@ -174,11 +255,11 @@ export default function WellbeingSurvey({ showResults = false, surveyResults = [
               <div className="flex items-start space-x-3">
                 <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
                 <div className="space-y-2">
-                  <h4 className="font-medium">Anonymous Submission</h4>
-                  <p className="text-sm text-muted-foreground">Your responses are anonymous and confidential.</p>
+                  <h4 className="font-medium">{t.anonymousSubmission}</h4>
+                  <p className="text-sm text-muted-foreground">{t.confidential}</p>
                   <div className="flex items-center space-x-2">
                     <Checkbox id="notify-hr" checked={notifyHR} onCheckedChange={checked => setNotifyHR(checked === true)} />
-                    <Label htmlFor="notify-hr" className="text-sm">Notify HR about my submission</Label>
+                    <Label htmlFor="notify-hr" className="text-sm">{t.notifyHR}</Label>
                   </div>
                 </div>
               </div>
@@ -196,7 +277,7 @@ export default function WellbeingSurvey({ showResults = false, surveyResults = [
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Heart className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Wellbeing Survey</h1>
+            <h1 className="text-3xl font-bold">{t.wellbeingSurvey}</h1>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -204,13 +285,13 @@ export default function WellbeingSurvey({ showResults = false, surveyResults = [
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Monthly Wellbeing Check</CardTitle>
-                  <Badge variant="outline">Anonymous</Badge>
+                  <CardTitle>{t.monthlyCheck}</CardTitle>
+                  <Badge variant="outline">{t.anonymous}</Badge>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span>Step {currentStep} of {totalSteps}</span>
-                    <span>{Math.round(progress)}% Complete</span>
+                    <span>{t.step} {currentStep} {t.of} {totalSteps}</span>
+                    <span>{t.complete} {Math.round(progress)}%</span>
                   </div>
                   <Progress value={progress} className="w-full" />
                 </div>
@@ -218,17 +299,17 @@ export default function WellbeingSurvey({ showResults = false, surveyResults = [
               <CardContent className="space-y-6">
                 {renderStep()}
                 <Separator />
-                {submitError && <div className="text-red-600 text-sm text-center">{submitError}</div>}
-                {submitSuccess && <div className="text-green-600 text-sm text-center">Survey submitted successfully!</div>}
+                {submitError && <div className="text-red-600 text-sm text-center">{t.error}</div>}
+                {submitSuccess && <div className="text-green-600 text-sm text-center">{t.surveySubmitted}</div>}
                 <div className="flex justify-between">
-                  <Button variant="outline" onClick={() => setCurrentStep(Math.max(1, currentStep - 1))} disabled={currentStep === 1 || submitting}>Previous</Button>
+                  <Button variant="outline" onClick={() => setCurrentStep(Math.max(1, currentStep - 1))} disabled={currentStep === 1 || submitting}>{t.previous}</Button>
                   {currentStep === totalSteps ? (
                     <Button onClick={handleSubmit} disabled={submitting}>
                       <Send className="h-4 w-4 mr-2" />
-                      {submitting ? "Submitting..." : "Submit Survey"}
+                      {submitting ? t.submitting : t.submit}
                     </Button>
                   ) : (
-                    <Button onClick={() => setCurrentStep(Math.min(totalSteps, currentStep + 1))} disabled={submitting}>Next</Button>
+                    <Button onClick={() => setCurrentStep(Math.min(totalSteps, currentStep + 1))} disabled={submitting}>{t.next}</Button>
                   )}
                 </div>
               </CardContent>
@@ -241,19 +322,19 @@ export default function WellbeingSurvey({ showResults = false, surveyResults = [
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <BarChart className="h-5 w-5 mr-2" />
-                    Survey Results
+                    {t.surveyResults}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {surveyResults.length === 0 ? (
-                      <div className="text-center text-muted-foreground">No survey results yet.</div>
+                      <div className="text-center text-muted-foreground">{t.noResults}</div>
                     ) : (
                       surveyResults.map((survey: any, index: number) => (
                         <div key={index} className="flex items-center justify-between">
                           <div>
                             <p className="font-medium">{survey.submittedBy?.Names || "Anonymous"}</p>
-                            <p className="text-sm text-muted-foreground">{survey.surveyData?.overall ? `Score: ${survey.surveyData.overall}/10` : "No score"}</p>
+                            <p className="text-sm text-muted-foreground">{survey.surveyData?.overall ? `${t.score}: ${survey.surveyData.overall}/10` : "No score"}</p>
                           </div>
                           <Badge variant="secondary">{survey.surveyData?.workLife || "-"}</Badge>
                         </div>

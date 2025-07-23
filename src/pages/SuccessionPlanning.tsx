@@ -22,7 +22,7 @@ const getLayout = (pathname: string) => {
   return React.Fragment;
 };
 
-export default function SuccessionPlanning() {
+export default function SuccessionPlanning({ asModal = false }: { asModal?: boolean }) {
   const { user } = useAuth();
   const location = useLocation();
   const Layout = getLayout(location.pathname);
@@ -45,6 +45,9 @@ export default function SuccessionPlanning() {
   const [candidateSubmitting, setCandidateSubmitting] = useState(false);
   const [employeeQuery, setEmployeeQuery] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  // Add state for AlertDialog
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [candidateToRemove, setCandidateToRemove] = useState<{ planId: string, candidateId: string } | null>(null);
 
   // Add/expand translation keys at the top
   const translations = {
@@ -59,6 +62,8 @@ export default function SuccessionPlanning() {
       cancel: "Cancel",
       delete: "Delete",
       error: "Error",
+      deleteCandidateTitle: "Remove Candidate",
+      deleteCandidateDesc: "Are you sure you want to remove this candidate from the succession plan? This action cannot be undone.",
     },
     fr: {
       allFieldsRequired: "Tous les champs sont requis.",
@@ -71,10 +76,40 @@ export default function SuccessionPlanning() {
       cancel: "Annuler",
       delete: "Supprimer",
       error: "Erreur",
+      deleteCandidateTitle: "Supprimer le candidat",
+      deleteCandidateDesc: "Êtes-vous sûr de vouloir supprimer ce candidat du plan de succession ? Cette action ne peut pas être annulée.",
     },
   };
   const { language } = useLanguage();
   const t = (key: keyof typeof translations.en) => translations[language][key] || translations.en[key];
+
+  // Fetch plans
+  const fetchPlans = () => {
+    setLoading(true);
+    getSuccessionPlans()
+      .then(setPlans)
+      .catch(err => setError(err.message || "Failed to load plans"))
+      .finally(() => setLoading(false));
+  };
+
+  // Always call hooks before any early return!
+  useEffect(() => { fetchPlans(); }, []);
+  useEffect(() => {
+    getEmployees().then(res => setEmployees(res.data)).catch(() => setEmployees([]));
+  }, []);
+
+  // Role-based access control
+  const allowedRoles = ["admin", "manager"];
+  if (!user || !allowedRoles.includes(user.role)) {
+    const notAuthMsg = language === 'fr'
+      ? "Vous n'êtes pas autorisé à accéder à la planification de la succession."
+      : "You are not authorized to access Succession Planning.";
+    return (
+      <div className="flex items-center justify-center min-h-[200px] text-lg text-red-600 text-center">
+        {notAuthMsg}
+      </div>
+    );
+  }
 
   // Filter employees for combobox/autocomplete
   const filteredEmployees =
@@ -92,21 +127,6 @@ export default function SuccessionPlanning() {
             role.includes(query)
           );
         });
-
-  // Fetch plans
-  const fetchPlans = () => {
-    setLoading(true);
-    getSuccessionPlans()
-      .then(setPlans)
-      .catch(err => setError(err.message || "Failed to load plans"))
-      .finally(() => setLoading(false));
-  };
-  useEffect(() => { fetchPlans(); }, []);
-
-  // Fetch employees for candidate selection
-  useEffect(() => {
-    getEmployees().then(res => setEmployees(res.data)).catch(() => setEmployees([]));
-  }, []);
 
   // Open add/edit modal
   const openAdd = () => {
@@ -210,29 +230,23 @@ export default function SuccessionPlanning() {
 
   // Remove candidate
   const handleRemoveCandidate = async (planId: string, employeeId: string) => {
-    if (!window.confirm("Remove this candidate from the plan?")) return;
     try {
       await removeSuccessionCandidate(planId, { employee: employeeId });
       fetchPlans();
       toast({ title: "Candidate removed", description: "The candidate was removed from the plan successfully." });
     } catch (err: any) {
-      alert("Failed to remove candidate");
       toast({ title: "Error", description: err.message || "Failed to remove candidate", variant: "destructive" });
     }
   };
 
   return (
-    <Layout>
+    asModal ? (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Succession Planning</h1>
+            <h1 className="text-2xl font-bold text-foreground">Succession Planning</h1>
             <p className="text-muted-foreground">Manage key roles and candidate pipelines</p>
           </div>
-          <Button onClick={openAdd}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Plan
-          </Button>
         </div>
         {loading ? (
           <div className="text-center py-8">Loading plans...</div>
@@ -266,10 +280,14 @@ export default function SuccessionPlanning() {
                   {plan.candidates && plan.candidates.length > 0 ? (
                     <ul className="space-y-2">
                       {plan.candidates.map((c: any) => (
-                        <li key={c.employee?._id || c.employee} className="flex items-center justify-between">
-                          <span>{c.employee?.user?.Names || c.employee?.user?.Email || c.employee}</span>
+                        <li key={c._id || c.user?._id || c.user} className="flex items-center justify-between">
+                          <span>{c.user?.Names || c.user?.Email || c.user?._id || c._id || 'Unknown'}</span>
                           <span className="text-xs text-muted-foreground">{c.readiness || "-"}</span>
-                          <Button variant="ghost" size="icon" onClick={() => handleRemoveCandidate(plan._id, c.employee?._id || c.employee)}>
+                          <Button variant="ghost" size="icon" onClick={() => {
+                            // Always use c._id (employee id) for removal
+                            setCandidateToRemove({ planId: plan._id, candidateId: c._id });
+                            setRemoveDialogOpen(true);
+                          }}>
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
                         </li>
@@ -402,7 +420,242 @@ export default function SuccessionPlanning() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Remove Candidate Confirmation Modal */}
+        <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("deleteCandidateTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>{t("deleteCandidateDesc")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setRemoveDialogOpen(false)}>{t("cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (candidateToRemove) {
+                    // Always use candidateToRemove.candidateId (which is c._id)
+                    await handleRemoveCandidate(candidateToRemove.planId, candidateToRemove.candidateId);
+                    setRemoveDialogOpen(false);
+                  }
+                }}
+              >
+                {t("delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
-    </Layout>
+    ) : (
+      <Layout>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Succession Planning</h1>
+              <p className="text-muted-foreground">Manage key roles and candidate pipelines</p>
+            </div>
+            <Button onClick={openAdd}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Plan
+            </Button>
+          </div>
+          {loading ? (
+            <div className="text-center py-8">Loading plans...</div>
+          ) : error ? (
+            <div className="text-center text-red-600 py-8">{error}</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {plans.map((plan) => (
+                <Card key={plan._id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3 flex flex-row justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{plan.keyRole}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{plan.notes}</p>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(plan)}>
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(plan._id)}>
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Candidates</span>
+                      <Button variant="outline" size="sm" onClick={() => openCandidateModal(plan)}>
+                        <Users className="h-4 w-4 mr-1" /> Add Candidate
+                      </Button>
+                    </div>
+                    {plan.candidates && plan.candidates.length > 0 ? (
+                      <ul className="space-y-2">
+                        {plan.candidates.map((c: any) => (
+                          <li key={c._id || c.user?._id || c.user} className="flex items-center justify-between">
+                            <span>{c.user?.Names || c.user?.Email || c.user?._id || c._id || 'Unknown'}</span>
+                            <span className="text-xs text-muted-foreground">{c.readiness || "-"}</span>
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              // Always use c._id (employee id) for removal
+                              setCandidateToRemove({ planId: plan._id, candidateId: c._id });
+                              setRemoveDialogOpen(true);
+                            }}>
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="text-muted-foreground text-sm">No candidates yet.</div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Add/Edit Plan Modal */}
+          <Dialog open={showModal} onOpenChange={setShowModal}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{formMode === "add" ? "New Succession Plan" : "Edit Succession Plan"}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="keyRole">Key Role</Label>
+                  <Input id="keyRole" name="keyRole" value={form.keyRole} onChange={handleFormChange} required />
+                </div>
+                <div>
+                  <Label htmlFor="notes">Notes</Label>
+                  <Input id="notes" name="notes" value={form.notes} onChange={handleFormChange} />
+                </div>
+                {formError && <div className="text-red-600 text-sm text-center">{formError}</div>}
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setShowModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={submitting}>
+                    {submitting ? (formMode === "add" ? "Adding..." : "Saving...") : (formMode === "add" ? "Add" : "Save")}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {/* Add Candidate Modal */}
+          <Dialog open={candidateModal} onOpenChange={setCandidateModal}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Candidate</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleAddCandidate} className="space-y-4">
+                <div>
+                  <Label htmlFor="candidate">Employee</Label>
+                  {/* Combobox for employee selection */}
+                  <Combobox as="div" value={candidateId} onChange={setCandidateId}>
+                    <div className="relative">
+                      <Combobox.Input
+                        className="w-full border rounded-md px-3 py-2 mt-1"
+                        displayValue={(id: string) => {
+                          const emp = employees.find((e) => e._id === id);
+                          return emp ? `${emp.user?.Names || emp.user?.Email || 'Unknown'}` : "";
+                        }}
+                        onChange={e => setEmployeeQuery(e.target.value)}
+                        placeholder="Type to search employee..."
+                        required
+                      />
+                      <Combobox.Options className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+                        {filteredEmployees.length === 0 && (
+                          <div className="px-3 py-2 text-muted-foreground">No employees found.</div>
+                        )}
+                        {filteredEmployees.map((emp) => (
+                          <Combobox.Option
+                            key={emp._id}
+                            value={emp._id}
+                            className={({ active }) =>
+                              `cursor-pointer px-3 py-2 ${active ? "bg-accent" : ""}`
+                            }
+                          >
+                            {emp.user?.Names || emp.user?.Email || 'Unknown'}
+                            {emp.position || emp.user?.role ? (
+                              <span className="text-xs text-muted-foreground ml-2">
+                                ({emp.position || emp.user?.role})
+                              </span>
+                            ) : null}
+                          </Combobox.Option>
+                        ))}
+                      </Combobox.Options>
+                    </div>
+                  </Combobox>
+                </div>
+                <div>
+                  <Label htmlFor="readiness">Readiness</Label>
+                  <select
+                    id="readiness"
+                    value={candidateReadiness}
+                    onChange={e => setCandidateReadiness(e.target.value)}
+                    className="w-full border rounded-md px-3 py-2 mt-1"
+                    required
+                  >
+                    <option value="ready">Ready</option>
+                    <option value="developing">Developing</option>
+                    <option value="not-ready">Not Ready</option>
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="candidateNotes">Notes</Label>
+                  <Input id="candidateNotes" value={candidateNotes} onChange={e => setCandidateNotes(e.target.value)} />
+                </div>
+                {candidateError && <div className="text-red-600 text-sm text-center">{candidateError}</div>}
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setCandidateModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={candidateSubmitting}>
+                    {candidateSubmitting ? "Adding..." : "Add"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Confirmation Modal */}
+          <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t("deletePlanTitle")}</AlertDialogTitle>
+                <AlertDialogDescription>{t("deletePlanDesc")}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setDeleteId(null)}>{t("cancel")}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>{t("delete")}</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Remove Candidate Confirmation Modal */}
+          <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t("deleteCandidateTitle")}</AlertDialogTitle>
+                <AlertDialogDescription>{t("deleteCandidateDesc")}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setRemoveDialogOpen(false)}>{t("cancel")}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    if (candidateToRemove) {
+                      // Always use candidateToRemove.candidateId (which is c._id)
+                      await handleRemoveCandidate(candidateToRemove.planId, candidateToRemove.candidateId);
+                      setRemoveDialogOpen(false);
+                    }
+                  }}
+                >
+                  {t("delete")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </Layout>
+    )
   );
 }

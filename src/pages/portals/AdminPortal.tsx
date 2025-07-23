@@ -6,6 +6,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import { getSystemStats, getUsers, getLeaves, getActivityLogs, getUser } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
+import SuccessionPlanning from "@/pages/SuccessionPlanning";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 export default function AdminPortal() {
   const { t } = useLanguage();
@@ -21,6 +23,7 @@ export default function AdminPortal() {
   const [pendingLeavesList, setPendingLeavesList] = useState<any[]>([]);
   // Add state for employee details cache
   const [employeeCache, setEmployeeCache] = useState<Record<string, any>>({});
+  const [successionModalOpen, setSuccessionModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -104,7 +107,7 @@ export default function AdminPortal() {
       description: t('admin.successionPlanningDesc') || 'Manage succession plans and candidates',
       icon: FileText,
       color: 'bg-secondary',
-      onClick: () => navigate('/admin-portal/succession-planning'),
+      onClick: () => setSuccessionModalOpen(true), // open modal instead of navigate
     },
   ];
 
@@ -230,6 +233,12 @@ export default function AdminPortal() {
             )}
           </CardContent>
         </Card>
+
+        <Dialog open={successionModalOpen} onOpenChange={setSuccessionModalOpen}>
+          <DialogContent className="max-w-4xl w-full">
+            <SuccessionPlanning asModal />
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminPortalLayout>
   );

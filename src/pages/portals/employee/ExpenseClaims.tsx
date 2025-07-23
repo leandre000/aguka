@@ -43,10 +43,24 @@ const translations = {
     claimSubmitted: "Expense claim submitted successfully.",
     failedToSave: "Failed to submit expense claim.",
     error: "Error",
-    common: {
-      cancel: "Cancel",
-      actions: "Actions",
-    },
+    newExpenseClaim: "New Expense Claim",
+    submitExpense: "Submit Expense",
+    category: "Category",
+    amount: "Amount",
+    date: "Date",
+    description: "Description",
+    receipt: "Receipt",
+    status: "Status",
+    actions: "Actions",
+    uploaded: "Uploaded",
+    missing: "Missing",
+    approved: "Approved",
+    pending: "Pending",
+    rejected: "Rejected",
+    loading: "Loading expenses...",
+    noExpenses: "No expense claims found.",
+    view: "View",
+    close: "Close",
     trainer: {
       modules: "Modules",
     },
@@ -57,10 +71,24 @@ const translations = {
     claimSubmitted: "Note de frais soumise avec succès.",
     failedToSave: "Échec de la soumission de la note de frais.",
     error: "Erreur",
-    common: {
-      cancel: "Annuler",
-      actions: "Actions",
-    },
+    newExpenseClaim: "Nouvelle note de frais",
+    submitExpense: "Soumettre la dépense",
+    category: "Catégorie",
+    amount: "Montant",
+    date: "Date",
+    description: "Description",
+    receipt: "Reçu",
+    status: "Statut",
+    actions: "Actions",
+    uploaded: "Téléchargé",
+    missing: "Manquant",
+    approved: "Approuvé",
+    pending: "En attente",
+    rejected: "Rejeté",
+    loading: "Chargement des notes de frais...",
+    noExpenses: "Aucune note de frais trouvée.",
+    view: "Voir",
+    close: "Fermer",
     trainer: {
       modules: "Modules",
     },
@@ -294,7 +322,7 @@ export default function ExpenseClaims() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8">Loading expenses...</div>
+              <div className="text-center py-8">{t("loading")}</div>
             ) : error ? (
               <div className="text-center text-red-600 py-8">{error}</div>
             ) : (
@@ -321,9 +349,9 @@ export default function ExpenseClaims() {
                       <TableCell>${Number(expense.amount).toFixed(2)}</TableCell>
                       <TableCell>
                         {expense.receipt ? (
-                          <Badge variant="outline" className="text-green-600">Uploaded</Badge>
+                          <Badge variant="outline" className="text-green-600">{t("uploaded")}</Badge>
                         ) : (
-                          <Badge variant="outline" className="text-red-600">Missing</Badge>
+                          <Badge variant="outline" className="text-red-600">{t("missing")}</Badge>
                         )}
                       </TableCell>
                       <TableCell>
@@ -337,10 +365,10 @@ export default function ExpenseClaims() {
                           }
                         >
                           {expense.status === "approved"
-                            ? "Approved"
+                            ? t("approved")
                             : expense.status === "pending"
-                            ? "Pending"
-                            : "Rejected"}
+                            ? t("pending")
+                            : t("rejected")}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">

@@ -19,6 +19,55 @@ import { getMyPayroll } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
+const translations = {
+  en: {
+    title: "Payslips",
+    baseSalary: "Base Salary",
+    netPay: "Net Pay",
+    payPeriod: "Pay Period",
+    bonus: "Bonus",
+    yearToDate: "Year-to-Date Earnings",
+    loading: "Loading payslips...",
+    error: "Failed to load payslips",
+    noStubs: "No payslips found.",
+    noStubsDesc: "You have no payslips for this period.",
+    download: "Download",
+    actions: "Actions",
+    status: "Status",
+    paid: "Paid",
+    pending: "Pending",
+    rejected: "Rejected",
+    completed: "Completed",
+    cancelled: "Cancelled",
+    search: "Search by pay period...",
+    retry: "Retry",
+    history: "History",
+  },
+  fr: {
+    title: "Bulletins de paie",
+    baseSalary: "Salaire de base",
+    netPay: "Salaire net",
+    payPeriod: "Période de paie",
+    bonus: "Prime",
+    yearToDate: "Gains cumulés annuels",
+    loading: "Chargement des bulletins de paie...",
+    error: "Échec du chargement des bulletins de paie",
+    noStubs: "Aucun bulletin de paie trouvé.",
+    noStubsDesc: "Vous n'avez aucun bulletin de paie pour cette période.",
+    download: "Télécharger",
+    actions: "Actions",
+    status: "Statut",
+    paid: "Payé",
+    pending: "En attente",
+    rejected: "Rejeté",
+    completed: "Terminé",
+    cancelled: "Annulé",
+    search: "Rechercher par période de paie...",
+    retry: "Réessayer",
+    history: "Historique",
+  },
+};
+
 export default function Payslips() {
   const { t } = useLanguage();
   const { toast } = useToast();

@@ -120,6 +120,7 @@ const App = () => (
                       <Route path="/admin-portal/surveys" element={<SurveyResults />} />
                       <Route path="/admin-portal/messages" element={<Messages />} />
                       <Route path="/admin-portal/succession" element={<SuccessionPlanning />} />
+                      <Route path="/admin-portal/succession-planning" element={<SuccessionPlanning />} />
                       <Route path="/admin-portal/ai-tools" element={<AITools />} />
                     </Route>
                     <Route element={<RoleRoute allowedRoles={["manager"]} />}>

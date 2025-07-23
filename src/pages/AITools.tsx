@@ -94,9 +94,26 @@ export default function AITools() {
   const [sentimentLoading, setSentimentLoading] = useState(false);
 
   // AI Chat Assistant
+  // OpenAI best practice: maintain chat history and send full conversation context to backend
   const [chatInput, setChatInput] = useState("");
   const [chatHistory, setChatHistory] = useState<{ role: string; message: string }[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
+
+  // Helper to send chat history to backend (OpenAI best practice)
+  const sendChat = async (input: string) => {
+    setChatLoading(true);
+    setChatHistory(h => [...h, { role: "user", message: input }]);
+    try {
+      // Send the full chat history to the backend for context
+      const result = await getChatResponse(input, { history: chatHistory });
+      setChatHistory(h => [...h, { role: "ai", message: result.answer || result.data?.answer || "Sorry, I couldn't process your request." }]);
+      setChatInput("");
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message || t("aiTools.chatError"), variant: "destructive" });
+    } finally {
+      setChatLoading(false);
+    }
+  };
 
   // Add/expand translation keys at the top
   const translations = {
@@ -503,24 +520,14 @@ I absolutely love working here! The team is amazing and the work environment is 
             onSubmit={async e => {
               e.preventDefault();
               if (!chatInput.trim()) return;
-              setChatLoading(true);
-              setChatHistory(h => [...h, { role: "user", message: chatInput }]);
-              try {
-                const result = await getChatResponse(chatInput, {});
-                setChatHistory(h => [...h, { role: "ai", message: result.answer || result.data?.answer || "Sorry, I couldn't process your request." }]);
-                setChatInput("");
-              } catch (err: any) {
-                toast({ title: t("common.error"), description: err.message || t("aiTools.chatError"), variant: "destructive" });
-              } finally {
-                setChatLoading(false);
-              }
+              await sendChat(chatInput);
             }}
             className="flex gap-2"
           >
             <Input
               value={chatInput}
               onChange={e => setChatInput(e.target.value)}
-              placeholder={`${t("aiTools.typeMessage")} (e.g., "How do I request time off?")`}
+              placeholder={`${t("aiTools.typeMessage")}`}
               disabled={chatLoading}
             />
             <Button type="submit" disabled={chatLoading}>

@@ -319,10 +319,10 @@ export default function CourseCreation() {
 
                       <div className="flex gap-2">
                         {course.createdBy === user?._id && (
-                          <Button variant="outline" size="sm" onClick={() => openEdit(course)}>
-                            <Edit2 className="h-4 w-4 mr-1" />
-                            {t.edit}
-                          </Button>
+                        <Button variant="outline" size="sm" onClick={() => openEdit(course)}>
+                          <Edit2 className="h-4 w-4 mr-1" />
+                          {t.edit}
+                        </Button>
                         )}
                         <Button variant="secondary" size="sm" onClick={() => setPreviewCourse(course)}>{t.preview}</Button>
                         {course.createdBy === user?._id && (

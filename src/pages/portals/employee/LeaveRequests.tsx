@@ -52,6 +52,75 @@ const LEAVE_TYPES = [
   { value: "maternity", label: "Maternity Leave" },
 ];
 
+const translations = {
+  en: {
+    title: "Leave Requests",
+    requestLeave: "Request Leave",
+    newLeaveRequest: "New Leave Request",
+    leaveType: "Leave Type",
+    startDate: "Start Date",
+    endDate: "End Date",
+    reason: "Reason",
+    allFieldsRequired: "All fields are required.",
+    failedToSave: "Failed to save leave request.",
+    leaveRequested: "Leave requested successfully!",
+    leaveDeleted: "Leave deleted successfully!",
+    delete: "Delete",
+    cancel: "Cancel",
+    submit: "Submit Request",
+    submitting: "Submitting...",
+    loading: "Loading leave requests...",
+    error: "Failed to load leave requests.",
+    vacation: "Vacation",
+    sick: "Sick Leave",
+    personal: "Personal Leave",
+    maternity: "Maternity Leave",
+    type: "Type",
+    days: "Days",
+    status: "Status",
+    history: "Leave History",
+    actions: "Actions",
+    approved: "Approved",
+    pending: "Pending",
+    rejected: "Rejected",
+    deleteLeaveTitle: "Delete Leave Request",
+    deleteLeaveDesc: "Are you sure you want to delete this leave request? This action cannot be undone.",
+  },
+  fr: {
+    title: "Demandes de congé",
+    requestLeave: "Demander un congé",
+    newLeaveRequest: "Nouvelle demande de congé",
+    leaveType: "Type de congé",
+    startDate: "Date de début",
+    endDate: "Date de fin",
+    reason: "Raison",
+    allFieldsRequired: "Tous les champs sont requis.",
+    failedToSave: "Échec de l'enregistrement de la demande de congé.",
+    leaveRequested: "Congé demandé avec succès!",
+    leaveDeleted: "Demande de congé supprimée avec succès!",
+    delete: "Supprimer",
+    cancel: "Annuler",
+    submit: "Soumettre la demande",
+    submitting: "Soumission...",
+    loading: "Chargement des demandes de congé...",
+    error: "Échec du chargement des demandes de congé.",
+    vacation: "Vacances",
+    sick: "Congé maladie",
+    personal: "Congé personnel",
+    maternity: "Congé maternité",
+    type: "Type",
+    days: "Jours",
+    status: "Statut",
+    history: "Historique des congés",
+    actions: "Actions",
+    approved: "Approuvé",
+    pending: "En attente",
+    rejected: "Rejeté",
+    deleteLeaveTitle: "Supprimer la demande de congé",
+    deleteLeaveDesc: "Êtes-vous sûr de vouloir supprimer cette demande de congé? Cette action est irréversible.",
+  },
+};
+
 export default function LeaveRequests() {
   const { t } = useLanguage();
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
@@ -143,24 +212,21 @@ export default function LeaveRequests() {
     <EmployeePortalLayout>
       <div className="space-y-4 md:space-y-6 p-4 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-2xl md:text-3xl font-bold">Leave Requests</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t("title")}</h1>
           <Dialog open={showModal} onOpenChange={setShowModal}>
             <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">
-                <Plus className="h-4 w-4 mr-2" />
-                Request Leave
-              </Button>
+              <Button className="w-full sm:w-auto">{t("requestLeave")}</Button>
             </DialogTrigger>
             <DialogContent className="max-w-md mx-4 sm:max-w-lg">
               <DialogHeader>
-                <DialogTitle>New Leave Request</DialogTitle>
+                <DialogTitle>{t("newLeaveRequest")}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="leaveType">Leave Type</Label>
+                  <Label htmlFor="leaveType">{t("leaveType")}</Label>
                   <Select value={form.type} onValueChange={handleTypeChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Leave Type" />
+                      <SelectValue placeholder={t("leaveType")} />
                     </SelectTrigger>
                     <SelectContent>
                       {LEAVE_TYPES.map((lt) => (
@@ -171,22 +237,22 @@ export default function LeaveRequests() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="startDate">Start Date</Label>
+                    <Label htmlFor="startDate">{t("startDate")}</Label>
                     <Input id="startDate" name="startDate" type="date" value={form.startDate} onChange={handleFormChange} required />
                   </div>
                   <div>
-                    <Label htmlFor="endDate">End Date</Label>
+                    <Label htmlFor="endDate">{t("endDate")}</Label>
                     <Input id="endDate" name="endDate" type="date" value={form.endDate} onChange={handleFormChange} required />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="reason">Reason</Label>
-                  <Textarea id="reason" name="reason" value={form.reason} onChange={handleFormChange} placeholder="Describe your reason for leave" required />
+                  <Label htmlFor="reason">{t("reason")}</Label>
+                  <Textarea id="reason" name="reason" value={form.reason} onChange={handleFormChange} placeholder={t("reason")} required />
                 </div>
                 {formError && <div className="text-red-600 text-sm text-center">{formError}</div>}
                 <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
-                  <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => setShowModal(false)}>{t("common.cancel")}</Button>
-                  <Button type="submit" className="w-full sm:w-auto" disabled={submitting}>{submitting ? "Submitting..." : "Submit Request"}</Button>
+                  <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => setShowModal(false)}>{t("cancel")}</Button>
+                  <Button type="submit" className="w-full sm:w-auto" disabled={submitting}>{submitting ? t("submitting") : t("submit")}</Button>
                 </div>
               </form>
             </DialogContent>
@@ -197,7 +263,7 @@ export default function LeaveRequests() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Vacation Days
+                {t("vacation")} Days
               </CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -213,7 +279,7 @@ export default function LeaveRequests() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sick Days</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("sick")}</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -229,7 +295,7 @@ export default function LeaveRequests() {
           <Card className="sm:col-span-2 lg:col-span-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Personal Days
+                {t("personal")} Days
               </CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -246,11 +312,11 @@ export default function LeaveRequests() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg md:text-xl">Leave History</CardTitle>
+            <CardTitle className="text-lg md:text-xl">{t("history")}</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8">Loading leave requests...</div>
+              <div className="text-center py-8">{t("loading")}</div>
             ) : error ? (
               <div className="text-center text-red-600 py-8">{error}</div>
             ) : (
@@ -258,12 +324,12 @@ export default function LeaveRequests() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[100px]">Type</TableHead>
-                      <TableHead className="min-w-[100px]">Start Date</TableHead>
-                      <TableHead className="min-w-[100px]">End Date</TableHead>
-                      <TableHead className="min-w-[60px]">Days</TableHead>
-                      <TableHead className="min-w-[100px]">Status</TableHead>
-                      <TableHead className="min-w-[120px]">Reason</TableHead>
+                      <TableHead className="min-w-[100px]">{t("type")}</TableHead>
+                      <TableHead className="min-w-[100px]">{t("startDate")}</TableHead>
+                      <TableHead className="min-w-[100px]">{t("endDate")}</TableHead>
+                      <TableHead className="min-w-[60px]">{t("days")}</TableHead>
+                      <TableHead className="min-w-[100px]">{t("status")}</TableHead>
+                      <TableHead className="min-w-[120px]">{t("reason")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
