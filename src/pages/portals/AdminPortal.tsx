@@ -21,8 +21,7 @@ export default function AdminPortal() {
   const [loading, setLoading] = useState(true);
   // Add state for pending leaves if you want to display them
   const [pendingLeavesList, setPendingLeavesList] = useState<any[]>([]);
-  // Add state for employee details cache
-  const [employeeCache, setEmployeeCache] = useState<Record<string, any>>({});
+  const [usersList, setUsersList] = useState<any[]>([]);
   const [successionModalOpen, setSuccessionModalOpen] = useState(false);
 
   useEffect(() => {
@@ -51,17 +50,7 @@ export default function AdminPortal() {
           systemHealth: systemStats?.health || 0,
         });
         setPendingLeavesList(pendingLeavesArr);
-
-        // Fetch missing employee details for unknown employees
-        const missing = pendingLeavesArr.filter(l => !l.employee && l.employeeId);
-        for (const leave of missing) {
-          if (!employeeCache[leave.employeeId]) {
-            setEmployeeCache(prev => ({ ...prev, [leave.employeeId]: { loading: true } }));
-            getUser(leave.employeeId)
-              .then(user => setEmployeeCache(prev => ({ ...prev, [leave.employeeId]: user })))
-              .catch(() => setEmployeeCache(prev => ({ ...prev, [leave.employeeId]: null })));
-          }
-        }
+        setUsersList(users);
       } catch (error) {
         console.error('Failed to fetch admin data:', error);
       } finally {
@@ -72,6 +61,19 @@ export default function AdminPortal() {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function getEmployeeNameFromLeave(leave: any) {
+    if (leave.employee && leave.employee.Names) return leave.employee.Names;
+    if (leave.employee && leave.employee._id) {
+      const user = usersList.find((u: any) => u._id === leave.employee._id);
+      if (user && user.Names) return user.Names;
+    }
+    if (leave.employeeId) {
+      const user = usersList.find((u: any) => u._id === leave.employeeId);
+      if (user && user.Names) return user.Names;
+    }
+    return leave.employeeId || 'Unknown employee';
+  }
 
   const quickActions = [
     {
@@ -108,6 +110,13 @@ export default function AdminPortal() {
       icon: FileText,
       color: 'bg-secondary',
       onClick: () => setSuccessionModalOpen(true), // open modal instead of navigate
+    },
+    {
+      title: t('admin.manageContracts') || 'Manage Contracts',
+      description: t('admin.manageContractsDesc') || 'Assign and manage employee contracts',
+      icon: FileText,
+      color: 'bg-secondary',
+      onClick: () => navigate('/admin-portal/contracts'),
     },
   ];
 
@@ -215,14 +224,7 @@ export default function AdminPortal() {
                 {pendingLeavesList.map(leave => (
                   <li key={leave._id} className="py-2 flex flex-col md:flex-row md:items-center md:gap-4">
                     <span className="font-medium">
-                      {leave.employee ? leave.employee.Names :
-                        leave.employeeId && employeeCache[leave.employeeId]?.loading ? (
-                          <span className="text-muted-foreground italic">Loading...</span>
-                        ) : leave.employeeId && employeeCache[leave.employeeId] ? (
-                          employeeCache[leave.employeeId].Names || employeeCache[leave.employeeId].name || <span className="text-muted-foreground italic">Unknown employee</span>
-                        ) : (
-                          <span className="text-muted-foreground italic">Unknown employee</span>
-                        )}
+                      {getEmployeeNameFromLeave(leave)}
                     </span>
                     <span className="ml-2">{leave.type}</span>
                     <span className="ml-2 text-muted-foreground">{leave.reason}</span>

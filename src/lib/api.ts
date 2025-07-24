@@ -463,3 +463,18 @@ export const createContract = (data: any) => apiFetch('/contracts', { method: 'P
 export const updateContract = (id: string, data: any) => apiFetch(`/contracts/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteContract = (id: string) => apiFetch(`/contracts/${id}`, { method: 'DELETE' });
 export const getMyContracts = () => apiFetch('/contracts/me/list');
+
+/**
+ * Upload a contract file to the backend /upload endpoint.
+ * @param formData FormData containing the file (key: 'file')
+ * @returns {Promise<{ url: string }>} The uploaded file's public URL
+ */
+export const uploadContractFile = (formData: FormData) => {
+  const token = localStorage.getItem('token');
+  return axios.post(`${getBackendUrl()}/api/upload`, formData, {
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      // Do NOT set Content-Type here!
+    },
+  }).then(response => response.data);
+};

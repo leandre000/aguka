@@ -63,6 +63,11 @@ export function AdminPortalSidebar() {
       icon: FileText,
     },
     {
+      title: t("admin.manageContracts"),
+      url: "/admin-portal/contracts",
+      icon: FileText,
+    },
+    {
       title: t("common.messages"),
       url: "/admin-portal/messages",
       icon: MessageSquare,

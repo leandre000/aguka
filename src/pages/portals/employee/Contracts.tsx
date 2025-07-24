@@ -5,9 +5,19 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { EmployeePortalLayout } from '@/components/layouts/EmployeePortalLayout';
 import { format } from 'date-fns';
 
+interface Contract {
+  _id: string;
+  contractType: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  terms?: string;
+  fileUrl?: string;
+}
+
 export default function EmployeeContracts() {
   const { t } = useLanguage();
-  const [contracts, setContracts] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

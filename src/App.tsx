@@ -63,6 +63,7 @@ import NotAuthorized from "./pages/NotAuthorized";
 import { useTranslation } from 'react-i18next';
 import { Documents } from './pages/portals/employee';
 import Contracts from "./pages/portals/employee/Contracts";
+import ContractsManagement from "./pages/portals/admin/ContractsManagement";
 
 // --- PrivateRoute ---
 const PrivateRoute = () => {
@@ -123,6 +124,8 @@ const App = () => (
                       <Route path="/admin-portal/succession" element={<SuccessionPlanning />} />
                       <Route path="/admin-portal/succession-planning" element={<SuccessionPlanning />} />
                       <Route path="/admin-portal/ai-tools" element={<AITools />} />
+                      {/* Add contracts management route */}
+                      <Route path="/admin-portal/contracts" element={<ContractsManagement />} />
                     </Route>
                     <Route element={<RoleRoute allowedRoles={["manager"]} />}>
                       <Route path="/manager-portal" element={<ManagerPortal />} />

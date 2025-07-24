@@ -47,7 +47,12 @@
     "managementPortal": "Management Portal",
     "hrms": "HRMS",
     "readMore": "Read More",
-    "byDate": "by Date"
+    "byDate": "by Date",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "status": "Status",
+    "file": "File",
+    "actions": "Actions"
   },
   "notifications": {
     "title": "Notifications",
@@ -152,7 +157,17 @@
     "quickActions": "Quick actions",
     "loadMore": "Load more",
     "last24Hours": "Last 24 hours",
-    "recentActivityDesc": "Recent activity description"
+    "recentActivityDesc": "Recent activity description",
+    "manageContracts": "Manage Contracts",
+    "manageContractsDesc": "Assign and manage employee contracts",
+    "addContract": "Add Contract",
+    "contractsList": "Contracts List",
+    "selectEmployee": "Select Employee",
+    "contractType": "Contract Type",
+    "terms": "Terms",
+    "save": "Save",
+    "delete": "Delete",
+    "noContracts": "No contracts for now."
   },
   "employee": {
     "title": "Employee Portal",
@@ -270,7 +285,7 @@
     },
     "announcements": "Announcements",
     "wellbeingSurvey": {
-      "wellbeingSurvey": "Wellbeing Survey",
+    "wellbeingSurvey": "Wellbeing Survey",
       "monthlyCheck": "Monthly Wellbeing Check",
       "anonymous": "Anonymous",
       "step": "Step",
@@ -339,6 +354,13 @@
       "payPeriod": "Pay Period",
       "download": "Download"
     },
+    "payslips": "Payslips",
+    "leaveRequests": "Leave Requests",
+    "expenseClaims": "Expense Claims",
+    "training": "Training",
+    "wellbeingSurvey": "Wellbeing Survey",
+    "hrFaq": "HR FAQ",
+    "profile": "Profile",
     "contracts": "Contracts",
     "contractType": "Type",
     "status": "Status",
@@ -347,7 +369,8 @@
     "terms": "Terms",
     "file": "File",
     "noContracts": "No contracts found.",
-    "download": "Download"
+    "download": "Download",
+    "messages": "Messages"
   },
   "manager": {
     "title": "Manager Portal",
