@@ -30,7 +30,9 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function CourseCreation() {
-  const content = {
+  const { language } = useLanguage();
+  const { user } = useAuth();
+  const t = {
     en: {
       title: "Course Creation",
       description: "Create and manage training courses",
@@ -119,9 +121,6 @@ export default function CourseCreation() {
       add: "Ajouter",
     },
   };
-  const { language } = useLanguage();
-  const { user } = useAuth();
-  const t = content[language]; // Use content for UI labels
   const translations = {
     en: {
       allFieldsRequired: "All fields are required.",
@@ -265,12 +264,12 @@ export default function CourseCreation() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t.title}</h1>
-            <p className="text-muted-foreground">{t.description}</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t.en.title}</h1>
+            <p className="text-muted-foreground">{t.en.description}</p>
           </div>
           <Button onClick={openAdd}>
             <Plus className="mr-2 h-4 w-4" />
-            {t.newCourse}
+            {t.en.newCourse}
           </Button>
         </div>
 
@@ -299,18 +298,18 @@ export default function CourseCreation() {
                           </p>
                         </div>
                         <Badge variant={course.status === "published" ? "default" : "secondary"}>
-                          {course.status === "published" ? t.published : t.draft}
+                          {course.status === "published" ? t.en.published : t.en.draft}
                         </Badge>
                       </div>
 
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <BookOpen className="h-4 w-4" />
-                          {course.modules?.length || 0} {t.modules}
+                          {course.modules?.length || 0} {t.en.modules}
                         </span>
                         <span className="flex items-center gap-1">
                           <Users className="h-4 w-4" />
-                          {course.enrolled || 0} {t.enrolled}
+                          {course.enrolled || 0} {t.en.enrolled}
                         </span>
                         <Badge variant="outline">{course.category}</Badge>
                         <Badge variant="outline">{course.level}</Badge>
@@ -321,10 +320,10 @@ export default function CourseCreation() {
                         {course.createdBy === user?._id && (
                         <Button variant="outline" size="sm" onClick={() => openEdit(course)}>
                           <Edit2 className="h-4 w-4 mr-1" />
-                          {t.edit}
+                          {t.en.edit}
                         </Button>
                         )}
-                        <Button variant="secondary" size="sm" onClick={() => setPreviewCourse(course)}>{t.preview}</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setPreviewCourse(course)}>{t.en.preview}</Button>
                         {course.createdBy === user?._id && (
                           <Button variant="destructive" onClick={() => setDeleteId(course._id)}>{tError("delete")}</Button>
                         )}
@@ -341,51 +340,51 @@ export default function CourseCreation() {
             {showForm && (
               <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
                 <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-                  <h2 className="text-xl font-bold mb-4">{formMode === "add" ? t.newCourse : t.edit}</h2>
+                  <h2 className="text-xl font-bold mb-4">{formMode === "add" ? t.en.newCourse : t.en.edit}</h2>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium">{t.courseTitle}</label>
+                      <label className="text-sm font-medium">{t.en.courseTitle}</label>
                       <Input name="title" value={form.title} onChange={handleFormChange} required />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">{t.courseDescription}</label>
+                      <label className="text-sm font-medium">{t.en.courseDescription}</label>
                       <Textarea name="description" value={form.description} onChange={handleFormChange} required />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">{t.category}</label>
+                      <label className="text-sm font-medium">{t.en.category}</label>
                       <Select value={form.category} onValueChange={v => handleSelectChange("category", v)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="technical">{t.technical}</SelectItem>
-                          <SelectItem value="soft-skills">{t.soft_skills}</SelectItem>
-                          <SelectItem value="compliance">{t.compliance}</SelectItem>
-                          <SelectItem value="leadership">{t.leadership}</SelectItem>
+                          <SelectItem value="technical">{t.en.technical}</SelectItem>
+                          <SelectItem value="soft-skills">{t.en.soft_skills}</SelectItem>
+                          <SelectItem value="compliance">{t.en.compliance}</SelectItem>
+                          <SelectItem value="leadership">{t.en.leadership}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <label className="text-sm font-medium">{t.duration}</label>
+                      <label className="text-sm font-medium">{t.en.duration}</label>
                       <Input name="duration" value={form.duration} onChange={handleFormChange} required />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">{t.level}</label>
+                      <label className="text-sm font-medium">{t.en.level}</label>
                       <Select value={form.level} onValueChange={v => handleSelectChange("level", v)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select level" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Beginner">{t.beginner}</SelectItem>
-                          <SelectItem value="Intermediate">{t.intermediate}</SelectItem>
-                          <SelectItem value="Advanced">{t.advanced}</SelectItem>
+                          <SelectItem value="Beginner">{t.en.beginner}</SelectItem>
+                          <SelectItem value="Intermediate">{t.en.intermediate}</SelectItem>
+                          <SelectItem value="Advanced">{t.en.advanced}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     {formError && <div className="text-red-600 text-sm text-center">{formError}</div>}
                     <div className="flex gap-2 justify-end">
-                      <Button type="button" variant="outline" onClick={() => setShowForm(false)}>{t.cancel}</Button>
-                      <Button type="submit" disabled={submitting}>{submitting ? t.save + "..." : t.save}</Button>
+                      <Button type="button" variant="outline" onClick={() => setShowForm(false)}>{t.en.cancel}</Button>
+                      <Button type="submit" disabled={submitting}>{submitting ? t.en.save + "..." : t.en.save}</Button>
                     </div>
                   </form>
                 </div>
@@ -398,7 +397,7 @@ export default function CourseCreation() {
                 <CardDescription>Start creating a new course</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button className="w-full" onClick={openAdd}>{t.add} {t.newCourse}</Button>
+                <Button className="w-full" onClick={openAdd}>{t.en.add} {t.en.newCourse}</Button>
               </CardContent>
             </Card>
           </div>
@@ -425,11 +424,11 @@ export default function CourseCreation() {
               <Badge variant="outline">{previewCourse.category}</Badge>
               <Badge variant="outline">{previewCourse.level}</Badge>
               <Badge variant={previewCourse.status === "published" ? "default" : "secondary"}>
-                {previewCourse.status === "published" ? t.published : t.draft}
+                {previewCourse.status === "published" ? t.en.published : t.en.draft}
               </Badge>
             </div>
             <div>
-              <strong>{t.modules}:</strong>
+              <strong>{t.en.modules}:</strong>
               <ul className="list-disc ml-6">
                 {previewCourse.modules?.map((m: any, i: number) => (
                   <li key={i}>{m.title || m}</li>
@@ -437,7 +436,7 @@ export default function CourseCreation() {
               </ul>
             </div>
             <div className="flex justify-end">
-              <Button onClick={() => setPreviewCourse(null)}>{t.close || "Close"}</Button>
+              <Button onClick={() => setPreviewCourse(null)}>{t.en.cancel}</Button>
             </div>
           </div>
         </Modal>

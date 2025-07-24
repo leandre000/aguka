@@ -24,7 +24,7 @@ i18n
       caches: ['localStorage'],
     },
     
-    supportedLngs: ['en', 'fr', 'rw'],
+    supportedLngs: ['en', 'fr'],
     
     ns: ['translation'],
     defaultNS: 'translation',

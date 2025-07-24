@@ -62,6 +62,11 @@ export function EmployeePortalSidebar() {
       icon: User,
     },
     {
+      title: t("employee.contracts"),
+      url: "/employee-portal/contracts",
+      icon: FileText,
+    },
+    {
       title: t("employee.payslips"),
       url: "/employee-portal/payslips",
       icon: Receipt,
@@ -107,7 +112,7 @@ export function EmployeePortalSidebar() {
       icon: MessageSquare,
     },
     {
-      title: "AI Tools",
+      title: t("aiTools.title"),
       url: "/employee-portal/ai-tools",
       icon: BarChart,
     },

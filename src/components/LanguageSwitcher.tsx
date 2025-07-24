@@ -9,7 +9,6 @@ export const LanguageSwitcher = () => {
   const languages = [
     { code: 'en', name: t('common.english') },
     { code: 'fr', name: t('common.french') },
-    { code: 'rw', name: t('common.kinyarwanda') },
   ];
 
   return (

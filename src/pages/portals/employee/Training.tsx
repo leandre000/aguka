@@ -14,55 +14,6 @@ import { Slider } from "@/components/ui/slider";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "@/components/ui/modal";
 
-const translations = {
-  en: {
-    title: "Training",
-    current: "Current Training",
-    recommended: "Recommended",
-    completed: "Completed",
-    progress: "Progress",
-    lessons: "Lessons",
-    duration: "Duration",
-    enroll: "Enroll",
-    enrolling: "Enrolling...",
-    updateProgress: "Update Progress",
-    markComplete: "Mark as Complete",
-    updating: "Updating...",
-    undo: "Undo",
-    close: "Close",
-    published: "Published",
-    draft: "Draft",
-    modules: "Modules",
-    error: "Failed to load training data",
-    loading: "Loading training data...",
-    noCourses: "No courses available.",
-    noEnrollments: "No enrollments found.",
-  },
-  fr: {
-    title: "Formation",
-    current: "Formation en cours",
-    recommended: "Recommandé",
-    completed: "Terminé",
-    progress: "Progression",
-    lessons: "Leçons",
-    duration: "Durée",
-    enroll: "S'inscrire",
-    enrolling: "Inscription...",
-    updateProgress: "Mettre à jour la progression",
-    markComplete: "Marquer comme terminé",
-    updating: "Mise à jour...",
-    undo: "Annuler",
-    close: "Fermer",
-    published: "Publié",
-    draft: "Brouillon",
-    modules: "Modules",
-    error: "Échec du chargement des données de formation",
-    loading: "Chargement des données de formation...",
-    noCourses: "Aucun cours disponible.",
-    noEnrollments: "Aucune inscription trouvée.",
-  },
-};
-
 export default function Training() {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -128,38 +79,38 @@ export default function Training() {
     <EmployeePortalLayout>
       <div className="space-y-4 md:space-y-6 p-4 md:p-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl md:text-3xl font-bold">{t(translations.en.title)}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('employee.training.title')}</h1>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t(translations.en.current)}</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('employee.training.current')}</CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-xl md:text-2xl font-bold">{currentEnrollments.length}</div>
-              <p className="text-xs text-muted-foreground">{t(translations.en.activeCourses)}</p>
+              <p className="text-xs text-muted-foreground">{t('employee.training.activeCourses')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t(translations.en.completed)}</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('employee.training.completed')}</CardTitle>
               <Award className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-xl md:text-2xl font-bold">
                 {completedEnrollments.length}
               </div>
-              <p className="text-xs text-muted-foreground">{t(translations.en.finishedCourses)}</p>
+              <p className="text-xs text-muted-foreground">{t('employee.training.finishedCourses')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {t(translations.en.certificates)}
+                {t('employee.training.certificates')}
               </CardTitle>
               <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -167,14 +118,14 @@ export default function Training() {
               <div className="text-xl md:text-2xl font-bold">
                 {completedEnrollments.length}
               </div>
-              <p className="text-xs text-muted-foreground">{t(translations.en.earned)}</p>
+              <p className="text-xs text-muted-foreground">{t('employee.training.earned')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {t(translations.en.averageProgress)}
+                {t('employee.training.averageProgress')}
               </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -183,7 +134,7 @@ export default function Training() {
                 {enrollments.length > 0 ? Math.round(enrollments.reduce((sum: number, e: any) => sum + (e.progress || 0), 0) / enrollments.length) : 0}%
               </div>
               <p className="text-xs text-muted-foreground">
-                {t(translations.en.overallProgress)}
+                {t('employee.training.overallProgress')}
               </p>
             </CardContent>
           </Card>
@@ -191,14 +142,14 @@ export default function Training() {
 
         <Tabs defaultValue="current" className="space-y-4">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="current" className="text-xs sm:text-sm">{t(translations.en.currentTraining)}</TabsTrigger>
-            <TabsTrigger value="recommended" className="text-xs sm:text-sm">{t(translations.en.recommended)}</TabsTrigger>
-            <TabsTrigger value="completed" className="text-xs sm:text-sm">{t(translations.en.completed)}</TabsTrigger>
+            <TabsTrigger value="current" className="text-xs sm:text-sm">{t('employee.training.currentTraining')}</TabsTrigger>
+            <TabsTrigger value="recommended" className="text-xs sm:text-sm">{t('employee.training.recommended')}</TabsTrigger>
+            <TabsTrigger value="completed" className="text-xs sm:text-sm">{t('employee.training.completed')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="current" className="space-y-4">
             {loading ? (
-              <div className="text-center py-8">{t(translations.en.loading)}</div>
+              <div className="text-center py-8">{t('employee.training.loading')}</div>
             ) : error ? (
               <div className="text-center text-red-600 py-8">{error}</div>
             ) : (
@@ -218,7 +169,7 @@ export default function Training() {
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
-                            <span>{t(translations.en.progress)}</span>
+                            <span>{t('employee.training.progress')}</span>
                             <span>{progressValue}%</span>
                           </div>
                           <Slider
@@ -233,7 +184,7 @@ export default function Training() {
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-muted-foreground">
                           <span>
-                            {course.modules?.length || 0} {t(translations.en.lessons)}
+                            {course.modules?.length || 0} {t('employee.training.lessons')}
                           </span>
                           <span className="flex items-center">
                             <Clock className="h-4 w-4 mr-1" />
@@ -245,7 +196,7 @@ export default function Training() {
                           onClick={() => handleUpdateProgress(enrollment._id, progressValue)}
                           disabled={progressing === enrollment._id || progressValue === enrollment.progress}
                         >
-                          {progressing === enrollment._id ? t(translations.en.updating) : progressValue === 100 ? t(translations.en.markComplete) : t(translations.en.updateProgress)}
+                          {progressing === enrollment._id ? t('employee.training.updating') : progressValue === 100 ? t('employee.training.markComplete') : t('employee.training.updateProgress')}
                         </Button>
                         {progressValue !== enrollment.progress && progressing !== enrollment._id && (
                           <Button
@@ -253,7 +204,7 @@ export default function Training() {
                             className="w-full mt-2"
                             onClick={() => setProgressInputs(prev => ({ ...prev, [enrollment._id]: enrollment.progress }))}
                           >
-                            {t(translations.en.undo)}
+                            {t('employee.training.undo')}
                           </Button>
                         )}
                       </CardContent>
@@ -266,7 +217,7 @@ export default function Training() {
 
           <TabsContent value="recommended" className="space-y-4">
             {loading ? (
-              <div className="text-center py-8">{t(translations.en.loading)}</div>
+              <div className="text-center py-8">{t('employee.training.loading')}</div>
             ) : error ? (
               <div className="text-center text-red-600 py-8">{error}</div>
             ) : (
@@ -285,7 +236,7 @@ export default function Training() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>{course.modules?.length || 0} {t(translations.en.lessons)}</span>
+                        <span>{course.modules?.length || 0} {t('employee.training.lessons')}</span>
                         <span className="flex items-center">
                           <Clock className="h-4 w-4 mr-1" />
                           {course.duration}
@@ -293,7 +244,7 @@ export default function Training() {
                       </div>
                       <Button className="w-full" onClick={() => handleEnroll(course._id)} disabled={enrolling === course._id}>
                         <BookOpen className="h-4 w-4 mr-2" />
-                        {enrolling === course._id ? t(translations.en.enrolling) : t(translations.en.enroll)}
+                        {enrolling === course._id ? t('employee.training.enrolling') : t('employee.training.enroll')}
                       </Button>
                     </CardContent>
                   </Card>
@@ -304,7 +255,7 @@ export default function Training() {
 
           <TabsContent value="completed" className="space-y-4">
             {loading ? (
-              <div className="text-center py-8">{t(translations.en.loading)}</div>
+              <div className="text-center py-8">{t('employee.training.loading')}</div>
             ) : error ? (
               <div className="text-center text-red-600 py-8">{error}</div>
             ) : (
@@ -317,17 +268,17 @@ export default function Training() {
                       <CardHeader className="pb-4">
                         <CardTitle className="text-base md:text-lg">{course.title}</CardTitle>
                         <p className="text-sm text-muted-foreground">
-                          {t(translations.en.completed)}
+                          {t('employee.training.completed')}
                         </p>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm">{t(translations.en.finalProgress)}</span>
+                          <span className="text-sm">{t('employee.training.finalProgress')}</span>
                           <Badge variant="secondary">{enrollment.progress}%</Badge>
                         </div>
                         <Button variant="outline" className="w-full">
                           <Award className="h-4 w-4 mr-2" />
-                          {t(translations.en.downloadCertificate)}
+                          {t('employee.training.downloadCertificate')}
                         </Button>
                       </CardContent>
                     </Card>
@@ -347,11 +298,11 @@ export default function Training() {
               <Badge variant="outline">{previewCourse.category}</Badge>
               <Badge variant="outline">{previewCourse.level}</Badge>
               <Badge variant={previewCourse.status === "published" ? "default" : "secondary"}>
-                {previewCourse.status === "published" ? t(translations.en.published) : t(translations.en.draft)}
+                {previewCourse.status === "published" ? t('employee.training.published') : t('employee.training.draft')}
               </Badge>
             </div>
             <div>
-              <strong>{t(translations.en.modules)}:</strong>
+              <strong>{t('employee.training.modules')}:</strong>
               <ul className="list-disc ml-6">
                 {previewCourse.modules?.map((m: any, i: number) => (
                   <li key={i}>{m.title || m}</li>
@@ -359,7 +310,7 @@ export default function Training() {
               </ul>
             </div>
             <div className="flex justify-end">
-              <Button onClick={() => setPreviewCourse(null)}>{t(translations.en.close)}</Button>
+              <Button onClick={() => setPreviewCourse(null)}>{t('employee.training.close')}</Button>
             </div>
           </div>
         </Modal>

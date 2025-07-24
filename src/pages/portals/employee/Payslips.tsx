@@ -19,55 +19,6 @@ import { getMyPayroll } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
-const translations = {
-  en: {
-    title: "Payslips",
-    baseSalary: "Base Salary",
-    netPay: "Net Pay",
-    payPeriod: "Pay Period",
-    bonus: "Bonus",
-    yearToDate: "Year-to-Date Earnings",
-    loading: "Loading payslips...",
-    error: "Failed to load payslips",
-    noStubs: "No payslips found.",
-    noStubsDesc: "You have no payslips for this period.",
-    download: "Download",
-    actions: "Actions",
-    status: "Status",
-    paid: "Paid",
-    pending: "Pending",
-    rejected: "Rejected",
-    completed: "Completed",
-    cancelled: "Cancelled",
-    search: "Search by pay period...",
-    retry: "Retry",
-    history: "History",
-  },
-  fr: {
-    title: "Bulletins de paie",
-    baseSalary: "Salaire de base",
-    netPay: "Salaire net",
-    payPeriod: "Période de paie",
-    bonus: "Prime",
-    yearToDate: "Gains cumulés annuels",
-    loading: "Chargement des bulletins de paie...",
-    error: "Échec du chargement des bulletins de paie",
-    noStubs: "Aucun bulletin de paie trouvé.",
-    noStubsDesc: "Vous n'avez aucun bulletin de paie pour cette période.",
-    download: "Télécharger",
-    actions: "Actions",
-    status: "Statut",
-    paid: "Payé",
-    pending: "En attente",
-    rejected: "Rejeté",
-    completed: "Terminé",
-    cancelled: "Annulé",
-    search: "Rechercher par période de paie...",
-    retry: "Réessayer",
-    history: "Historique",
-  },
-};
-
 export default function Payslips() {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -151,7 +102,7 @@ export default function Payslips() {
     <EmployeePortalLayout>
       <div className="space-y-4 md:space-y-6 p-4 md:p-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl md:text-3xl font-bold">{t("employee.payroll.title")}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('employee.payslips.title')}</h1>
         </div>
 
         {/* Loading State */}
@@ -179,7 +130,7 @@ export default function Payslips() {
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-red-500 mb-4">{error}</p>
-                <Button onClick={() => window.location.reload()}>Retry</Button>
+                <Button onClick={() => window.location.reload()}>{t('employee.payslips.retry')}</Button>
               </div>
             </CardContent>
           </Card>
@@ -191,7 +142,7 @@ export default function Payslips() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  {t("employee.payroll.baseSalary")} ({t("employee.payroll.payPeriod")})
+                  {t('employee.payslips.baseSalary')} ({t('employee.payslips.payPeriod')})
                 </CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
@@ -199,14 +150,14 @@ export default function Payslips() {
                 <div className="text-xl md:text-2xl font-bold">
                   ${currentMonthPayslip?.baseSalary?.toLocaleString() || '0'}
                 </div>
-                <p className="text-xs text-muted-foreground">{t("employee.payroll.baseSalary")}</p>
+                <p className="text-xs text-muted-foreground">{t('employee.payslips.baseSalary')}</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  {t("employee.payroll.netPay")} ({t("employee.payroll.payPeriod")})
+                  {t('employee.payslips.netPay')} ({t('employee.payslips.payPeriod')})
                 </CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
@@ -214,14 +165,14 @@ export default function Payslips() {
                 <div className="text-xl md:text-2xl font-bold">
                   ${currentMonthPayslip?.netPay?.toLocaleString() || '0'}
                 </div>
-                <p className="text-xs text-muted-foreground">{t("employee.payroll.netPay")}</p>
+                <p className="text-xs text-muted-foreground">{t('employee.payslips.netPay')}</p>
               </CardContent>
             </Card>
 
             <Card className="sm:col-span-2 lg:col-span-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Year-to-Date Earnings
+                  {t('employee.payslips.yearToDate')}
                 </CardTitle>
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
@@ -239,12 +190,12 @@ export default function Payslips() {
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <CardTitle className="text-lg md:text-xl">{t("employee.payroll.title")} History</CardTitle>
+              <CardTitle className="text-lg md:text-xl">{t('employee.payslips.title')} {t('employee.payslips.history')}</CardTitle>
               <div className="flex items-center space-x-2">
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search by pay period..."
+                    placeholder={t('employee.payslips.search')}
                     className="pl-8 w-full sm:w-64"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -258,32 +209,32 @@ export default function Payslips() {
               <div className="flex items-center justify-center py-8">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">{t("employee.payroll.loading")}</p>
+                  <p className="text-muted-foreground">{t('employee.payslips.loading')}</p>
                 </div>
               </div>
             ) : error ? (
               <div className="text-center py-8">
                 <p className="text-red-500 mb-4">{error}</p>
-                <Button onClick={() => window.location.reload()}>Retry</Button>
+                <Button onClick={() => window.location.reload()}>{t('employee.payslips.retry')}</Button>
               </div>
             ) : filteredPayslips.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-2">{t("employee.payroll.noStubs")}</p>
-                <p className="text-sm text-muted-foreground">{t("employee.payroll.noStubsDesc")}</p>
+                <p className="text-muted-foreground mb-2">{t('employee.payslips.noStubs')}</p>
+                <p className="text-sm text-muted-foreground">{t('employee.payslips.noStubsDesc')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[100px]">{t("employee.payroll.payPeriod")}</TableHead>
-                      <TableHead className="min-w-[100px]">{t("employee.payroll.baseSalary")}</TableHead>
-                      <TableHead className="min-w-[100px]">{t("employee.payroll.bonus")}</TableHead>
-                      <TableHead className="min-w-[100px]">{t("employee.payroll.netPay")}</TableHead>
-                      <TableHead className="min-w-[80px]">Status</TableHead>
+                      <TableHead className="min-w-[100px]">{t('employee.payslips.payPeriod')}</TableHead>
+                      <TableHead className="min-w-[100px]">{t('employee.payslips.baseSalary')}</TableHead>
+                      <TableHead className="min-w-[100px]">{t('employee.payslips.bonus')}</TableHead>
+                      <TableHead className="min-w-[100px]">{t('employee.payslips.netPay')}</TableHead>
+                      <TableHead className="min-w-[80px]">{t('employee.payslips.status')}</TableHead>
                       <TableHead className="text-right min-w-[120px]">
-                        {t("common.actions")}
+                        {t('employee.payslips.actions')}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -291,14 +242,14 @@ export default function Payslips() {
                     {filteredPayslips.map((payslip) => (
                       <TableRow key={payslip._id || payslip.id}>
                         <TableCell className="font-medium">
-                          {payslip.period || `${t("employee.payroll.payPeriod")} ${payslip._id ? payslip._id.slice(-6) : 'N/A'}`}
+                          {payslip.period || `${t('employee.payslips.payPeriod')} ${payslip._id ? payslip._id.slice(-6) : 'N/A'}`}
                         </TableCell>
                         <TableCell>${payslip.baseSalary?.toLocaleString() || '0'}</TableCell>
                         <TableCell>${payslip.bonus?.toLocaleString() || '0'}</TableCell>
                         <TableCell>${payslip.netPay?.toLocaleString() || '0'}</TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(payslip.status)}>
-                            {payslip.status || 'Pending'}
+                            {t(`employee.payslips.${payslip.status?.toLowerCase() || 'pending'}`)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -309,7 +260,7 @@ export default function Payslips() {
                             onClick={() => handleDownload(payslip)}
                           >
                             <Download className="h-3 w-3 mr-1 md:mr-2" />
-                            <span className="hidden sm:inline">{t("employee.payroll.download")}</span>
+                            <span className="hidden sm:inline">{t('employee.payslips.download')}</span>
                             <span className="sm:hidden">DL</span>
                           </Button>
                         </TableCell>

@@ -35,73 +35,8 @@ import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
 import { getExpenseClaims } from "@/lib/api";
 
-// Add/expand translation keys at the top
-const translations = {
-  en: {
-    allFieldsRequired: "All fields are required, including receipt.",
-    amountPositive: "Amount must be a positive number.",
-    claimSubmitted: "Expense claim submitted successfully.",
-    failedToSave: "Failed to submit expense claim.",
-    error: "Error",
-    newExpenseClaim: "New Expense Claim",
-    submitExpense: "Submit Expense",
-    category: "Category",
-    amount: "Amount",
-    date: "Date",
-    description: "Description",
-    receipt: "Receipt",
-    status: "Status",
-    actions: "Actions",
-    uploaded: "Uploaded",
-    missing: "Missing",
-    approved: "Approved",
-    pending: "Pending",
-    rejected: "Rejected",
-    loading: "Loading expenses...",
-    noExpenses: "No expense claims found.",
-    view: "View",
-    close: "Close",
-    trainer: {
-      modules: "Modules",
-    },
-  },
-  fr: {
-    allFieldsRequired: "Tous les champs sont requis, y compris le reçu.",
-    amountPositive: "Le montant doit être un nombre positif.",
-    claimSubmitted: "Note de frais soumise avec succès.",
-    failedToSave: "Échec de la soumission de la note de frais.",
-    error: "Erreur",
-    newExpenseClaim: "Nouvelle note de frais",
-    submitExpense: "Soumettre la dépense",
-    category: "Catégorie",
-    amount: "Montant",
-    date: "Date",
-    description: "Description",
-    receipt: "Reçu",
-    status: "Statut",
-    actions: "Actions",
-    uploaded: "Téléchargé",
-    missing: "Manquant",
-    approved: "Approuvé",
-    pending: "En attente",
-    rejected: "Rejeté",
-    loading: "Chargement des notes de frais...",
-    noExpenses: "Aucune note de frais trouvée.",
-    view: "Voir",
-    close: "Fermer",
-    trainer: {
-      modules: "Modules",
-    },
-  },
-};
-
 export default function ExpenseClaims() {
-  const { language } = useLanguage();
-  const t = (key: string) =>
-    translations[language][key as keyof typeof translations.en] ||
-    translations.en[key as keyof typeof translations.en] ||
-    key;
-
+  const { t } = useLanguage();
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -125,7 +60,7 @@ export default function ExpenseClaims() {
     setError(null);
     getExpenseClaims()
       .then((data) => setExpenses(Array.isArray(data) ? data : data.data || []))
-      .catch((err) => setError(err.message || "Failed to load expenses"))
+      .catch((err) => setError(err.message || t('employee.expenseClaims.failedToSave')))
       .finally(() => setLoading(false));
   };
   // Fetch on mount
@@ -135,28 +70,28 @@ export default function ExpenseClaims() {
     <EmployeePortalLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Expense Claims</h1>
+          <h1 className="text-3xl font-bold">{t('employee.expenseClaims.newExpenseClaim')}</h1>
           <Dialog open={modalOpen} onOpenChange={setModalOpen}>
             <DialogTrigger asChild>
               <Button onClick={() => setModalOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                New Expense Claim
+                {t('employee.expenseClaims.newExpenseClaim')}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Submit Expense</DialogTitle>
+                <DialogTitle>{t('employee.expenseClaims.submitExpense')}</DialogTitle>
               </DialogHeader>
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
                   // Validation
                   if (!form.category || !form.amount || !form.date || !form.description || !form.receipt) {
-                    setFormError(t("allFieldsRequired"));
+                    setFormError(t('employee.expenseClaims.allFieldsRequired'));
                     return;
                   }
                   if (isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
-                    setFormError(t("amountPositive"));
+                    setFormError(t('employee.expenseClaims.amountPositive'));
                     return;
                   }
                   setFormError(null);
@@ -171,13 +106,13 @@ export default function ExpenseClaims() {
                     await axios.post("/expenses/create", data, {
                       headers: { "Content-Type": "multipart/form-data" },
                     });
-                    toast({ title: t("claimSubmitted") });
+                    toast({ title: t('employee.expenseClaims.claimSubmitted') });
                     setModalOpen(false);
                     setForm({ category: "", amount: "", date: "", description: "", receipt: null });
                     if (fileInputRef.current) fileInputRef.current.value = "";
                     fetchExpenses(); // Refetch expenses
                   } catch (err: any) {
-                    toast({ title: t("error"), description: err.response?.data?.message || err.message || t("failedToSave"), variant: "destructive" });
+                    toast({ title: t('employee.expenseClaims.error'), description: err.response?.data?.message || err.message || t('employee.expenseClaims.failedToSave'), variant: "destructive" });
                   } finally {
                     setSubmitting(false);
                   }
@@ -185,10 +120,10 @@ export default function ExpenseClaims() {
                 className="space-y-4"
               >
                 <div>
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">{t('employee.expenseClaims.category')}</Label>
                   <Select value={form.category} onValueChange={val => setForm(f => ({ ...f, category: val }))}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Category" />
+                      <SelectValue placeholder={t('employee.expenseClaims.category')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="travel">Travel</SelectItem>
@@ -201,7 +136,7 @@ export default function ExpenseClaims() {
                 </div>
 
                 <div>
-                  <Label htmlFor="amount">Amount</Label>
+                  <Label htmlFor="amount">{t('employee.expenseClaims.amount')}</Label>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -217,7 +152,7 @@ export default function ExpenseClaims() {
                 </div>
 
                 <div>
-                  <Label htmlFor="date">Date</Label>
+                  <Label htmlFor="date">{t('employee.expenseClaims.date')}</Label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -231,17 +166,17 @@ export default function ExpenseClaims() {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{t('employee.expenseClaims.description')}</Label>
                   <Textarea
                     id="description"
-                    placeholder="Describe your expense"
+                    placeholder={t('employee.expenseClaims.description')}
                     value={form.description}
                     onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="receipt">Receipt</Label>
+                  <Label htmlFor="receipt">{t('employee.expenseClaims.receipt')}</Label>
                   <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
                     <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
@@ -259,8 +194,8 @@ export default function ExpenseClaims() {
                 {formError && <div className="text-red-600 text-sm text-center">{formError}</div>}
 
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" type="button" onClick={() => setModalOpen(false)} disabled={submitting}>{t("common.cancel")}</Button>
-                  <Button type="submit" disabled={submitting}>{submitting ? "Submitting..." : "Submit Claim"}</Button>
+                  <Button variant="outline" type="button" onClick={() => setModalOpen(false)} disabled={submitting}>{t('employee.expenseClaims.close')}</Button>
+                  <Button type="submit" disabled={submitting}>{submitting ? t('employee.expenseClaims.submitting') : t('employee.expenseClaims.submitExpense')}</Button>
                 </div>
               </form>
             </DialogContent>
@@ -271,7 +206,7 @@ export default function ExpenseClaims() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Expenses
+                {t('employee.expenseClaims.amount')}
               </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -286,7 +221,7 @@ export default function ExpenseClaims() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Approved Amount
+                {t('employee.expenseClaims.approved')}
               </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -303,7 +238,7 @@ export default function ExpenseClaims() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Pending Amount
+                {t('employee.expenseClaims.pending')}
               </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -318,11 +253,11 @@ export default function ExpenseClaims() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Expense History</CardTitle>
+            <CardTitle>{t('employee.expenseClaims.history')}</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8">{t("loading")}</div>
+              <div className="text-center py-8">{t('employee.expenseClaims.loading')}</div>
             ) : error ? (
               <div className="text-center text-red-600 py-8">{error}</div>
             ) : (
@@ -336,7 +271,7 @@ export default function ExpenseClaims() {
                     <TableHead>Receipt</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">
-                      {t("common.actions")}
+                      {t('employee.expenseClaims.actions')}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -349,9 +284,9 @@ export default function ExpenseClaims() {
                       <TableCell>${Number(expense.amount).toFixed(2)}</TableCell>
                       <TableCell>
                         {expense.receipt ? (
-                          <Badge variant="outline" className="text-green-600">{t("uploaded")}</Badge>
+                          <Badge variant="outline" className="text-green-600">{t('employee.expenseClaims.uploaded')}</Badge>
                         ) : (
-                          <Badge variant="outline" className="text-red-600">{t("missing")}</Badge>
+                          <Badge variant="outline" className="text-red-600">{t('employee.expenseClaims.missing')}</Badge>
                         )}
                       </TableCell>
                       <TableCell>
@@ -365,10 +300,10 @@ export default function ExpenseClaims() {
                           }
                         >
                           {expense.status === "approved"
-                            ? t("approved")
+                            ? t('employee.expenseClaims.approved')
                             : expense.status === "pending"
-                            ? t("pending")
-                            : t("rejected")}
+                            ? t('employee.expenseClaims.pending')
+                            : t('employee.expenseClaims.rejected')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -405,7 +340,7 @@ export default function ExpenseClaims() {
             </div>
           )}
           <div className="flex justify-end">
-            <Button variant="outline" onClick={() => setViewExpense(null)}>{t("common.cancel")}</Button>
+            <Button variant="outline" onClick={() => setViewExpense(null)}>{t('employee.expenseClaims.close')}</Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -45,84 +45,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { deleteLeave } from "@/lib/api";
 
-const LEAVE_TYPES = [
-  { value: "vacation", label: "Vacation" },
-  { value: "sick", label: "Sick Leave" },
-  { value: "personal", label: "Personal Leave" },
-  { value: "maternity", label: "Maternity Leave" },
-];
-
-const translations = {
-  en: {
-    title: "Leave Requests",
-    requestLeave: "Request Leave",
-    newLeaveRequest: "New Leave Request",
-    leaveType: "Leave Type",
-    startDate: "Start Date",
-    endDate: "End Date",
-    reason: "Reason",
-    allFieldsRequired: "All fields are required.",
-    failedToSave: "Failed to save leave request.",
-    leaveRequested: "Leave requested successfully!",
-    leaveDeleted: "Leave deleted successfully!",
-    delete: "Delete",
-    cancel: "Cancel",
-    submit: "Submit Request",
-    submitting: "Submitting...",
-    loading: "Loading leave requests...",
-    error: "Failed to load leave requests.",
-    vacation: "Vacation",
-    sick: "Sick Leave",
-    personal: "Personal Leave",
-    maternity: "Maternity Leave",
-    type: "Type",
-    days: "Days",
-    status: "Status",
-    history: "Leave History",
-    actions: "Actions",
-    approved: "Approved",
-    pending: "Pending",
-    rejected: "Rejected",
-    deleteLeaveTitle: "Delete Leave Request",
-    deleteLeaveDesc: "Are you sure you want to delete this leave request? This action cannot be undone.",
-  },
-  fr: {
-    title: "Demandes de congé",
-    requestLeave: "Demander un congé",
-    newLeaveRequest: "Nouvelle demande de congé",
-    leaveType: "Type de congé",
-    startDate: "Date de début",
-    endDate: "Date de fin",
-    reason: "Raison",
-    allFieldsRequired: "Tous les champs sont requis.",
-    failedToSave: "Échec de l'enregistrement de la demande de congé.",
-    leaveRequested: "Congé demandé avec succès!",
-    leaveDeleted: "Demande de congé supprimée avec succès!",
-    delete: "Supprimer",
-    cancel: "Annuler",
-    submit: "Soumettre la demande",
-    submitting: "Soumission...",
-    loading: "Chargement des demandes de congé...",
-    error: "Échec du chargement des demandes de congé.",
-    vacation: "Vacances",
-    sick: "Congé maladie",
-    personal: "Congé personnel",
-    maternity: "Congé maternité",
-    type: "Type",
-    days: "Jours",
-    status: "Statut",
-    history: "Historique des congés",
-    actions: "Actions",
-    approved: "Approuvé",
-    pending: "En attente",
-    rejected: "Rejeté",
-    deleteLeaveTitle: "Supprimer la demande de congé",
-    deleteLeaveDesc: "Êtes-vous sûr de vouloir supprimer cette demande de congé? Cette action est irréversible.",
-  },
-};
-
 export default function LeaveRequests() {
   const { t } = useLanguage();
+
+  const LEAVE_TYPES = [
+    { value: "vacation", label: t("employee.leaveRequests.vacation") },
+    { value: "sick", label: t("employee.leaveRequests.sick") },
+    { value: "personal", label: t("employee.leaveRequests.personal") },
+    { value: "maternity", label: t("employee.leaveRequests.maternity") },
+  ];
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

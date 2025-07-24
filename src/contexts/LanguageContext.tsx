@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-type Language = 'en' | 'fr' | 'rw';
+type Language = 'en' | 'fr';
 
 interface LanguageContextType {
   language: Language;
@@ -20,7 +20,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   useEffect(() => {
     // Set initial language from localStorage or browser
     const savedLanguage = localStorage.getItem('language') as Language;
-    if (savedLanguage && ['en', 'fr', 'rw'].includes(savedLanguage)) {
+    if (savedLanguage && ['en', 'fr'].includes(savedLanguage)) {
       setLanguageState(savedLanguage);
       i18n.changeLanguage(savedLanguage);
     } else {

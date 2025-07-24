@@ -103,12 +103,12 @@ export default function Announcements() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center space-x-2">
             <Megaphone className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-            <h1 className="text-2xl md:text-3xl font-bold">Announcements</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">{t('employee.announcements')}</h1>
           </div>
           {isAdminOrManager && (
             <Button onClick={() => setShowAdd(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Announcement
+              {t('common.add')} {t('employee.announcements')}
             </Button>
           )}
         </div>
@@ -116,16 +116,16 @@ export default function Announcements() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search announcements..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <Input placeholder={t('common.search') + ' ' + t('employee.announcements') + '...'} className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <Button variant="outline" className="w-full sm:w-auto">
             <Calendar className="h-4 w-4 mr-2" />
-            Filter by Date
+            {t('common.filter')} {t('common.byDate')}
           </Button>
         </div>
 
         {loading ? (
-          <div className="text-center py-8">Loading announcements...</div>
+          <div className="text-center py-8">{t('common.loading')} {t('employee.announcements')}...</div>
         ) : error ? (
           <div className="text-center text-red-600 py-8">{error}</div>
         ) : (
@@ -155,7 +155,7 @@ export default function Announcements() {
                             </AvatarFallback>
                           </Avatar>
                           <span className="text-sm text-muted-foreground truncate">
-                            {announcement.author || announcement.createdBy?.Names || "System"}
+                            {announcement.author || announcement.createdBy?.Names || t('common.system')}
                           </span>
                         </div>
                         <div className="hidden lg:block">
@@ -172,7 +172,7 @@ export default function Announcements() {
                             <Badge variant={getPriorityColor(announcement.priority)}>
                               {announcement.priority.charAt(0).toUpperCase() +
                                 announcement.priority.slice(1) +
-                                " Priority"}
+                                ' ' + t('common.priority')}
                             </Badge>
                           )}
                           {announcement.category && (
@@ -216,7 +216,7 @@ export default function Announcements() {
                       </Button>
                     </div>
                     <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                      Read More
+                      {t('common.readMore')}
                     </Button>
                   </div>
                 </CardContent>
@@ -228,20 +228,20 @@ export default function Announcements() {
         {isAdminOrManager && showAdd && (
           <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-              <h2 className="text-xl font-bold mb-4">Add Announcement</h2>
+              <h2 className="text-xl font-bold mb-4">{t('common.add')} {t('employee.announcements')}</h2>
               <form onSubmit={handleAdd} className="space-y-4">
                 <div>
-                  <label className="block mb-1 font-medium">Title</label>
+                  <label className="block mb-1 font-medium">{t('common.title')}</label>
                   <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
                 </div>
                 <div>
-                  <label className="block mb-1 font-medium">Content</label>
+                  <label className="block mb-1 font-medium">{t('common.content')}</label>
                   <Input value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} required />
                 </div>
                 {formError && <div className="text-red-600 text-sm text-center">{formError}</div>}
                 <div className="flex gap-2 justify-end">
-                  <Button type="button" variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
-                  <Button type="submit" disabled={submitting}>{submitting ? "Adding..." : "Add"}</Button>
+                  <Button type="button" variant="outline" onClick={() => setShowAdd(false)}>{t('common.cancel')}</Button>
+                  <Button type="submit" disabled={submitting}>{submitting ? t('common.adding') : t('common.add')}</Button>
                 </div>
               </form>
             </div>
@@ -250,7 +250,7 @@ export default function Announcements() {
 
         <div className="text-center py-8">
           <Button variant="outline">
-            {t("employee.AnnouncementsloadMore")}
+            {t('employee.AnnouncementsloadMore')}
           </Button>
         </div>
       </div>

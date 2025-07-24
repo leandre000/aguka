@@ -455,3 +455,11 @@ export const updateAttendance = (attendanceId: string, data: any) =>
   apiFetch(`/attendance/${attendanceId}`, { method: "PUT", body: JSON.stringify(data) });
 
 export const getAllEmployeeDocuments = () => apiFetch('/employees/documents');
+
+// --- Contracts API ---
+export const getContracts = () => apiFetch('/contracts');
+export const getContract = (id: string) => apiFetch(`/contracts/${id}`);
+export const createContract = (data: any) => apiFetch('/contracts', { method: 'POST', body: JSON.stringify(data) });
+export const updateContract = (id: string, data: any) => apiFetch(`/contracts/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteContract = (id: string) => apiFetch(`/contracts/${id}`, { method: 'DELETE' });
+export const getMyContracts = () => apiFetch('/contracts/me/list');

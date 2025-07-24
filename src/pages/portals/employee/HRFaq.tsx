@@ -15,75 +15,44 @@ export default function HRFaq() {
 
   const faqCategories = [
     {
-      category: "Leave Policy",
+      category: t('employee.hrFaq.leavePolicy'),
       questions: [
         {
-          q: "How many vacation days do I get?",
-          a: "Full-time employees receive 25 vacation days per year.",
+          q: t('employee.hrFaq.vacationDaysQ'),
+          a: t('employee.hrFaq.vacationDaysA'),
         },
         {
-          q: "How do I request sick leave?",
-          a: "Submit a leave request through the employee portal or contact HR directly.",
+          q: t('employee.hrFaq.sickLeaveQ'),
+          a: t('employee.hrFaq.sickLeaveA'),
         },
       ],
     },
     {
-      category: "Benefits",
+      category: t('employee.hrFaq.benefits'),
       questions: [
         {
-          q: "When can I enroll in health insurance?",
-          a: "Open enrollment is in November, or within 30 days of starting.",
+          q: t('employee.hrFaq.enrollInsuranceQ'),
+          a: t('employee.hrFaq.enrollInsuranceA'),
         },
         {
-          q: "What retirement benefits are available?",
-          a: "We offer a 401(k) plan with company matching up to 4%.",
+          q: t('employee.hrFaq.retirementQ'),
+          a: t('employee.hrFaq.retirementA'),
         },
       ],
     },
   ];
-
-  const translations = {
-    en: {
-      title: "HR FAQ",
-      search: "Search FAQ...",
-      leavePolicy: "Leave Policy",
-      benefits: "Benefits",
-      vacationDaysQ: "How many vacation days do I get?",
-      vacationDaysA: "Full-time employees receive 25 vacation days per year.",
-      sickLeaveQ: "How do I request sick leave?",
-      sickLeaveA: "Submit a leave request through the employee portal or contact HR directly.",
-      enrollInsuranceQ: "When can I enroll in health insurance?",
-      enrollInsuranceA: "Open enrollment is in November, or within 30 days of starting.",
-      retirementQ: "What retirement benefits are available?",
-      retirementA: "We offer a 401(k) plan with company matching up to 4%.",
-    },
-    fr: {
-      title: "FAQ RH",
-      search: "Rechercher dans la FAQ...",
-      leavePolicy: "Politique de congé",
-      benefits: "Avantages",
-      vacationDaysQ: "Combien de jours de vacances ai-je?",
-      vacationDaysA: "Les employés à temps plein reçoivent 25 jours de vacances par an.",
-      sickLeaveQ: "Comment demander un congé maladie?",
-      sickLeaveA: "Soumettez une demande de congé via le portail des employés ou contactez directement les RH.",
-      enrollInsuranceQ: "Quand puis-je m'inscrire à l'assurance maladie?",
-      enrollInsuranceA: "La période d'inscription est en novembre, ou dans les 30 jours suivant le début.",
-      retirementQ: "Quels avantages de retraite sont disponibles?",
-      retirementA: "Nous offrons un plan 401(k) avec une contrepartie de l'entreprise jusqu'à 4%.",
-    },
-  };
 
   return (
     <EmployeePortalLayout>
       <div className="space-y-4 md:space-y-6 p-4 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <HelpCircle className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-          <h1 className="text-2xl md:text-3xl font-bold">HR FAQ</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('employee.hrFaq.title')}</h1>
         </div>
 
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search FAQ..." className="pl-10 w-full" />
+          <Input placeholder={t('employee.hrFaq.search')} className="pl-10 w-full" />
         </div>
 
         <div className="space-y-4">
