@@ -108,7 +108,7 @@ export default function WellbeingSurvey({ showResults = false, surveyResults = [
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="poor" id="wlb-poor" />
-                  <Label htmlFor="wlb-poor">{t('employee.wellbeingSurvey.poor')}</Label>
+                  <Label htmlFor="wlb-poor">{t('employee.wellbeingSurvey.Poor')}</Label>
                 </div>
               </RadioGroup>
             </div>

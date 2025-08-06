@@ -67,7 +67,7 @@ export function EmployeePortalSidebar() {
       icon: FileText,
     },
     {
-      title: t("employee.payslips"),
+      title: t("employee.payslips.title"),
       url: "/employee-portal/payslips",
       icon: Receipt,
     },
@@ -77,12 +77,12 @@ export function EmployeePortalSidebar() {
       icon: Calendar,
     },
     {
-      title: t("employee.expenseClaims"),
+      title: t("employee.expenseClaims.title"),
       url: "/employee-portal/expense-claims",
       icon: DollarSign,
     },
     {
-      title: t("employee.training"),
+      title: t("employee.training.title2"),
       url: "/employee-portal/training",
       icon: BookOpen,
     },
@@ -92,12 +92,12 @@ export function EmployeePortalSidebar() {
       icon: MessageSquare,
     },
     {
-      title: t("employee.wellbeingSurvey"),
+      title: t("employee.wellbeingSurvey.title"),
       url: "/employee-portal/wellbeing-survey",
       icon: Heart,
     },
     {
-      title: t("employee.hrFaq"),
+      title: t("employee.hrFaq.title"),
       url: "/employee-portal/hr-faq",
       icon: HelpCircle,
     },
