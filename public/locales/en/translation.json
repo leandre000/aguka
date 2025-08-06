@@ -137,6 +137,7 @@
     "backup": "Backup & Restore",
     "surveys": "Survey Results",
     "successionPlanning": "Succession Planning",
+    "successionPlanningDesc": "Manage succession plans and candidates",
     "activeUsers": "Active Users",
     "pendingApprovals": "Pending Approvals",
     "currentlyOnline": "Currently online",

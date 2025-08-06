@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "react-hot-toast";
 import { createPolicy, updatePolicy, deletePolicy, createAudit, updateAudit, deleteAudit, createIncident, updateIncident, deleteIncident } from "@/lib/api";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Compliance = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -288,7 +288,7 @@ const Compliance = () => {
                         <Button variant="outline" size="sm">
                           Edit
                         </Button>
-                        <Button variant="outline" size="sm" variant="destructive" onClick={() => setPolicyDeleteId(policy._id)}>{t("delete")}</Button>
+                        <Button variant="outline" size="sm"  onClick={() => setPolicyDeleteId(policy._id)}>{t("delete")}</Button>
                       </div>
                     </div>
                   </div>

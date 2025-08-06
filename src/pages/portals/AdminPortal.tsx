@@ -59,7 +59,6 @@ export default function AdminPortal() {
     };
 
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function getEmployeeNameFromLeave(leave: any) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Card,
   CardContent,
@@ -77,6 +78,7 @@ const translations = {
     rpoDesc: "Maximum data loss tolerance: 1 hour",
     backupStatus: "Backup Status",
     backupStatusDesc: "All critical systems backed up within RPO",
+    delete:"Delete"
   },
   fr: {
     backup: "Sauvegarde",
@@ -132,6 +134,7 @@ const translations = {
     rpoDesc: "Tolérance maximale de perte de données : 1 heure",
     backupStatus: "Statut des sauvegardes",
     backupStatusDesc: "Tous les systèmes critiques sauvegardés dans le RPO",
+    delete: "Supprimer"
   },
 };
 

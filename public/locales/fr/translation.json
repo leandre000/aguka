@@ -171,7 +171,8 @@
     "save": "Enregistrer",
     "delete": "Supprimer",
     "noContracts": "Aucun contrat pour le moment.",
-    "successionPlanningDesc": "Description de la planification de succession"
+    "successionPlanningTitle": "Planification de succession",
+    "successionPlanningDesc": "Gérer les plans de succession et les candidats"
   },
   "employee": {
     "title": "Portail employé",
