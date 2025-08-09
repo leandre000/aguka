@@ -41,6 +41,12 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Adding custom colors based on the logo
+        red: '#e74c3c', // Red color
+        orange: '#f39c12', // Orange color
+        yellow: '#f1c40f', // Yellow color
+        green: '#2ecc71', // Green color
+        blue: '#3498db', // Blue color
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -64,4 +70,4 @@ export default {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} 
+}
