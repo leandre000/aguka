@@ -32,7 +32,6 @@ axios.interceptors.response.use(
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5500/api';
 
-// Utility function to get backend URL for file access (without /api)
 export const getBackendUrl = () => {
   return import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5500';
 };

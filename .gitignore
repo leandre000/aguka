@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+DEPLOYMENT_CONFIG.md
+econdary
+econdary main
+.gitignore
