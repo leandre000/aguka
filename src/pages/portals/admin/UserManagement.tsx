@@ -139,7 +139,7 @@ const UserManagement = () => {
   const [formError, setFormError] = useState<string | null>(null);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ _id: '', Names: '', Email: '', role: '', department: '' });
+  const [editForm, setEditForm] = useState({ id: '', Names: '', Email: '', role: '', department: '' });
   const [editLoading, setEditLoading] = useState(false);
   const [editFormError, setEditFormError] = useState<string | null>(null);
 
@@ -151,7 +151,7 @@ const UserManagement = () => {
 
   // Open edit modal and set form
   const openEditModal = (user: any) => {
-    setEditForm({ _id: user._id, Names: user.Names, Email: user.Email, role: user.role, department: user.department });
+    setEditForm({ id: user.id, Names: user.Names, Email: user.Email, role: user.role, department: user.department });
     setEditFormError(null);
     setEditModalOpen(true);
   };
@@ -176,7 +176,7 @@ const UserManagement = () => {
     setEditFormError(null);
     setEditLoading(true);
     try {
-      await apiFetch(`/users/${editForm._id}`, {
+      await apiFetch(`/users/${editForm.id}`, {
         method: "PUT",
         body: JSON.stringify({
           Names: editForm.Names,
@@ -235,8 +235,11 @@ const UserManagement = () => {
     getLeaves().then((res: any) => {
       // API returns { success, message, data: [...] }
       const leaves = res.data || [];
-      // Only leaves with status "Pending"
-      setPendingLeaves(leaves.filter((l: any) => l.status === "Pending"));
+      // Only leaves with status "Pending" (case insensitive)
+      setPendingLeaves(leaves.filter((l: any) => 
+        (l.status && l.status.toLowerCase() === "pending") || 
+        (l.Status && l.Status.toLowerCase() === "pending")
+      ));
     });
   }, []);
 
@@ -515,7 +518,7 @@ const UserManagement = () => {
             <div className="space-y-3 md:space-y-4">
               {filteredUsers.map((user) => (
                 <div
-                  key={user._id}
+                  key={user.id}
                   className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 border rounded-lg gap-4"
                 >
                   <div className="flex items-center gap-3 md:gap-4">
@@ -563,8 +566,8 @@ const UserManagement = () => {
                         View
                       </Button>
                       {isAdmin && (
-                        <Button variant="destructive" size="sm" className="text-xs" onClick={() => setDeleteUserId(user._id)} disabled={deleteLoading === user._id}>
-                          {deleteLoading === user._id ? t("deleting") || "Deleting..." : t("delete") || "Delete"}
+                        <Button variant="destructive" size="sm" className="text-xs" onClick={() => setDeleteUserId(user.id)} disabled={deleteLoading === user.id}>
+                          {deleteLoading === user.id ? t("deleting") || "Deleting..." : t("delete") || "Delete"}
                         </Button>
                       )}
                     </div>
@@ -613,18 +616,23 @@ const UserManagement = () => {
                       </td>
                     </tr>
                   )}
-                  {pendingLeaves.map((leave: any) => (
-                    <tr key={leave._id}>
-                      <td className="px-2 py-1">{leave.employee?.role || "-"}</td>
-                      <td className="px-2 py-1">{leave.employee?.department || "-"}</td>
-                      <td className="px-2 py-1">{leave.employee?.Names || "-"}</td>
-                      <td className="px-2 py-1">{leave.employee?.Email || "-"}</td>
-                      <td className="px-2 py-1">{leave.type}</td>
-                      <td className="px-2 py-1">{leave.startDate?.slice(0, 10)}</td>
-                      <td className="px-2 py-1">{leave.endDate?.slice(0, 10)}</td>
-                      <td className="px-2 py-1">{leave.reason}</td>
-                    </tr>
-                  ))}
+                  {pendingLeaves.map((leave: any) => {
+                    // Try to find the employee data from users list if leave.employee is not available
+                    const employee = leave.employee || (leave.employeeId ? users.find((u: any) => u.id === leave.employeeId) : null);
+                    
+                    return (
+                      <tr key={leave.id}>
+                        <td className="px-2 py-1">{employee?.role || "-"}</td>
+                        <td className="px-2 py-1">{employee?.department || "-"}</td>
+                        <td className="px-2 py-1">{employee?.Names || "-"}</td>
+                        <td className="px-2 py-1">{employee?.Email || "-"}</td>
+                        <td className="px-2 py-1">{leave.type || "-"}</td>
+                        <td className="px-2 py-1">{leave.startDate?.slice(0, 10) || "-"}</td>
+                        <td className="px-2 py-1">{leave.endDate?.slice(0, 10) || "-"}</td>
+                        <td className="px-2 py-1">{leave.reason || "-"}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -664,6 +672,7 @@ const UserManagement = () => {
               <option value="admin">admin</option>
               <option value="employee">employee</option>
               <option value="manager">manager</option>
+              <option value="hr">hr</option>
               <option value="recruiter">recruiter</option>
               <option value="trainer">trainer</option>
               <option value="auditor">auditor</option>
@@ -713,6 +722,7 @@ const UserManagement = () => {
               <option value="admin">admin</option>
               <option value="employee">employee</option>
               <option value="manager">manager</option>
+              <option value="hr">hr</option>
               <option value="recruiter">recruiter</option>
               <option value="trainer">trainer</option>
               <option value="auditor">auditor</option>

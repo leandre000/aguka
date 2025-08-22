@@ -40,7 +40,7 @@ export default function AdminPortal() {
         const leaves = Array.isArray(leavesRes) ? leavesRes : leavesRes?.data || [];
         const pendingLeavesArr = leaves.filter((l: any) => {
           const status = l.status || l.Status;
-          return status === 'Pending' || status === 'pending';
+          return status && status.toLowerCase() === 'pending';
         });
 
         setStats({
@@ -63,12 +63,12 @@ export default function AdminPortal() {
 
   function getEmployeeNameFromLeave(leave: any) {
     if (leave.employee && leave.employee.Names) return leave.employee.Names;
-    if (leave.employee && leave.employee._id) {
-      const user = usersList.find((u: any) => u._id === leave.employee._id);
+    if (leave.employee && leave.employee.id) {
+      const user = usersList.find((u: any) => u.id === leave.employee.id);
       if (user && user.Names) return user.Names;
     }
     if (leave.employeeId) {
-      const user = usersList.find((u: any) => u._id === leave.employeeId);
+      const user = usersList.find((u: any) => u.id === leave.employeeId);
       if (user && user.Names) return user.Names;
     }
     return leave.employeeId || 'Unknown employee';
@@ -221,7 +221,7 @@ export default function AdminPortal() {
             ) : (
               <ul className="divide-y">
                 {pendingLeavesList.map(leave => (
-                  <li key={leave._id} className="py-2 flex flex-col md:flex-row md:items-center md:gap-4">
+                  <li key={leave.id} className="py-2 flex flex-col md:flex-row md:items-center md:gap-4">
                     <span className="font-medium">
                       {getEmployeeNameFromLeave(leave)}
                     </span>

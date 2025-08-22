@@ -25,7 +25,6 @@
     "success": "Success",
     "confirm": "Confirm",
     "back": "Back",
-    "next": "Next",
     "previous": "Previous",
     "submit": "Submit",
     "close": "Close",
@@ -53,7 +52,13 @@
     "endDate": "End Date",
     "status": "Status",
     "file": "File",
-    "actions": "Actions"
+    "actions": "Actions",
+    "allFieldsRequired": "All required fields must be filled",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "of": "of",
+    "submitting": "Submitting..."
   },
   "notifications": {
     "title": "Notifications",
@@ -311,7 +316,27 @@
       "noStubs": "No Payslips Found",
       "noStubsDesc": "Your payslips will appear here once generated.",
       "search":"Search"
-
+    },
+    "leaveRequests": {
+      "title": "Leave Requests",
+      "newLeaveRequest": "New Leave Request",
+      "approve": "Approve",
+      "reject": "Reject",
+      "cancel": "Cancel",
+      "approveLeave": "Approve Leave",
+      "personal": "Personal Leave",
+      "sick": "Sick Leave",
+      "vacation": "Vacation Leave",
+      "maternity": "Maternity Leave",
+      "paternity": "Paternity Leave",
+      "leaveType": "Leave Type",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "reason": "Reason",
+      "submit": "Submit",
+      "loading": "Loading leave requests...",
+      "noRequests": "No leave requests found",
+      "noRequestsDesc": "Your leave requests will appear here once submitted."
     }
   },
   "manager": {

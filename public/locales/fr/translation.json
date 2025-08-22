@@ -52,7 +52,13 @@
     "endDate": "Date de fin",
     "status": "Statut",
     "file": "Fichier",
-    "actions": "Actions"
+    "actions": "Actions",
+    "allFieldsRequired": "Tous les champs requis doivent être remplis",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "page": "Page",
+    "of": "de",
+    "submitting": "Soumission en cours..."
   },
   "notifications": {
     "title": "Notifications",

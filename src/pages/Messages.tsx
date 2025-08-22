@@ -83,7 +83,7 @@ export default function Messages() {
           setError("You are not a participant in this thread.");
           setSelectedThread(null);
           // Optionally remove the thread from the list
-          setThreads((prev) => prev.filter((t) => t._id !== threadId));
+          setThreads((prev) => prev.filter((t) => t.id !== threadId));
         } else {
           setError(err.message || "Failed to load messages");
         }
@@ -91,7 +91,7 @@ export default function Messages() {
       .finally(() => setLoadingMessages(false));
   };
   useEffect(() => {
-    if (selectedThread?._id) fetchMessages(selectedThread._id);
+    if (selectedThread?.id) fetchMessages(selectedThread.id);
   }, [selectedThread]);
 
   // Filter users for combobox/autocomplete
@@ -120,7 +120,7 @@ export default function Messages() {
     try {
       const thread = await createThread({
         subject: newThreadSubject,
-        participants: selectedParticipants.map((u) => u._id),
+        participants: selectedParticipants.map((u) => u.id),
       });
       setNewThreadSubject("");
       setSelectedParticipants([]);
@@ -146,11 +146,11 @@ export default function Messages() {
 
     const allParticipants = [
       ...(selectedThread.participants || []),
-      user._id
-    ].map(p => (typeof p === "object" ? p._id : p));
+      user.id
+    ].map(p => (typeof p === "object" ? p.id : p));
 
     const recipients = allParticipants
-      .filter(id => id && id !== user._id)
+      .filter(id => id && id !== user.id)
       .filter((v, i, a) => a.indexOf(v) === i); // deduplicate
 
     if (recipients.length === 0) {
@@ -162,10 +162,10 @@ export default function Messages() {
       await sendMessage({
         recipients,
         content: newMessage,
-        thread: selectedThread._id,
+        thread: selectedThread.id,
       });
       setNewMessage("");
-      fetchMessages(selectedThread._id);
+             fetchMessages(selectedThread.id);
     } catch (err: any) {
       setError(
         err?.message?.includes("At least one recipient is required")
@@ -215,7 +215,7 @@ export default function Messages() {
                   />
                   <Combobox.Options>
                     {filteredUsers.map((u) => (
-                      <Combobox.Option key={u._id} value={u}>
+                      <Combobox.Option key={u.id} value={u}>
                         {u.Names || u.name || u.email} {u.role ? <span className="text-xs text-muted-foreground">({u.role})</span> : null}
                       </Combobox.Option>
                     ))}
@@ -229,13 +229,13 @@ export default function Messages() {
             ) : (
               <div className="space-y-2">
                 {threads.map((thread) => (
-                  <Card key={thread._id} className={selectedThread?._id === thread._id ? "border-primary" : ""}>
+                  <Card key={thread.id} className={selectedThread?.id === thread.id ? "border-primary" : ""}>
                     <CardContent className="cursor-pointer" onClick={() => setSelectedThread(thread)}>
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
                         <span className="font-semibold">{thread.subject}</span>
                       </div>
-                      <div className="text-xs text-muted-foreground">{t('messages.participants') || 'Participants'}: {thread.participants.map((p: any) => p.Names || p.name || p.email || p._id).join(", ")}</div>
+                      <div className="text-xs text-muted-foreground">{t('messages.participants') || 'Participants'}: {thread.participants.map((p: any) => p.Names || p.name || p.email || p.id).join(", ")}</div>
                     </CardContent>
                   </Card>
                 ))}
@@ -249,22 +249,33 @@ export default function Messages() {
               <Card>
                 <CardHeader>
                   <CardTitle>{selectedThread.subject}</CardTitle>
-                  <div className="text-xs text-muted-foreground">{t('messages.participants') || 'Participants'}: {selectedThread.participants.map((p: any) => p.Names || p.name || p.email || p._id).join(", ")}</div>
+                  <div className="text-xs text-muted-foreground">{t('messages.participants') || 'Participants'}: {selectedThread.participants.map((p: any) => p.Names || p.name || p.email || p.id).join(", ")}</div>
                 </CardHeader>
                 <CardContent>
                   {loadingMessages ? (
                     <div>{t('messages.loadingMessages') || 'Loading messages...'}</div>
                   ) : (
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {messages.map((msg: any) => (
-                        <div key={msg._id} className={`flex ${msg.sender?._id === user._id ? "justify-end" : "justify-start"}`}>
-                          <div className={`p-2 rounded-lg ${msg.sender?._id === user._id ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-                            <div className="text-sm">{msg.content}</div>
-                            <div className="text-xs opacity-70 mt-1">{msg.sender?.Names || msg.sender?.name || msg.sender?.email || msg.sender} • {new Date(msg.createdAt).toLocaleString()}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                                         <div className="space-y-3 max-h-96 overflow-y-auto">
+                       {messages.map((msg: any) => {
+                         const isOwnMessage = msg.sender?.id === user.id;
+                         return (
+                           <div key={msg.id} className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}>
+                             <div className={`max-w-xs lg:max-w-md p-3 rounded-2xl ${
+                               isOwnMessage 
+                                 ? "bg-blue-600 text-white shadow-lg" 
+                                 : "bg-gray-100 text-gray-800 border border-gray-200"
+                             }`}>
+                               <div className="text-sm font-medium">{msg.content}</div>
+                               <div className={`text-xs mt-2 ${
+                                 isOwnMessage ? "text-blue-100" : "text-gray-500"
+                               }`}>
+                                 {isOwnMessage ? "You" : (msg.sender?.Names || msg.sender?.name || msg.sender?.email || "Unknown")} • {new Date(msg.createdAt).toLocaleString()}
+                               </div>
+                             </div>
+                           </div>
+                         );
+                       })}
+                     </div>
                   )}
                   <form onSubmit={handleSendMessage} className="flex gap-2 mt-4">
                     <Input placeholder={t('messages.typeMessage') || 'Type your message...'} value={newMessage} onChange={e => setNewMessage(e.target.value)} />

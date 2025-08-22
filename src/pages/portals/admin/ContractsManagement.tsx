@@ -136,7 +136,7 @@ export default function ContractsManagement() {
     try {
       await deleteContract(id);
       toast({ title: t("admin.delete") + " " + t("common.success") || "Deleted" });
-      setContracts((prev) => prev.filter((c) => c._id !== id));
+      setContracts((prev) => prev.filter((c) => c.id !== id));
     } catch (err: any) {
       toast({ title: t("common.error"), description: err.message || "Failed to delete contract", variant: "destructive" });
     } finally {
@@ -144,9 +144,22 @@ export default function ContractsManagement() {
     }
   };
 
-  function getEmployeeName(employeeId: string) {
-    const emp = employees.find((e: any) => e._id === employeeId);
-    return emp && emp.user ? emp.user.Names : employeeId;
+  function getEmployeeName(employeeId: string | any) {
+    // Handle case where employeeId might be an object
+    if (typeof employeeId === 'object' && employeeId !== null) {
+      if (employeeId.user && employeeId.user.Names) {
+        return employeeId.user.Names;
+      }
+      if (employeeId.id) {
+        employeeId = employeeId.id;
+      } else {
+        return 'Unknown Employee';
+      }
+    }
+    
+    // Now employeeId should be a string
+    const emp = employees.find((e: any) => e.id === employeeId);
+    return emp && emp.user ? emp.user.Names : (employeeId || 'Unknown Employee');
   }
 
   return (
@@ -196,10 +209,10 @@ export default function ContractsManagement() {
                     </thead>
                     <tbody>
                       {paginatedContracts.map((c: any) => (
-                        <tr key={c._id}>
-                          <td className="px-2 py-2 border-b">
-                            {getEmployeeName(c.employee)}
-                          </td>
+                        <tr key={c.id}>
+                                                     <td className="px-2 py-2 border-b">
+                             {getEmployeeName(c.employee)}
+                           </td>
                           <td className="px-2 py-2 border-b">{c.contractType}</td>
                           <td className="px-2 py-2 border-b">{c.startDate?.slice(0, 10)}</td>
                           <td className="px-2 py-2 border-b">{c.endDate?.slice(0, 10)}</td>
@@ -223,7 +236,7 @@ export default function ContractsManagement() {
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => handleDelete(c._id)}
+                              onClick={() => handleDelete(c.id)}
                             >
                               {t("admin.delete") || "Delete"}
                             </Button>
@@ -278,8 +291,8 @@ export default function ContractsManagement() {
                   {employees
                     .filter((emp: any) => emp.user) // Only show employees with a linked user
                     .map((emp: any) => (
-                      <SelectItem key={emp._id} value={emp._id}>
-                        {emp.user?.Names || emp._id} {/* Show name, fallback to id */}
+                      <SelectItem key={emp.id} value={emp.id}>
+                        {emp.user?.Names || emp.id} {/* Show name, fallback to id */}
                         {emp.position ? ` (${emp.position})` : ""}
                       </SelectItem>
                     ))}
