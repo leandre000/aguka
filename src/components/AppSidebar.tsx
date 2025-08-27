@@ -69,7 +69,7 @@ export function AppSidebar() {
       icon: Shield,
     },
     {
-      title: t("nav.gdpr"),
+      title: "GDPR",
       url: "/gdpr",
       icon: Eye,
     },
