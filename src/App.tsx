@@ -11,7 +11,6 @@ import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
 import Recruitment from "./pages/Recruitment";
 import Payroll from "./pages/Payroll";
-// import Performance from "./pages/Performance";   <Route path="/reports" element={<Reports />} />
 import Login from "./pages/auth/Login";
 import AdminPortal from "./pages/portals/AdminPortal";
 import ManagerPortal from "./pages/portals/ManagerPortal";

@@ -11,9 +11,9 @@ export function ManagerPortalLayout({ children }: ManagerPortalLayoutProps) {
   const { t } = useLanguage();
 
   return (
-    <SidebarProvider>
+    // <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <ManagerPortalSidebar />
+        {/* <ManagerPortalSidebar /> */}
         <SidebarInset className="flex-1">
           <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4">
             <SidebarTrigger className="-ml-1" />
@@ -25,6 +25,6 @@ export function ManagerPortalLayout({ children }: ManagerPortalLayoutProps) {
           </main>
         </SidebarInset>
       </div>
-    </SidebarProvider>
+    // </SidebarProvider>
   );
 }
